@@ -216,6 +216,15 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     }
   }
 
+  void _handleInteractionUpdate() {
+    final clamped = _clampMatrix(_transformationController.value.clone());
+    if (_matrixEquals(_transformationController.value, clamped)) {
+      return;
+    }
+
+    _transformationController.value = clamped;
+  }
+
   Matrix4 _clampMatrix(Matrix4 matrix) {
     final viewportSize = _viewportSize;
     if (viewportSize == null) {
@@ -306,6 +315,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
               maxScale: _fitScale * _maxZoomMultiplier,
               boundaryMargin: EdgeInsets.zero,
               onInteractionStart: (_) => _hasUserMovedViewport = true,
+              onInteractionUpdate: (_) => _handleInteractionUpdate(),
               onInteractionEnd: (_) => _enforceMinimumScale(),
               child: SizedBox(
                 width: _mapWidth,
