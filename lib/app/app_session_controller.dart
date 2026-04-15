@@ -44,16 +44,44 @@ class AppSessionController extends ChangeNotifier {
     _refreshToken = _prefs!.getString(_refreshTokenKey);
     final profileRaw = _prefs!.getString(_profileKey);
 
+    if (profileRaw != null) {
+      _profile = UserProfile.fromJson(jsonDecode(profileRaw) as Map<String, dynamic>);
+    }
+
     if (_accessToken?.isNotEmpty == true) {
       ApiClient.setAccessToken(_accessToken);
-      if (profileRaw != null) {
-        _profile = UserProfile.fromJson(jsonDecode(profileRaw) as Map<String, dynamic>);
-      }
+    }
+
+    if (_refreshToken?.isNotEmpty == true) {
       try {
-        _profile = await _authService.getCurrentUser();
+        if (_accessToken?.isNotEmpty == true) {
+          _profile = await _authService.getCurrentUser();
+        } else {
+          final refreshedSession = await _authService.refreshSession(_refreshToken!);
+          _accessToken = refreshedSession.accessToken;
+          _refreshToken = refreshedSession.refreshToken;
+          _profile = refreshedSession.profile;
+          await _prefs!.setString(_accessTokenKey, refreshedSession.accessToken);
+          await _prefs!.setString(_refreshTokenKey, refreshedSession.refreshToken);
+        }
+
         await _prefs!.setString(_profileKey, jsonEncode(_profile!.toJson()));
       } catch (_) {
-        await clearSession(notify: false);
+        if (_refreshToken?.isNotEmpty == true) {
+          try {
+            final refreshedSession = await _authService.refreshSession(_refreshToken!);
+            _accessToken = refreshedSession.accessToken;
+            _refreshToken = refreshedSession.refreshToken;
+            _profile = refreshedSession.profile;
+            await _prefs!.setString(_accessTokenKey, refreshedSession.accessToken);
+            await _prefs!.setString(_refreshTokenKey, refreshedSession.refreshToken);
+            await _prefs!.setString(_profileKey, jsonEncode(_profile!.toJson()));
+          } catch (_) {
+            await clearSession(notify: false);
+          }
+        } else {
+          await clearSession(notify: false);
+        }
       }
     }
 

@@ -66,6 +66,22 @@ class AuthService {
     }
   }
 
+  Future<AuthSession> refreshSession(String refreshToken) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/auth/refresh-token',
+        data: {'refreshToken': refreshToken},
+      );
+
+      return _toSession(response.data!);
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapRefreshMessage(error),
+      );
+    }
+  }
+
   Future<UserProfile> getCurrentUser() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/auth/me');
@@ -127,6 +143,19 @@ class AuthService {
     return _problemDetail(error) ??
         error.message ??
         'Kayit olusturulurken bir hata olustu.';
+  }
+
+  String _mapRefreshMessage(DioException error) {
+    switch (_problemCode(error)) {
+      case 'invalid_token':
+        return 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.';
+      case 'auth.account_inactive':
+        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+      default:
+        return _problemDetail(error) ??
+            error.message ??
+            'Oturum yenilenemedi.';
+    }
   }
 
   ApiException _toApiException(
