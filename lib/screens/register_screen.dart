@@ -49,22 +49,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted || success) {
       return;
     }
-
-    final message =
-        widget.sessionController.errorMessage ?? 'Kayit sirasinda bir hata olustu.';
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
       appBar: AppBar(
@@ -101,6 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: TextFormField(
                           controller: _firstNameController,
                           textInputAction: TextInputAction.next,
+                          onChanged: (_) => widget.sessionController.clearErrorMessage(),
                           decoration: const InputDecoration(hintText: 'Ahmet'),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -118,6 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: TextFormField(
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
+                          onChanged: (_) => widget.sessionController.clearErrorMessage(),
                           decoration: const InputDecoration(hintText: 'Yilmaz'),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -136,6 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextFormField(
                     controller: _userNameController,
                     textInputAction: TextInputAction.next,
+                    onChanged: (_) => widget.sessionController.clearErrorMessage(),
                     decoration: const InputDecoration(hintText: 'ahmetyilmaz'),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -155,6 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
+                    onChanged: (_) => widget.sessionController.clearErrorMessage(),
                     decoration: const InputDecoration(hintText: 'ornek@mail.com'),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -174,6 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.next,
+                    onChanged: (_) => widget.sessionController.clearErrorMessage(),
                     decoration: InputDecoration(
                       hintText: 'En az 8 karakter',
                       suffixIcon: IconButton(
@@ -211,6 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirmPassword,
                     textInputAction: TextInputAction.done,
+                    onChanged: (_) => widget.sessionController.clearErrorMessage(),
                     onFieldSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
                       hintText: 'Sifreni tekrar gir',
@@ -238,6 +234,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                 ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 18),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDECEC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFF6C7C7)),
+                    ),
+                    child: Text(
+                      errorMessage,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF8A1F1F),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../models/auth_models.dart';
+import '../models/exceptions.dart';
 import '../services/auth_service.dart';
 
 class AppSessionController extends ChangeNotifier {
@@ -27,6 +28,15 @@ class AppSessionController extends ChangeNotifier {
   bool get isAuthenticated => _accessToken?.isNotEmpty == true && _profile != null;
   String? get errorMessage => _errorMessage;
   UserProfile? get profile => _profile;
+
+  void clearErrorMessage() {
+    if (_errorMessage == null) {
+      return;
+    }
+
+    _errorMessage = null;
+    notifyListeners();
+  }
 
   Future<void> restore() async {
     _prefs = await SharedPreferences.getInstance();
@@ -74,7 +84,9 @@ class AppSessionController extends ChangeNotifier {
       return true;
     } catch (error) {
       _busy = false;
-      _errorMessage = error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = error is ApiException
+          ? error.message
+          : error.toString().replaceFirst('Exception: ', '');
       notifyListeners();
       return false;
     }
@@ -112,7 +124,9 @@ class AppSessionController extends ChangeNotifier {
       return true;
     } catch (error) {
       _busy = false;
-      _errorMessage = error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = error is ApiException
+          ? error.message
+          : error.toString().replaceFirst('Exception: ', '');
       notifyListeners();
       return false;
     }

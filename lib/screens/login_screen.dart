@@ -38,22 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted || success) {
       return;
     }
-
-    final message =
-        widget.sessionController.errorMessage ?? 'Giris sirasinda bir hata olustu.';
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
       body: SafeArea(
@@ -107,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      onChanged: (_) => widget.sessionController.clearErrorMessage(),
                       decoration: const InputDecoration(
                         hintText: 'ornek@mail.com',
                       ),
@@ -137,6 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscureText,
+                      onChanged: (_) => widget.sessionController.clearErrorMessage(),
                       decoration: InputDecoration(
                         hintText: '••••••••',
                         suffixIcon: IconButton(
@@ -158,6 +150,28 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       onFieldSubmitted: (_) => _submit(),
                     ),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFDECEC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFF6C7C7)),
+                        ),
+                        child: Text(
+                          errorMessage,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF8A1F1F),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 28),
                     SizedBox(
                       width: double.infinity,

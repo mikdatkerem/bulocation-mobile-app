@@ -21,7 +21,10 @@ class AuthService {
 
       return _toSession(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_mapLoginMessage(error));
+      throw _toApiException(
+        error,
+        overrideMessage: _mapLoginMessage(error),
+      );
     }
   }
 
@@ -43,7 +46,10 @@ class AuthService {
 
       return _toSession(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_mapRegisterMessage(error));
+      throw _toApiException(
+        error,
+        overrideMessage: _mapRegisterMessage(error),
+      );
     }
   }
 
@@ -65,7 +71,10 @@ class AuthService {
       final response = await _dio.get<Map<String, dynamic>>('/auth/me');
       return UserProfile.fromJson(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_mapProfileMessage(error));
+      throw _toApiException(
+        error,
+        overrideMessage: _mapProfileMessage(error),
+      );
     }
   }
 
@@ -84,32 +93,103 @@ class AuthService {
   }
 
   String _mapLoginMessage(DioException error) {
-    final statusCode = error.response?.statusCode;
-    final body = error.response?.data;
-    final detail = body is Map<String, dynamic> ? body['detail']?.toString() : null;
-
-    if (statusCode == 400 || statusCode == 401) {
-      return detail ?? 'E-posta veya sifre hatali.';
+    switch (_problemCode(error)) {
+      case 'auth.invalid_credentials':
+        return 'E-posta veya kullanici adi ya da sifre hatali.';
+      case 'auth.account_locked':
+        return 'Hesap gecici olarak kilitlendi. Bir sure sonra tekrar deneyin.';
+      case 'auth.account_inactive':
+        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+      case 'validation_failed':
+        return _firstValidationMessage(error) ?? 'Form alanlarini kontrol edin.';
     }
 
+    final detail = _problemDetail(error);
     return detail ?? error.message ?? 'Giris sirasinda bir hata olustu.';
   }
 
   String _mapProfileMessage(DioException error) {
-    final body = error.response?.data;
-    final detail = body is Map<String, dynamic> ? body['detail']?.toString() : null;
-    return detail ?? error.message ?? 'Kullanici profili yuklenemedi.';
+    return _problemDetail(error) ??
+        error.message ??
+        'Kullanici profili yuklenemedi.';
   }
 
   String _mapRegisterMessage(DioException error) {
-    final statusCode = error.response?.statusCode;
-    final body = error.response?.data;
-    final detail = body is Map<String, dynamic> ? body['detail']?.toString() : null;
-
-    if (statusCode == 400 || statusCode == 409) {
-      return detail ?? 'Kayit bilgileri gecersiz veya zaten kullanimda.';
+    switch (_problemCode(error)) {
+      case 'conflict.email_in_use':
+        return 'Bu e-posta adresi zaten kullaniliyor.';
+      case 'conflict.username_in_use':
+        return 'Bu kullanici adi zaten kullaniliyor.';
+      case 'validation_failed':
+        return _firstValidationMessage(error) ?? 'Kayit alanlarini kontrol edin.';
     }
 
-    return detail ?? error.message ?? 'Kayit olusturulurken bir hata olustu.';
+    return _problemDetail(error) ??
+        error.message ??
+        'Kayit olusturulurken bir hata olustu.';
+  }
+
+  ApiException _toApiException(
+    DioException error, {
+    required String overrideMessage,
+  }) {
+    return ApiException(
+      overrideMessage,
+      statusCode: error.response?.statusCode,
+      code: _problemCode(error),
+      errors: _problemErrors(error),
+    );
+  }
+
+  String? _problemDetail(DioException error) {
+    final body = error.response?.data;
+    if (body is! Map<String, dynamic>) {
+      return null;
+    }
+
+    return body['detail']?.toString() ?? body['title']?.toString();
+  }
+
+  String? _problemCode(DioException error) {
+    final body = error.response?.data;
+    if (body is! Map<String, dynamic>) {
+      return null;
+    }
+
+    return body['code']?.toString();
+  }
+
+  Map<String, List<String>>? _problemErrors(DioException error) {
+    final body = error.response?.data;
+    if (body is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final rawErrors = body['errors'];
+    if (rawErrors is! Map) {
+      return null;
+    }
+
+    return rawErrors.map((key, value) {
+      final messages = value is List
+          ? value.map((item) => item.toString()).toList()
+          : <String>[value.toString()];
+      return MapEntry(key.toString(), messages);
+    });
+  }
+
+  String? _firstValidationMessage(DioException error) {
+    final errors = _problemErrors(error);
+    if (errors == null || errors.isEmpty) {
+      return null;
+    }
+
+    for (final messages in errors.values) {
+      if (messages.isNotEmpty) {
+        return messages.first;
+      }
+    }
+
+    return null;
   }
 }

@@ -1,17 +1,25 @@
 class LocationNotFoundException implements Exception {
-  final String locationId;
   const LocationNotFoundException(this.locationId);
 
+  final String locationId;
+
   @override
-  String toString() => 'Konum bulunamadı: $locationId';
+  String toString() => 'Konum bulunamadi: $locationId';
 }
 
 class ApiException implements Exception {
+  const ApiException(
+    this.message, {
+    this.statusCode,
+    this.code,
+    this.errors,
+  });
+
   final String message;
   final int? statusCode;
-
-  const ApiException(this.message, {this.statusCode});
+  final String? code;
+  final Map<String, List<String>>? errors;
 
   @override
-  String toString() => 'API Hatası${statusCode != null ? ' ($statusCode)' : ''}: $message';
+  String toString() => message;
 }

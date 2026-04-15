@@ -67,8 +67,8 @@ class MapNode {
   bool get isPark => type == NodeType.park;
   bool get isQr => type == NodeType.qr;
 
-  double resolveX(double mapWidth) => (normalizedX != null ? normalizedX! * mapWidth : x);
-  double resolveY(double mapHeight) => (normalizedY != null ? normalizedY! * mapHeight : y);
+  double resolveX(double mapWidth) => x;
+  double resolveY(double mapHeight) => y;
 }
 
 class MapEdge {
