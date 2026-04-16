@@ -34,22 +34,60 @@ class AuthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 370),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
-      decoration: BoxDecoration(
-        color: authCard,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.48),
-            blurRadius: 34,
-            offset: const Offset(0, 22),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: authCard,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.48),
+              blurRadius: 34,
+              offset: const Offset(0, 22),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+                child: child,
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 3,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        authCard,
+                        Color(0xFF101527),
+                        Color(0xFF14236C),
+                        authPrimary,
+                        Color(0xFF182B93),
+                        Color(0xFF111735),
+                      ],
+                      stops: [0, 0.16, 0.36, 0.66, 0.84, 1],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: authPrimary.withValues(alpha: 0.42),
+                        blurRadius: 14,
+                        spreadRadius: 0.2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      child: child,
     );
   }
 }
@@ -90,6 +128,25 @@ class AuthBrand extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class AuthLogo extends StatelessWidget {
+  const AuthLogo({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: MediaQuery.sizeOf(context).width * 0.92,
+        height: 150,
+        child: Image.asset(
+          'assets/logo_removed_bg.png',
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+      ),
     );
   }
 }
@@ -238,12 +295,11 @@ class AuthGoogleButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'G',
-              style: TextStyle(
-                color: Color(0xFF4BA3FF),
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CustomPaint(
+                painter: _GoogleLogoPainter(),
               ),
             ),
             const SizedBox(width: 10),
@@ -253,6 +309,50 @@ class AuthGoogleButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  const _GoogleLogoPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = size.width * 0.16;
+    final rect = Rect.fromLTWH(
+      strokeWidth / 2,
+      strokeWidth / 2,
+      size.width - strokeWidth,
+      size.height - strokeWidth,
+    );
+
+    void drawArc(Color color, double start, double sweep) {
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.square;
+      canvas.drawArc(rect, start, sweep, false, paint);
+    }
+
+    drawArc(const Color(0xFF4285F4), -0.15, 1.55);
+    drawArc(const Color(0xFF34A853), 1.35, 1.18);
+    drawArc(const Color(0xFFFBBC05), 2.5, 0.9);
+    drawArc(const Color(0xFFEA4335), 3.35, 1.52);
+
+    final bluePaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.square;
+    final centerY = size.height * 0.52;
+    canvas.drawLine(
+      Offset(size.width * 0.52, centerY),
+      Offset(size.width * 0.9, centerY),
+      bluePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class AuthDivider extends StatelessWidget {

@@ -86,8 +86,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const AuthBrand(centered: true),
-                const SizedBox(height: 24),
+                const AuthLogo(),
+                const SizedBox(height: 0),
                 const Text(
                   'Yeni hesap olustur',
                   style: TextStyle(
@@ -116,13 +116,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          height: 1,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          decoration: BoxDecoration(
-                            color: authBorder.withValues(alpha: 0.35),
-                          ),
-                        ),
                         Row(
                           children: [
                             Expanded(

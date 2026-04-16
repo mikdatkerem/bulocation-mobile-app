@@ -66,11 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 2),
-                  child: AuthBrand(),
-                ),
-                const SizedBox(height: 64),
+                const AuthLogo(),
+                const SizedBox(height: 0),
                 const Center(
                   child: Text(
                     'Welcome back',
@@ -104,14 +101,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            height: 2,
-                            margin: const EdgeInsets.only(bottom: 22),
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                  colors: [authCard, authPrimary]),
-                            ),
-                          ),
                           const AuthLabel('EMAIL ADDRESS'),
                           TextFormField(
                             controller: _emailController,
