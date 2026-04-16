@@ -6,6 +6,8 @@ class UserProfile {
     required this.firstName,
     required this.lastName,
     required this.fullName,
+    required this.emailVerified,
+    required this.isActive,
     required this.roles,
   });
 
@@ -15,6 +17,8 @@ class UserProfile {
   final String firstName;
   final String lastName;
   final String fullName;
+  final bool emailVerified;
+  final bool isActive;
   final List<String> roles;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class UserProfile {
       lastName: json['lastName'] as String? ?? '',
       fullName: json['fullName'] as String? ??
           '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim(),
+      emailVerified: json['emailVerified'] as bool? ?? false,
+      isActive: json['isActive'] as bool? ?? true,
       roles: ((json['roles'] as List<dynamic>?) ?? const <dynamic>[])
           .map((item) => item.toString())
           .toList(),
@@ -40,6 +46,8 @@ class UserProfile {
       'firstName': firstName,
       'lastName': lastName,
       'fullName': fullName,
+      'emailVerified': emailVerified,
+      'isActive': isActive,
       'roles': roles,
     };
   }

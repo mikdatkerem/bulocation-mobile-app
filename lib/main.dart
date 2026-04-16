@@ -18,9 +18,15 @@ class AppConfig {
     defaultValue: '',
   );
 
+  static const String googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '',
+  );
+
   static String get apiBaseUrl => '$baseHost/api';
   static String get hubBaseUrl => '$baseHost/hubs/parking';
   static String get mapSvgUrl => '$baseHost/maps/kroki.svg';
+  static bool get googleSignInEnabled => googleServerClientId.isNotEmpty;
 }
 
 Future<void> main() async {

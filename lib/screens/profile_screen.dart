@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_session_controller.dart';
+import 'verify_email_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.sessionController});
@@ -96,6 +97,58 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
+            if (profile != null && !profile.emailVerified) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF1DEAA)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.mark_email_unread_outlined,
+                      color: Color(0xFF9E6A00),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'E-posta dogrulama bekleniyor',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF5C4300),
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Sifirlama ve guvenlik akislari icin hesabini dogrula.',
+                            style: TextStyle(color: Color(0xFF7A5E16)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => VerifyEmailScreen(
+                              sessionController: sessionController,
+                              email: profile.email,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Dogrula'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const Row(
               children: [
                 Expanded(
@@ -132,10 +185,10 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Premium Uyelik',
                           style: TextStyle(

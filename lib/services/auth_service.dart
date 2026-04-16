@@ -53,6 +53,22 @@ class AuthService {
     }
   }
 
+  Future<AuthSession> loginWithGoogle(String idToken) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/auth/google',
+        data: {'idToken': idToken},
+      );
+
+      return _toSession(response.data!);
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapGoogleMessage(error),
+      );
+    }
+  }
+
   Future<void> logout(String refreshToken) async {
     try {
       await _dio.post<void>(
@@ -78,6 +94,65 @@ class AuthService {
       throw _toApiException(
         error,
         overrideMessage: _mapRefreshMessage(error),
+      );
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _dio.post<void>(
+        '/auth/forgot-password',
+        data: {'email': email.trim()},
+      );
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapForgotPasswordMessage(error),
+      );
+    }
+  }
+
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/auth/reset-password',
+        data: {'token': token.trim(), 'newPassword': newPassword},
+      );
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapResetPasswordMessage(error),
+      );
+    }
+  }
+
+  Future<void> resendEmailVerification(String email) async {
+    try {
+      await _dio.post<void>(
+        '/auth/resend-email-verification',
+        data: {'email': email.trim()},
+      );
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapResendVerificationMessage(error),
+      );
+    }
+  }
+
+  Future<void> verifyEmail(String token) async {
+    try {
+      await _dio.post<void>(
+        '/auth/verify-email',
+        data: {'token': token.trim()},
+      );
+    } on DioException catch (error) {
+      throw _toApiException(
+        error,
+        overrideMessage: _mapVerifyEmailMessage(error),
       );
     }
   }
@@ -145,6 +220,21 @@ class AuthService {
         'Kayit olusturulurken bir hata olustu.';
   }
 
+  String _mapGoogleMessage(DioException error) {
+    switch (_problemCode(error)) {
+      case 'auth.google_not_configured':
+        return 'Google ile giris bu ortamda aktif degil.';
+      case 'auth.invalid_credentials':
+        return 'Google hesabi dogrulanamadi.';
+      case 'auth.account_inactive':
+        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+      default:
+        return _problemDetail(error) ??
+            error.message ??
+            'Google ile giris yapilirken bir hata olustu.';
+    }
+  }
+
   String _mapRefreshMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'invalid_token':
@@ -155,6 +245,52 @@ class AuthService {
         return _problemDetail(error) ??
             error.message ??
             'Oturum yenilenemedi.';
+    }
+  }
+
+  String _mapForgotPasswordMessage(DioException error) {
+    if (_problemCode(error) == 'validation_failed') {
+      return _firstValidationMessage(error) ?? 'Gecerli bir e-posta adresi girin.';
+    }
+
+    return _problemDetail(error) ??
+        error.message ??
+        'Sifre sifirlama talebi gonderilemedi.';
+  }
+
+  String _mapResetPasswordMessage(DioException error) {
+    switch (_problemCode(error)) {
+      case 'invalid_token':
+        return 'Sifre sifirlama kodu gecersiz veya suresi dolmus.';
+      case 'validation_failed':
+        return _firstValidationMessage(error) ?? 'Yeni sifre alanlarini kontrol edin.';
+      default:
+        return _problemDetail(error) ??
+            error.message ??
+            'Sifre guncellenemedi.';
+    }
+  }
+
+  String _mapResendVerificationMessage(DioException error) {
+    if (_problemCode(error) == 'validation_failed') {
+      return _firstValidationMessage(error) ?? 'Gecerli bir e-posta adresi girin.';
+    }
+
+    return _problemDetail(error) ??
+        error.message ??
+        'Dogrulama e-postasi yeniden gonderilemedi.';
+  }
+
+  String _mapVerifyEmailMessage(DioException error) {
+    switch (_problemCode(error)) {
+      case 'invalid_token':
+        return 'Dogrulama kodu gecersiz veya suresi dolmus.';
+      case 'validation_failed':
+        return _firstValidationMessage(error) ?? 'Dogrulama kodunu kontrol edin.';
+      default:
+        return _problemDetail(error) ??
+            error.message ??
+            'E-posta dogrulanamadi.';
     }
   }
 
