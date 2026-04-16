@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const authBackground = Color(0xFF171A1D);
+const authBackground = Color(0xFF08090B);
 const authCard = Color(0xFF0D0F12);
 const authInput = Color(0xFF292B2D);
 const authInputDark = Color(0xFF202225);
@@ -17,32 +17,11 @@ class AuthDottedBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DotGridPainter(),
+    return ColoredBox(
+      color: authBackground,
       child: child,
     );
   }
-}
-
-class _DotGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawColor(authBackground, BlendMode.src);
-
-    final paint = Paint()
-      ..color = const Color(0xFF6C747E).withValues(alpha: 0.28)
-      ..style = PaintingStyle.fill;
-
-    const gap = 12.0;
-    for (var x = 4.0; x < size.width; x += gap) {
-      for (var y = 4.0; y < size.height; y += gap) {
-        canvas.drawCircle(Offset(x, y), 0.9, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class AuthCard extends StatelessWidget {
@@ -54,17 +33,16 @@ class AuthCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(maxWidth: 390),
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+      constraints: const BoxConstraints(maxWidth: 370),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: BoxDecoration(
         color: authCard,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: authBorder),
+        borderRadius: BorderRadius.circular(7),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.45),
-            blurRadius: 34,
-            offset: const Offset(0, 22),
+            blurRadius: 28,
+            offset: const Offset(0, 20),
           ),
         ],
       ),
@@ -74,16 +52,18 @@ class AuthCard extends StatelessWidget {
 }
 
 class AuthBrand extends StatelessWidget {
-  const AuthBrand({super.key});
+  const AuthBrand({super.key, this.centered = false});
+
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
       children: [
         Container(
-          width: 16,
-          height: 16,
+          width: 15,
+          height: 15,
           decoration: const BoxDecoration(
             color: authPrimary,
             shape: BoxShape.circle,
@@ -99,7 +79,7 @@ class AuthBrand extends StatelessWidget {
           'BULOCATION',
           style: TextStyle(
             color: Color(0xFF2947E7),
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.6,
           ),
@@ -122,7 +102,7 @@ class AuthLabel extends StatelessWidget {
         text,
         style: const TextStyle(
           color: authMuted,
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.1,
         ),

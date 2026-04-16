@@ -21,12 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
 
   @override
-  void initState() {
-    super.initState();
-    _emailController.text = '';
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -67,184 +61,190 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: authBackground,
       body: AuthDottedBackground(
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(18, 26, 18, 28),
-              child: AuthCard(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: AuthBrand(),
-                      ),
-                      const SizedBox(height: 66),
-                      const Center(
-                        child: Text(
-                          'Welcome back',
-                          style: TextStyle(
-                            color: authText,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.9,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Center(
-                        child: Text(
-                          'Indoor navigation and infrastructure via QR.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: authMuted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 26),
-                      Container(height: 2, color: authPrimary),
-                      const SizedBox(height: 22),
-                      const AuthLabel('EMAIL ADDRESS'),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                        style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
-                        decoration: authFieldDecoration(
-                          'invalid@mail',
-                          prefixIcon: Icons.email_rounded,
-                          suffixIcon: errorMessage == null
-                              ? null
-                              : const Icon(Icons.error_rounded, size: 15, color: authDanger),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a valid corporate email.';
-                          }
-                          return null;
-                        },
-                      ),
-                      if (errorMessage != null) ...[
-                        const SizedBox(height: 8),
-                        AuthInlineError(message: errorMessage),
-                      ],
-                      const SizedBox(height: 18),
-                      Row(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 2),
+                  child: AuthBrand(),
+                ),
+                const SizedBox(height: 30),
+                Center(
+                  child: AuthCard(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const AuthLabel('PASSWORD'),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: () {
+                          const SizedBox(height: 42),
+                          const Center(
+                            child: Text(
+                              'Welcome back',
+                              style: TextStyle(
+                                color: authText,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.9,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Center(
+                            child: Text(
+                              'Indoor navigation and infrastructure via QR.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: authMuted,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 25),
+                          Container(height: 2, color: authPrimary),
+                          const SizedBox(height: 22),
+                          const AuthLabel('EMAIL ADDRESS'),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            decoration: authFieldDecoration(
+                              'invalid@mail',
+                              prefixIcon: Icons.email_rounded,
+                              suffixIcon: errorMessage == null
+                                  ? null
+                                  : const Icon(Icons.error_rounded, size: 15, color: authDanger),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter a valid corporate email.';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (errorMessage != null) ...[
+                            const SizedBox(height: 8),
+                            AuthInlineError(message: errorMessage),
+                          ],
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              const AuthLabel('PASSWORD'),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => ForgotPasswordScreen(
+                                        sessionController: widget.sessionController,
+                                        initialEmail: _emailController.text.trim(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF9EA6FF),
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(0, 22),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text(
+                                  'Forgot password?',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscureText,
+                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            decoration: authFieldDecoration(
+                              '........',
+                              prefixIcon: Icons.lock_rounded,
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() => _obscureText = !_obscureText);
+                                },
+                                icon: Icon(
+                                  _obscureText
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: authMuted,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Sifre gerekli.';
+                              }
+                              return null;
+                            },
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: 22),
+                          AuthPrimaryButton(
+                            label: 'Giris Yap',
+                            busy: widget.sessionController.isBusy,
+                            onPressed: _submit,
+                          ),
+                          const SizedBox(height: 24),
+                          const AuthDivider(label: 'OR CONTINUE WITH'),
+                          const SizedBox(height: 18),
+                          AuthGoogleButton(
+                            label: 'Google',
+                            onPressed: widget.sessionController.isBusy ? null : _signInWithGoogle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 26),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Hesabin yok mu?',
+                      style: TextStyle(
+                        color: authMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: widget.sessionController.isBusy
+                          ? null
+                          : () {
                               Navigator.of(context).push(
                                 MaterialPageRoute<void>(
-                                  builder: (_) => ForgotPasswordScreen(
+                                  builder: (_) => RegisterScreen(
                                     sessionController: widget.sessionController,
-                                    initialEmail: _emailController.text.trim(),
                                   ),
                                 ),
                               );
                             },
-                            style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF9EA6FF),
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(0, 22),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Forgot password?',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-                            ),
-                          ),
-                        ],
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFB7BDFF),
+                        padding: const EdgeInsets.only(left: 6),
+                        minimumSize: const Size(0, 28),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscureText,
-                        onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                        style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
-                        decoration: authFieldDecoration(
-                          '••••••••',
-                          prefixIcon: Icons.lock_rounded,
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() => _obscureText = !_obscureText);
-                            },
-                            icon: Icon(
-                              _obscureText
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: authMuted,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Sifre gerekli.';
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (_) => _submit(),
+                      child: const Text(
+                        'Kayit Ol',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                       ),
-                      const SizedBox(height: 22),
-                      AuthPrimaryButton(
-                        label: 'Giris Yap',
-                        busy: widget.sessionController.isBusy,
-                        onPressed: _submit,
-                      ),
-                      const SizedBox(height: 24),
-                      const AuthDivider(label: 'OR CONTINUE WITH'),
-                      const SizedBox(height: 18),
-                      AuthGoogleButton(
-                        label: 'Google',
-                        onPressed: widget.sessionController.isBusy ? null : _signInWithGoogle,
-                      ),
-                      const SizedBox(height: 38),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Hesabin yok mu?',
-                            style: TextStyle(
-                              color: authMuted,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: widget.sessionController.isBusy
-                                ? null
-                                : () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => RegisterScreen(
-                                          sessionController: widget.sessionController,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                            style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFFB7BDFF),
-                              padding: const EdgeInsets.only(left: 6),
-                              minimumSize: const Size(0, 28),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Kayit Ol',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
+              ],
             ),
           ),
         ),
