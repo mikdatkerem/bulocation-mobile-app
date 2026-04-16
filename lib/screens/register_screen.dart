@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_session_controller.dart';
-import '../main.dart';
-
-const _authBackground = Color(0xFF060708);
-const _authSurface = Color(0xFF0D1013);
-const _authText = Color(0xFFF5F3EF);
-const _authMuted = Color(0xFFA8AFBC);
-const _authBlue = Color(0xFF1836B9);
-const _authBorder = Color(0xFF242A31);
+import 'auth_screen_styles.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key, required this.sessionController});
@@ -39,6 +32,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  double get _passwordStrength {
+    final text = _passwordController.text;
+    var score = 0;
+    if (text.length >= 8) score++;
+    if (RegExp(r'[A-Z]').hasMatch(text)) score++;
+    if (RegExp(r'[a-z]').hasMatch(text)) score++;
+    if (RegExp(r'[0-9]').hasMatch(text)) score++;
+    return (score / 4).clamp(0.12, 1);
   }
 
   Future<void> _submit() async {
@@ -75,80 +78,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
-      backgroundColor: _authBackground,
-      appBar: AppBar(
-        backgroundColor: _authBackground,
-        foregroundColor: _authText,
-        title: const Text(
-          'Kayit ol',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Image.asset(
-                    'assets/logo_removed_bg.png',
-                    height: 54,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Text(
-                      'Bulocation',
-                      style: TextStyle(
-                        color: _authText,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 34),
-                const Text(
-                  'Yeni hesap olustur',
-                  style: TextStyle(
-                    color: _authText,
-                    fontSize: 34,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.1,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Kurum haritalari, QR konum acilisi ve kapali alan navigasyonu icin guvenli hesabini olustur.',
-                  style: TextStyle(
-                    color: _authMuted,
-                    fontSize: 15,
-                    height: 1.55,
-                  ),
-                ),
-                const SizedBox(height: 26),
-                Container(
-                  decoration: BoxDecoration(
-                    color: _authSurface,
-                    border: Border.all(color: _authBorder),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  padding: const EdgeInsets.all(18),
+      backgroundColor: authBackground,
+      body: AuthDottedBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18, 26, 18, 28),
+              child: AuthCard(
+                child: Form(
+                  key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      const AuthBrand(),
+                      const SizedBox(height: 34),
+                      const Center(
+                        child: Text(
+                          'Yeni hesap olustur',
+                          style: TextStyle(
+                            color: authText,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.9,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 9),
+                      const Center(
+                        child: Text(
+                          'Gerekli bilgileri doldurarak platforma katilin.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: authMuted,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
                       Row(
                         children: [
                           Expanded(
-                            child: _LabeledField(
-                              label: 'Ad',
+                            child: _Field(
+                              label: 'AD',
                               child: TextFormField(
                                 controller: _firstNameController,
                                 textInputAction: TextInputAction.next,
                                 onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                                style: const TextStyle(color: _authText),
-                                decoration: _authInputDecoration('Ahmet'),
+                                style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                                decoration: authFieldDecoration('Adiniz'),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Ad gerekli.';
@@ -160,14 +139,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _LabeledField(
-                              label: 'Soyad',
+                            child: _Field(
+                              label: 'SOYAD',
                               child: TextFormField(
                                 controller: _lastNameController,
                                 textInputAction: TextInputAction.next,
                                 onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                                style: const TextStyle(color: _authText),
-                                decoration: _authInputDecoration('Yilmaz'),
+                                style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                                decoration: authFieldDecoration('Soyadiniz'),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Soyad gerekli.';
@@ -179,15 +158,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 18),
-                      _LabeledField(
-                        label: 'Kullanici adi',
+                      const SizedBox(height: 16),
+                      _Field(
+                        label: 'KULLANICI ADI',
                         child: TextFormField(
                           controller: _userNameController,
                           textInputAction: TextInputAction.next,
                           onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                          style: const TextStyle(color: _authText),
-                          decoration: _authInputDecoration('ahmetyilmaz'),
+                          style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                          decoration: authFieldDecoration(
+                            'kullanici_adi',
+                            prefixIcon: Icons.alternate_email_rounded,
+                          ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Kullanici adi gerekli.';
@@ -199,16 +181,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      _LabeledField(
-                        label: 'E-posta adresi',
+                      const SizedBox(height: 16),
+                      _Field(
+                        label: 'E-POSTA',
                         child: TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                          style: const TextStyle(color: _authText),
-                          decoration: _authInputDecoration('ornek@mail.com'),
+                          style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                          decoration: authFieldDecoration(
+                            'ornek@email.com',
+                            prefixIcon: Icons.email_rounded,
+                          ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'E-posta adresi gerekli.';
@@ -220,16 +205,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      _LabeledField(
-                        label: 'Sifre',
+                      const SizedBox(height: 16),
+                      _Field(
+                        label: 'SIFRE',
                         child: TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.next,
-                          onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                          style: const TextStyle(color: _authText),
-                          decoration: _authInputDecoration('En az 8 karakter').copyWith(
+                          onChanged: (_) {
+                            widget.sessionController.clearErrorMessage();
+                            setState(() {});
+                          },
+                          style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                          decoration: authFieldDecoration(
+                            '••••••••',
+                            prefixIcon: Icons.lock_rounded,
                             suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() => _obscurePassword = !_obscurePassword);
@@ -238,7 +228,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 _obscurePassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                color: _authMuted,
+                                color: authMuted,
+                                size: 18,
                               ),
                             ),
                           ),
@@ -259,17 +250,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      _LabeledField(
-                        label: 'Sifre tekrari',
+                      const SizedBox(height: 9),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: LinearProgressIndicator(
+                                value: _passwordStrength,
+                                minHeight: 3,
+                                backgroundColor: const Color(0xFF303234),
+                                valueColor: const AlwaysStoppedAnimation(Color(0xFFB19BFF)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'ZAYIF',
+                            style: TextStyle(
+                              color: authMuted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _Field(
+                        label: 'SIFRE TEKRAR',
                         child: TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
                           textInputAction: TextInputAction.done,
                           onChanged: (_) => widget.sessionController.clearErrorMessage(),
                           onFieldSubmitted: (_) => _submit(),
-                          style: const TextStyle(color: _authText),
-                          decoration: _authInputDecoration('Sifreni tekrar gir').copyWith(
+                          style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                          decoration: authFieldDecoration(
+                            '••••••••',
+                            prefixIcon: Icons.lock_rounded,
                             suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() {
@@ -280,7 +298,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 _obscureConfirmPassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                color: _authMuted,
+                                color: authMuted,
+                                size: 18,
                               ),
                             ),
                           ),
@@ -296,89 +315,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       if (errorMessage != null) ...[
-                        const SizedBox(height: 18),
-                        _AuthMessage(message: errorMessage),
+                        const SizedBox(height: 12),
+                        AuthInlineError(message: errorMessage),
                       ],
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: widget.sessionController.isBusy ? null : _submit,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _authBlue,
-                            foregroundColor: _authText,
-                            minimumSize: const Size.fromHeight(56),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                      AuthPrimaryButton(
+                        label: 'Kaydi Tamamla',
+                        busy: widget.sessionController.isBusy,
+                        onPressed: _submit,
+                      ),
+                      const SizedBox(height: 22),
+                      const AuthDivider(label: 'VEYA'),
+                      const SizedBox(height: 18),
+                      AuthGoogleButton(
+                        label: 'Google ile devam et',
+                        onPressed: widget.sessionController.isBusy ? null : _signInWithGoogle,
+                      ),
+                      const SizedBox(height: 28),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Zaten uye misin?',
+                            style: TextStyle(
+                              color: authMuted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          child: widget.sessionController.isBusy
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.2,
-                                    color: _authText,
-                                  ),
-                                )
-                              : const Text(
-                                  'Kaydi tamamla',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      if (AppConfig.googleSignInEnabled) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
+                          TextButton(
                             onPressed: widget.sessionController.isBusy
                                 ? null
-                                : _signInWithGoogle,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _authText,
-                              side: const BorderSide(color: _authBorder),
-                              minimumSize: const Size.fromHeight(54),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                                : () => Navigator.of(context).maybePop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFFB7BDFF),
+                              padding: const EdgeInsets.only(left: 6),
+                              minimumSize: const Size(0, 28),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                            label: const Text(
-                              'Google ile kayit ol',
-                              style: TextStyle(fontWeight: FontWeight.w800),
+                            child: const Text(
+                              'Giris Yap',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: widget.sessionController.isBusy
-                        ? null
-                        : () => Navigator.of(context).maybePop(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _authText,
-                      side: const BorderSide(color: _authBorder),
-                      minimumSize: const Size.fromHeight(54),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Girise don',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -387,8 +372,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({required this.label, required this.child});
+class _Field extends StatelessWidget {
+  const _Field({required this.label, required this.child});
 
   final String label;
   final Widget child;
@@ -398,78 +383,9 @@ class _LabeledField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: _authMuted,
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.1,
-          ),
-        ),
-        const SizedBox(height: 8),
+        AuthLabel(label),
         child,
       ],
     );
   }
-}
-
-class _AuthMessage extends StatelessWidget {
-  const _AuthMessage({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A1013),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF6B252B)),
-      ),
-      child: Text(
-        message,
-        style: const TextStyle(
-          color: Color(0xFFFFCDD2),
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-InputDecoration _authInputDecoration(String hint) {
-  return InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFF606A78)),
-    filled: true,
-    fillColor: const Color(0xFF090C0F),
-    errorStyle: const TextStyle(
-      color: Color(0xFFFFA4AC),
-      fontWeight: FontWeight.w700,
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _authBorder),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _authBorder),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF3854E8), width: 1.3),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF9B2D36)),
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFFF6B76)),
-    ),
-  );
 }
