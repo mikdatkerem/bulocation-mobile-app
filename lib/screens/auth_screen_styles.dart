@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
-const authBackground = Color(0xFF08090B);
-const authCard = Color(0xFF0D0F12);
-const authInput = Color(0xFF292B2D);
-const authInputDark = Color(0xFF202225);
-const authText = Color(0xFFE5E7EB);
-const authMuted = Color(0xFF8B9099);
-const authPrimary = Color(0xFF213CD3);
-const authBorder = Color(0xFF2A2F38);
-const authDanger = Color(0xFFE46C72);
+const authBackground = Color(0xFF060708);
+const authCard = Color(0xFF121315);
+const authInput = Color(0xFF292A2B);
+const authInputDark = Color(0xFF1F2021);
+const authText = Color(0xFFE3E2E3);
+const authMuted = Color(0xFF8F8FA0);
+const authSubtleText = Color(0xFFC5C5D6);
+const authPrimary = Color(0xFF1836B9);
+const authPrimaryText = Color(0xFFA4B1FF);
+const authBorder = Color(0xFF444654);
+const authDanger = Color(0xFFFFB4AB);
+const authSecondary = Color(0xFF4B18B9);
 
 class AuthDottedBackground extends StatelessWidget {
   const AuthDottedBackground({super.key, required this.child});
@@ -37,12 +40,12 @@ class AuthCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: BoxDecoration(
         color: authCard,
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.45),
-            blurRadius: 28,
-            offset: const Offset(0, 20),
+            color: Colors.black.withValues(alpha: 0.48),
+            blurRadius: 34,
+            offset: const Offset(0, 22),
           ),
         ],
       ),
@@ -59,11 +62,12 @@ class AuthBrand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
+      mainAxisAlignment:
+          centered ? MainAxisAlignment.center : MainAxisAlignment.start,
       children: [
         Container(
-          width: 15,
-          height: 15,
+          width: 16,
+          height: 16,
           decoration: const BoxDecoration(
             color: authPrimary,
             shape: BoxShape.circle,
@@ -79,6 +83,7 @@ class AuthBrand extends StatelessWidget {
           'BULOCATION',
           style: TextStyle(
             color: Color(0xFF2947E7),
+            fontFamily: 'Manrope',
             fontSize: 15,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.6,
@@ -104,7 +109,7 @@ class AuthLabel extends StatelessWidget {
           color: authMuted,
           fontSize: 10,
           fontWeight: FontWeight.w900,
-          letterSpacing: 1.1,
+          letterSpacing: 1.35,
         ),
       ),
     );
@@ -118,10 +123,14 @@ InputDecoration authFieldDecoration(
 }) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFF777C84), fontWeight: FontWeight.w600),
+    hintStyle: const TextStyle(
+      color: Color(0xFF686A72),
+      fontWeight: FontWeight.w700,
+      fontSize: 13,
+    ),
     prefixIcon: prefixIcon == null
         ? null
-        : Icon(prefixIcon, size: 16, color: const Color(0xFF747983)),
+        : Icon(prefixIcon, size: 15, color: const Color(0xFF5F626A)),
     suffixIcon: suffixIcon,
     filled: true,
     fillColor: authInput,
@@ -175,7 +184,7 @@ class AuthPrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: authPrimary,
           disabledBackgroundColor: const Color(0xFF172058),
-          foregroundColor: authText,
+          foregroundColor: authPrimaryText,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
         ),
@@ -183,14 +192,19 @@ class AuthPrimaryButton extends StatelessWidget {
             ? const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2.2, color: authText),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.2, color: authText),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Icon(Icons.arrow_forward_rounded, size: 16),
@@ -202,7 +216,8 @@ class AuthPrimaryButton extends StatelessWidget {
 }
 
 class AuthGoogleButton extends StatelessWidget {
-  const AuthGoogleButton({super.key, required this.label, required this.onPressed});
+  const AuthGoogleButton(
+      {super.key, required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;
@@ -214,7 +229,7 @@ class AuthGoogleButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          backgroundColor: const Color(0xFF303234),
+          backgroundColor: const Color(0xFF343536),
           foregroundColor: authText,
           side: BorderSide.none,
           minimumSize: const Size.fromHeight(44),

@@ -82,12 +82,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: AuthDottedBackground(
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthBrand(centered: true),
-                const SizedBox(height: 26),
+                const SizedBox(height: 24),
+                const Text(
+                  'Yeni hesap olustur',
+                  style: TextStyle(
+                    color: authText,
+                    fontFamily: 'Manrope',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Gerekli bilgileri doldurarak platforma katilin.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: authMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 28),
                 AuthCard(
                   child: Form(
                     key: _formKey,
@@ -95,30 +116,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Center(
-                          child: Text(
-                            'Yeni hesap olustur',
-                            style: TextStyle(
-                              color: authText,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.9,
-                            ),
+                        Container(
+                          height: 1,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: authBorder.withValues(alpha: 0.35),
                           ),
                         ),
-                        const SizedBox(height: 9),
-                        const Center(
-                          child: Text(
-                            'Gerekli bilgileri doldurarak platforma katilin.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: authMuted,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 28),
                         Row(
                           children: [
                             Expanded(
@@ -127,8 +131,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: TextFormField(
                                   controller: _firstNameController,
                                   textInputAction: TextInputAction.next,
-                                  onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                                  style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                                  onChanged: (_) => widget.sessionController
+                                      .clearErrorMessage(),
+                                  style: const TextStyle(
+                                      color: authText,
+                                      fontWeight: FontWeight.w700),
                                   decoration: authFieldDecoration('Adiniz'),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
@@ -146,8 +153,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: TextFormField(
                                   controller: _lastNameController,
                                   textInputAction: TextInputAction.next,
-                                  onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                                  style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                                  onChanged: (_) => widget.sessionController
+                                      .clearErrorMessage(),
+                                  style: const TextStyle(
+                                      color: authText,
+                                      fontWeight: FontWeight.w700),
                                   decoration: authFieldDecoration('Soyadiniz'),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
@@ -166,8 +176,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: TextFormField(
                             controller: _userNameController,
                             textInputAction: TextInputAction.next,
-                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               'kullanici_adi',
                               prefixIcon: Icons.alternate_email_rounded,
@@ -190,8 +202,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               'ornek@email.com',
                               prefixIcon: Icons.email_rounded,
@@ -218,13 +232,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               widget.sessionController.clearErrorMessage();
                               setState(() {});
                             },
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
                               suffixIcon: IconButton(
                                 onPressed: () {
-                                  setState(() => _obscurePassword = !_obscurePassword);
+                                  setState(() =>
+                                      _obscurePassword = !_obscurePassword);
                                 },
                                 icon: Icon(
                                   _obscurePassword
@@ -262,7 +278,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   value: _passwordStrength,
                                   minHeight: 3,
                                   backgroundColor: const Color(0xFF303234),
-                                  valueColor: const AlwaysStoppedAnimation(Color(0xFFB19BFF)),
+                                  valueColor: const AlwaysStoppedAnimation(
+                                      Color(0xFFB19BFF)),
                                 ),
                               ),
                             ),
@@ -284,16 +301,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
                             textInputAction: TextInputAction.done,
-                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
                             onFieldSubmitted: (_) => _submit(),
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
                               suffixIcon: IconButton(
                                 onPressed: () {
                                   setState(() {
-                                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
                                   });
                                 },
                                 icon: Icon(
@@ -331,7 +351,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 18),
                         AuthGoogleButton(
                           label: 'Google ile devam et',
-                          onPressed: widget.sessionController.isBusy ? null : _signInWithGoogle,
+                          onPressed: widget.sessionController.isBusy
+                              ? null
+                              : _signInWithGoogle,
                         ),
                       ],
                     ),
@@ -361,7 +383,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: const Text(
                         'Giris Yap',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w900),
                       ),
                     ),
                   ],

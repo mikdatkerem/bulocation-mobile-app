@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: AuthDottedBackground(
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -70,7 +70,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: EdgeInsets.only(left: 2),
                   child: AuthBrand(),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 64),
+                const Center(
+                  child: Text(
+                    'Welcome back',
+                    style: TextStyle(
+                      color: authText,
+                      fontFamily: 'Manrope',
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Center(
+                  child: Text(
+                    'Indoor navigation and map infrastructure via QR.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: authMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Center(
                   child: AuthCard(
                     child: Form(
@@ -79,46 +104,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const SizedBox(height: 42),
-                          const Center(
-                            child: Text(
-                              'Welcome back',
-                              style: TextStyle(
-                                color: authText,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.9,
-                              ),
+                          Container(
+                            height: 2,
+                            margin: const EdgeInsets.only(bottom: 22),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                  colors: [authCard, authPrimary]),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Center(
-                            child: Text(
-                              'Indoor navigation and infrastructure via QR.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: authMuted,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 25),
-                          Container(height: 2, color: authPrimary),
-                          const SizedBox(height: 22),
                           const AuthLabel('EMAIL ADDRESS'),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               'invalid@mail',
                               prefixIcon: Icons.email_rounded,
                               suffixIcon: errorMessage == null
                                   ? null
-                                  : const Icon(Icons.error_rounded, size: 15, color: authDanger),
+                                  : const Icon(Icons.error_rounded,
+                                      size: 15, color: authDanger),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
@@ -141,8 +150,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute<void>(
                                       builder: (_) => ForgotPasswordScreen(
-                                        sessionController: widget.sessionController,
-                                        initialEmail: _emailController.text.trim(),
+                                        sessionController:
+                                            widget.sessionController,
+                                        initialEmail:
+                                            _emailController.text.trim(),
                                       ),
                                     ),
                                   );
@@ -151,11 +162,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   foregroundColor: const Color(0xFF9EA6FF),
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(0, 22),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: const Text(
                                   'Forgot password?',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800),
                                 ),
                               ),
                             ],
@@ -163,8 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscureText,
-                            onChanged: (_) => widget.sessionController.clearErrorMessage(),
-                            style: const TextStyle(color: authText, fontWeight: FontWeight.w700),
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
+                            style: const TextStyle(
+                                color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
@@ -189,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             onFieldSubmitted: (_) => _submit(),
                           ),
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 20),
                           AuthPrimaryButton(
                             label: 'Giris Yap',
                             busy: widget.sessionController.isBusy,
@@ -200,14 +216,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 18),
                           AuthGoogleButton(
                             label: 'Google',
-                            onPressed: widget.sessionController.isBusy ? null : _signInWithGoogle,
+                            onPressed: widget.sessionController.isBusy
+                                ? null
+                                : _signInWithGoogle,
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -239,7 +257,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Text(
                         'Kayit Ol',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w900),
                       ),
                     ),
                   ],
