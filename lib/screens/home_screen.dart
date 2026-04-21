@@ -100,10 +100,12 @@ class MapsScreenState extends State<MapsScreen> {
 
   List<SiteHierarchy> get _availableSites => _hierarchy?.sites ?? const [];
 
-  List<BuildingHierarchy> get _availableBuildings => _site?.buildings ?? const [];
+  List<BuildingHierarchy> get _availableBuildings =>
+      _site?.buildings ?? const [];
 
   List<FloorHierarchy> get _availableFloors =>
-      _building?.floors.where((item) => item.hasPublishedMap).toList() ?? const [];
+      _building?.floors.where((item) => item.hasPublishedMap).toList() ??
+      const [];
 
   Future<void> _onOrganizationChanged(String? organizationId) async {
     if (organizationId == null) {
@@ -130,7 +132,8 @@ class MapsScreenState extends State<MapsScreen> {
     });
 
     try {
-      final hierarchy = await _facilityService.getOrganizationHierarchy(organizationId);
+      final hierarchy =
+          await _facilityService.getOrganizationHierarchy(organizationId);
       if (!mounted) {
         return;
       }
@@ -154,7 +157,8 @@ class MapsScreenState extends State<MapsScreen> {
       return;
     }
 
-    final site = _hierarchy!.sites.where((item) => item.id == siteId).firstOrNull;
+    final site =
+        _hierarchy!.sites.where((item) => item.id == siteId).firstOrNull;
     if (site == null) {
       return;
     }
@@ -182,7 +186,8 @@ class MapsScreenState extends State<MapsScreen> {
       return;
     }
 
-    final building = _site!.buildings.where((item) => item.id == buildingId).firstOrNull;
+    final building =
+        _site!.buildings.where((item) => item.id == buildingId).firstOrNull;
     if (building == null) {
       return;
     }
@@ -205,11 +210,15 @@ class MapsScreenState extends State<MapsScreen> {
   }
 
   Future<void> _onFloorChanged(String? floorId) async {
-    if (floorId == null || _hierarchy == null || _site == null || _building == null) {
+    if (floorId == null ||
+        _hierarchy == null ||
+        _site == null ||
+        _building == null) {
       return;
     }
 
-    final floor = _building!.floors.where((item) => item.id == floorId).firstOrNull;
+    final floor =
+        _building!.floors.where((item) => item.id == floorId).firstOrNull;
     if (floor == null) {
       return;
     }
@@ -327,7 +336,8 @@ class MapsScreenState extends State<MapsScreen> {
 
     final wasEmpty = _occupancy[key] == false;
     setState(() => _occupancy[key] = isOccupied);
-    final targetRef = (_targetPark?.externalReferenceId ?? _targetPark?.id)?.toUpperCase();
+    final targetRef =
+        (_targetPark?.externalReferenceId ?? _targetPark?.id)?.toUpperCase();
     if (isOccupied && wasEmpty && targetRef == key) {
       _showParkConfirmDialog(key);
     }
@@ -339,19 +349,29 @@ class MapsScreenState extends State<MapsScreen> {
       return;
     }
 
+    final referenceId = _normalizeQrReference(value);
+    if (referenceId.isEmpty) {
+      return;
+    }
+
     final now = DateTime.now();
-    if (_lastScan == value &&
+    if (_lastScan == referenceId &&
         _lastScanTime != null &&
         now.difference(_lastScanTime!) < const Duration(seconds: 3)) {
       return;
     }
 
-    _lastScan = value;
+    _lastScan = referenceId;
     _lastScanTime = now;
-    await openByQrReference(value);
+    await openByQrReference(referenceId);
   }
 
   Future<void> openByQrReference(String referenceId) async {
+    final normalizedReferenceId = _normalizeQrReference(referenceId);
+    if (normalizedReferenceId.isEmpty) {
+      return;
+    }
+
     if (_busy) {
       return;
     }
@@ -362,7 +382,8 @@ class MapsScreenState extends State<MapsScreen> {
     }
 
     try {
-      final context = await _facilityService.resolveQrScanContext(referenceId);
+      final context =
+          await _facilityService.resolveQrScanContext(normalizedReferenceId);
       await _applyScanContext(context);
       if (!mounted) {
         return;
@@ -370,7 +391,7 @@ class MapsScreenState extends State<MapsScreen> {
 
       setState(() => _busy = false);
       if (_targetPark != null) {
-        await _updateRoute(referenceId);
+        await _updateRoute(normalizedReferenceId);
       } else {
         _showSuggestionDialog();
       }
@@ -396,17 +417,24 @@ class MapsScreenState extends State<MapsScreen> {
     try {
       final hierarchy = _hierarchy?.id == request.organizationId
           ? _hierarchy!
-          : await _facilityService.getOrganizationHierarchy(request.organizationId);
+          : await _facilityService
+              .getOrganizationHierarchy(request.organizationId);
 
       final site = request.siteId == null
           ? null
-          : hierarchy.sites.where((item) => item.id == request.siteId).firstOrNull;
+          : hierarchy.sites
+              .where((item) => item.id == request.siteId)
+              .firstOrNull;
       final building = request.buildingId == null
           ? null
-          : site?.buildings.where((item) => item.id == request.buildingId).firstOrNull;
+          : site?.buildings
+              .where((item) => item.id == request.buildingId)
+              .firstOrNull;
       final floor = request.floorId == null
           ? null
-          : building?.floors.where((item) => item.id == request.floorId).firstOrNull;
+          : building?.floors
+              .where((item) => item.id == request.floorId)
+              .firstOrNull;
 
       if (site != null && building != null && floor != null) {
         await _applySelection(
@@ -450,15 +478,31 @@ class MapsScreenState extends State<MapsScreen> {
     }
   }
 
+  String _normalizeQrReference(String rawValue) {
+    final value = rawValue.trim();
+    final uri = Uri.tryParse(value);
+    final ref = uri?.queryParameters['ref']?.trim();
+
+    if (ref != null && ref.isNotEmpty) {
+      return ref;
+    }
+
+    return value;
+  }
+
   Future<void> _applyScanContext(QrScanContext context) async {
     final hierarchy = _hierarchy?.id == context.organizationId
         ? _hierarchy!
-        : await _facilityService.getOrganizationHierarchy(context.organizationId);
-    final site = hierarchy.sites.where((item) => item.id == context.siteId).firstOrNull;
-    final building =
-        site?.buildings.where((item) => item.id == context.buildingId).firstOrNull;
-    final floor =
-        building?.floors.where((item) => item.id == context.floorId).firstOrNull;
+        : await _facilityService
+            .getOrganizationHierarchy(context.organizationId);
+    final site =
+        hierarchy.sites.where((item) => item.id == context.siteId).firstOrNull;
+    final building = site?.buildings
+        .where((item) => item.id == context.buildingId)
+        .firstOrNull;
+    final floor = building?.floors
+        .where((item) => item.id == context.floorId)
+        .firstOrNull;
 
     if (site == null || building == null || floor == null) {
       throw Exception('QR baglami icin kat bulunamadi.');
@@ -533,7 +577,9 @@ class MapsScreenState extends State<MapsScreen> {
 
   Future<void> _showRouteSegment(int index) async {
     final multiRoute = _multiRoute;
-    if (multiRoute == null || index < 0 || index >= multiRoute.segments.length) {
+    if (multiRoute == null ||
+        index < 0 ||
+        index >= multiRoute.segments.length) {
       return;
     }
 
@@ -573,11 +619,11 @@ class MapsScreenState extends State<MapsScreen> {
         ),
         nearestToHospital: null,
         onSelected: (park) {
-                      setState(() {
-                        _targetPark = park;
-                        _route = null;
-                        _multiRoute = null;
-                      });
+          setState(() {
+            _targetPark = park;
+            _route = null;
+            _multiRoute = null;
+          });
           unawaited(_updateRoute(_lastScan!));
         },
       ),
@@ -591,7 +637,8 @@ class MapsScreenState extends State<MapsScreen> {
     }
 
     try {
-      final result = await _pathfinder.findBestExitRoute(fromReferenceId: _lastScan!);
+      final result =
+          await _pathfinder.findBestExitRoute(fromReferenceId: _lastScan!);
       if (result == null || result.segments.isEmpty) {
         _showError('Cikis rotasi bulunamadi.');
         return;
@@ -653,7 +700,8 @@ class MapsScreenState extends State<MapsScreen> {
 
   void _showParkConfirmDialog(String spotId) {
     final park = _mapNodes
-        .where((node) => (node.externalReferenceId ?? node.id).toUpperCase() == spotId)
+        .where((node) =>
+            (node.externalReferenceId ?? node.id).toUpperCase() == spotId)
         .firstOrNull;
     if (park == null) {
       return;
@@ -667,11 +715,11 @@ class MapsScreenState extends State<MapsScreen> {
         onConfirm: () {
           Navigator.pop(context);
           setState(() {
-                            _parkedAt = park;
-                            _targetPark = null;
-                            _route = null;
-                            _multiRoute = null;
-                            _displayNodes = _mapNodes;
+            _parkedAt = park;
+            _targetPark = null;
+            _route = null;
+            _multiRoute = null;
+            _displayNodes = _mapNodes;
           });
         },
         onDeny: () => Navigator.pop(context),
@@ -687,7 +735,8 @@ class MapsScreenState extends State<MapsScreen> {
         SnackBar(
           content: Text(message),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -707,7 +756,8 @@ class MapsScreenState extends State<MapsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final emptyCount = _occupancy.values.where((value) => value == false).length;
+    final emptyCount =
+        _occupancy.values.where((value) => value == false).length;
     final fullCount = _occupancy.values.where((value) => value == true).length;
     final hasMap = _map != null;
     final activeNodeId = _lastScan == null
@@ -735,7 +785,8 @@ class MapsScreenState extends State<MapsScreen> {
                             children: [
                               IconButton(
                                 onPressed: widget.onBack,
-                                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                                icon: const Icon(
+                                    Icons.arrow_back_ios_new_rounded),
                                 style: IconButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: const Color(0xFF182033),
@@ -792,7 +843,8 @@ class MapsScreenState extends State<MapsScreen> {
                                         occupancyMap: _occupancy,
                                         nodes: _displayNodes,
                                         mapAssetPath: _displayMapAssetPath,
-                                        mapAssetContentType: _displayMapAssetContentType,
+                                        mapAssetContentType:
+                                            _displayMapAssetContentType,
                                         mapWidth: _displayMapWidth,
                                         mapHeight: _displayMapHeight,
                                       )
@@ -805,7 +857,8 @@ class MapsScreenState extends State<MapsScreen> {
                                         selectedBuildingId: _building?.id,
                                         floors: _availableFloors,
                                         selectedFloorId: _floor?.id,
-                                        onOrganizationChanged: _onOrganizationChanged,
+                                        onOrganizationChanged:
+                                            _onOrganizationChanged,
                                         onSiteChanged: _onSiteChanged,
                                         onBuildingChanged: _onBuildingChanged,
                                         onFloorChanged: _onFloorChanged,
@@ -822,7 +875,8 @@ class MapsScreenState extends State<MapsScreen> {
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
-                      height: MediaQuery.of(context).size.height * ParkBottomSheet.fullSize,
+                      height: MediaQuery.of(context).size.height *
+                          ParkBottomSheet.fullSize,
                       child: ParkBottomSheet(
                         controller: _sheetController,
                         occupancyMap: _occupancy,
@@ -835,7 +889,8 @@ class MapsScreenState extends State<MapsScreen> {
                         totalCount: _occupancy.length,
                         multiRoute: _multiRoute,
                         activeSegmentIndex: _activeRouteSegmentIndex,
-                        onSegmentTap: (index) => unawaited(_showRouteSegment(index)),
+                        onSegmentTap: (index) =>
+                            unawaited(_showRouteSegment(index)),
                         onParkSelected: (park) {
                           _sheetController.animateTo(
                             ParkBottomSheet.peekSize,
@@ -861,36 +916,36 @@ class MapsScreenState extends State<MapsScreen> {
                           setState(() => _targetPark = _parkedAt);
                           unawaited(_updateRoute(_lastScan!));
                         },
-                      onClearNav: () => setState(() {
-                        _targetPark = null;
-                        _route = null;
-                        _multiRoute = null;
-                        _displayNodes = _mapNodes;
-                      }),
-                      onNearestToUser: () {
-                        if (_lastScan == null) {
-                          return;
-                        }
-                        final park = _pathfinder.nearestEmptyParkToUser(
-                          _lastScan!,
-                          _occupancy,
-                          _mapNodes,
-                        );
-                        if (park == null) {
-                          return;
-                        }
+                        onClearNav: () => setState(() {
+                          _targetPark = null;
+                          _route = null;
+                          _multiRoute = null;
+                          _displayNodes = _mapNodes;
+                        }),
+                        onNearestToUser: () {
+                          if (_lastScan == null) {
+                            return;
+                          }
+                          final park = _pathfinder.nearestEmptyParkToUser(
+                            _lastScan!,
+                            _occupancy,
+                            _mapNodes,
+                          );
+                          if (park == null) {
+                            return;
+                          }
                           setState(() {
                             _targetPark = park;
                             _multiRoute = null;
                           });
                           unawaited(_updateRoute(_lastScan!));
                         },
-                      onNearestToHospital: () {
-                        unawaited(_selectParkingNearEntrance());
-                      },
-                      parks: _mapNodes.where((node) => node.isPark).toList(),
+                        onNearestToHospital: () {
+                          unawaited(_selectParkingNearEntrance());
+                        },
+                        parks: _mapNodes.where((node) => node.isPark).toList(),
+                      ),
                     ),
-                  ),
                   ),
               ],
             ),
@@ -966,7 +1021,9 @@ class _MapSelectionPanel extends StatelessWidget {
                 const SizedBox(height: 18),
                 _PickerField<OrganizationSummary>(
                   label: 'Kurum',
-                  value: organizations.where((item) => item.id == selectedOrganizationId).firstOrNull,
+                  value: organizations
+                      .where((item) => item.id == selectedOrganizationId)
+                      .firstOrNull,
                   items: organizations,
                   onChanged: (item) => onOrganizationChanged(item?.id),
                   title: (item) => item.name,
@@ -974,7 +1031,9 @@ class _MapSelectionPanel extends StatelessWidget {
                 const SizedBox(height: 12),
                 _PickerField<SiteHierarchy>(
                   label: 'Yerleske',
-                  value: sites.where((item) => item.id == selectedSiteId).firstOrNull,
+                  value: sites
+                      .where((item) => item.id == selectedSiteId)
+                      .firstOrNull,
                   items: sites,
                   onChanged: (item) => onSiteChanged(item?.id),
                   title: (item) => item.name,
@@ -982,7 +1041,9 @@ class _MapSelectionPanel extends StatelessWidget {
                 const SizedBox(height: 12),
                 _PickerField<BuildingHierarchy>(
                   label: 'Bina',
-                  value: buildings.where((item) => item.id == selectedBuildingId).firstOrNull,
+                  value: buildings
+                      .where((item) => item.id == selectedBuildingId)
+                      .firstOrNull,
                   items: buildings,
                   onChanged: (item) => onBuildingChanged(item?.id),
                   title: (item) => item.name,
@@ -990,7 +1051,9 @@ class _MapSelectionPanel extends StatelessWidget {
                 const SizedBox(height: 12),
                 _PickerField<FloorHierarchy>(
                   label: 'Kat',
-                  value: floors.where((item) => item.id == selectedFloorId).firstOrNull,
+                  value: floors
+                      .where((item) => item.id == selectedFloorId)
+                      .firstOrNull,
                   items: floors,
                   onChanged: (item) => onFloorChanged(item?.id),
                   title: (item) => item.name,
