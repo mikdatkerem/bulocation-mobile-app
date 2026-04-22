@@ -44,10 +44,12 @@ class FloorPlanWidget extends StatefulWidget {
 }
 
 class _FloorPlanWidgetState extends State<FloorPlanWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const double _maxZoomMultiplier = 5.0;
+  static const double _panBoundaryMargin = 120.0;
 
   late final AnimationController _glowController;
+  late final AnimationController _viewportAnimationController;
   late final Animation<double> _glowAnimation;
   late final TransformationController _transformationController;
   bool _hasUserMovedViewport = false;
@@ -66,12 +68,17 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       parent: _glowController,
       curve: Curves.easeInOut,
     );
+    _viewportAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
     _transformationController = TransformationController();
   }
 
   @override
   void dispose() {
     _glowController.dispose();
+    _viewportAnimationController.dispose();
     _transformationController.dispose();
     super.dispose();
   }
@@ -80,8 +87,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   void didUpdateWidget(covariant FloorPlanWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final mapChanged =
-        oldWidget.mapAssetPath != widget.mapAssetPath ||
+    final mapChanged = oldWidget.mapAssetPath != widget.mapAssetPath ||
         oldWidget.mapWidth != widget.mapWidth ||
         oldWidget.mapHeight != widget.mapHeight;
 
@@ -91,7 +97,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       return;
     }
 
-    if (!_hasUserMovedViewport && oldWidget.activeZoneId != widget.activeZoneId) {
+    if (!_hasUserMovedViewport &&
+        oldWidget.activeZoneId != widget.activeZoneId) {
       _scheduleCenterOnActiveNode(force: true);
     }
   }
@@ -133,33 +140,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       return;
     }
 
-    final scale = _fitScale;
-    final scaledWidth = _mapWidth * scale;
-    final scaledHeight = _mapHeight * scale;
-    final activeNode = _activeNode;
-
-    double translateX = (viewportSize.width - scaledWidth) / 2;
-    double translateY = (viewportSize.height - scaledHeight) / 2;
-
-    if (activeNode != null) {
-      final desiredX = viewportSize.width / 2 - (activeNode.resolveX(_mapWidth) * scale);
-      final desiredY = viewportSize.height / 2 - (activeNode.resolveY(_mapHeight) * scale);
-      final minTranslateX = viewportSize.width - scaledWidth;
-      final minTranslateY = viewportSize.height - scaledHeight;
-
-      translateX = scaledWidth <= viewportSize.width
-          ? translateX
-          : desiredX.clamp(minTranslateX, 0.0);
-      translateY = scaledHeight <= viewportSize.height
-          ? translateY
-          : desiredY.clamp(minTranslateY, 0.0);
-    }
-
-    _transformationController.value = _buildMatrix(
-      scale: scale,
-      translateX: translateX,
-      translateY: translateY,
-    );
+    _viewportAnimationController.stop();
+    _transformationController.value = _centerMatrixForActiveNode(viewportSize);
   }
 
   void _zoom(double factor) {
@@ -187,42 +169,98 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     final nextTranslateX = focalPoint.dx - (sceneX * nextScale);
     final nextTranslateY = focalPoint.dy - (sceneY * nextScale);
 
-    _transformationController.value = _clampMatrix(
+    _animateToMatrix(_clampMatrix(
       _buildMatrix(
         scale: nextScale,
         translateX: nextTranslateX,
         translateY: nextTranslateY,
       ),
-    );
+    ));
   }
 
-  void _enforceMinimumScale() {
+  void _settleViewport() {
     final viewportSize = _viewportSize;
     if (viewportSize == null) {
       return;
     }
 
     final currentScale = _currentScale;
-    final clamped = _clampMatrix(_transformationController.value.clone());
-    if (_matrixEquals(_transformationController.value, clamped) &&
-        currentScale >= _fitScale) {
+    if (currentScale < _fitScale) {
+      _hasUserMovedViewport = false;
+      _animateToMatrix(_centerMatrixForActiveNode(viewportSize));
       return;
     }
 
-    _transformationController.value = clamped;
-    if (currentScale < _fitScale) {
-      _hasUserMovedViewport = false;
-      _centerOnActiveNode(force: true);
-    }
-  }
-
-  void _handleInteractionUpdate() {
     final clamped = _clampMatrix(_transformationController.value.clone());
     if (_matrixEquals(_transformationController.value, clamped)) {
       return;
     }
 
-    _transformationController.value = clamped;
+    _animateToMatrix(clamped);
+  }
+
+  Matrix4 _centerMatrixForActiveNode(Size viewportSize) {
+    final scale = _fitScale;
+    final scaledWidth = _mapWidth * scale;
+    final scaledHeight = _mapHeight * scale;
+    final activeNode = _activeNode;
+
+    double translateX = (viewportSize.width - scaledWidth) / 2;
+    double translateY = (viewportSize.height - scaledHeight) / 2;
+
+    if (activeNode != null) {
+      final desiredX =
+          viewportSize.width / 2 - (activeNode.resolveX(_mapWidth) * scale);
+      final desiredY =
+          viewportSize.height / 2 - (activeNode.resolveY(_mapHeight) * scale);
+      final minTranslateX = viewportSize.width - scaledWidth;
+      final minTranslateY = viewportSize.height - scaledHeight;
+
+      translateX = scaledWidth <= viewportSize.width
+          ? translateX
+          : desiredX.clamp(minTranslateX, 0.0);
+      translateY = scaledHeight <= viewportSize.height
+          ? translateY
+          : desiredY.clamp(minTranslateY, 0.0);
+    }
+
+    return _buildMatrix(
+      scale: scale,
+      translateX: translateX,
+      translateY: translateY,
+    );
+  }
+
+  void _animateToMatrix(Matrix4 target) {
+    _viewportAnimationController.stop();
+    final tween = Matrix4Tween(
+      begin: _transformationController.value.clone(),
+      end: target,
+    );
+    final animation = CurvedAnimation(
+      parent: _viewportAnimationController,
+      curve: Curves.easeOutCubic,
+    );
+
+    void listener() {
+      _transformationController.value = tween.evaluate(animation);
+    }
+
+    void statusListener(AnimationStatus status) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        animation.removeListener(listener);
+        animation.removeStatusListener(statusListener);
+        animation.dispose();
+      }
+    }
+
+    animation
+      ..addListener(listener)
+      ..addStatusListener(statusListener);
+    _viewportAnimationController
+      ..value = 0
+      ..forward();
   }
 
   Matrix4 _clampMatrix(Matrix4 matrix) {
@@ -232,7 +270,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     }
 
     final currentScale = matrix.storage[0];
-    final clampedScale = currentScale.clamp(_fitScale, _fitScale * _maxZoomMultiplier);
+    final clampedScale =
+        currentScale.clamp(_fitScale, _fitScale * _maxZoomMultiplier);
     final scaledWidth = _mapWidth * clampedScale;
     final scaledHeight = _mapHeight * clampedScale;
 
@@ -288,7 +327,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final nextViewportSize = Size(constraints.maxWidth, constraints.maxHeight);
+        final nextViewportSize =
+            Size(constraints.maxWidth, constraints.maxHeight);
         final nextFitScale = [
           constraints.maxWidth / _mapWidth,
           constraints.maxHeight / _mapHeight,
@@ -309,14 +349,17 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
             InteractiveViewer(
               transformationController: _transformationController,
               constrained: false,
+              clipBehavior: Clip.hardEdge,
               scaleEnabled: true,
               panEnabled: true,
               minScale: _fitScale,
               maxScale: _fitScale * _maxZoomMultiplier,
-              boundaryMargin: EdgeInsets.zero,
-              onInteractionStart: (_) => _hasUserMovedViewport = true,
-              onInteractionUpdate: (_) => _handleInteractionUpdate(),
-              onInteractionEnd: (_) => _enforceMinimumScale(),
+              boundaryMargin: const EdgeInsets.all(_panBoundaryMargin),
+              onInteractionStart: (_) {
+                _viewportAnimationController.stop();
+                _hasUserMovedViewport = true;
+              },
+              onInteractionEnd: (_) => _settleViewport(),
               child: SizedBox(
                 width: _mapWidth,
                 height: _mapHeight,
@@ -443,7 +486,8 @@ class _MapAssetSurface extends StatelessWidget {
     final headers = ApiClient.buildHeaders(includeJsonContentType: false);
     final resolvedContentType = contentType?.toLowerCase() ?? 'image/svg+xml';
 
-    if (resolvedContentType.contains('svg') || url.toLowerCase().endsWith('.svg')) {
+    if (resolvedContentType.contains('svg') ||
+        url.toLowerCase().endsWith('.svg')) {
       return SvgPicture.network(
         url,
         fit: BoxFit.contain,
@@ -466,7 +510,8 @@ class _MapAssetSurface extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       },
       errorBuilder: (_, __, ___) => const Center(
-        child: Icon(Icons.image_not_supported_outlined, color: Color(0xFF7C869C)),
+        child:
+            Icon(Icons.image_not_supported_outlined, color: Color(0xFF7C869C)),
       ),
     );
   }
@@ -517,7 +562,8 @@ class _ParkCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: cellColor,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 0.7),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.8), width: 0.7),
         boxShadow: [
           BoxShadow(
             color: cellColor.withValues(alpha: 0.28),

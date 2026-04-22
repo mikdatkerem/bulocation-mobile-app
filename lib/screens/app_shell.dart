@@ -48,11 +48,12 @@ class _AppShellState extends State<AppShell> {
                 child: Container(
                   height: 78,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF0D1013),
                     borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: const Color(0x1AF5F3EF)),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x140C1730),
+                        color: Color(0x66000000),
                         blurRadius: 24,
                         offset: Offset(0, 12),
                       ),
@@ -131,18 +132,21 @@ class _NavItem extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFEAF0FF) : Colors.transparent,
+            color: selected ? const Color(0xFF1836B9) : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(selected ? activeIcon : icon, color: color),
+              Icon(
+                selected ? activeIcon : icon,
+                color: selected ? const Color(0xFFF5F3EF) : color,
+              ),
               const SizedBox(height: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: color,
+                  color: selected ? const Color(0xFFF5F3EF) : color,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                   fontSize: 12,
                 ),

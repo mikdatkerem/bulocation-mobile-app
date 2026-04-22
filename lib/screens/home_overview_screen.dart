@@ -5,6 +5,15 @@ import '../models/auth_models.dart';
 import '../models/facility_models.dart';
 import '../services/facility_service.dart';
 
+const _bg = Color(0xFF060708);
+const _surface = Color(0xFF0D1013);
+const _surfaceStrong = Color(0xFF11161D);
+const _line = Color(0x1AF5F3EF);
+const _text = Color(0xFFF5F3EF);
+const _muted = Color(0xFF8F96A3);
+const _soft = Color(0xFFD7D2CA);
+const _accent = Color(0xFF1836B9);
+
 class HomeOverviewScreen extends StatefulWidget {
   const HomeOverviewScreen({
     super.key,
@@ -41,7 +50,9 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
       final hierarchies = <OrganizationHierarchy>[];
 
       for (final organization in organizations) {
-        hierarchies.add(await _facilityService.getOrganizationHierarchy(organization.id));
+        hierarchies.add(
+          await _facilityService.getOrganizationHierarchy(organization.id),
+        );
       }
 
       if (!mounted) {
@@ -66,13 +77,13 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
     }
   }
 
-  List<_PublishedFloorCardData> get _publishedFloors => [
+  List<_QuickLocationData> get _quickLocations => [
         for (final hierarchy in _hierarchies)
           for (final site in hierarchy.sites)
             for (final building in site.buildings)
               for (final floor in building.floors)
                 if (floor.hasPublishedMap)
-                  _PublishedFloorCardData(
+                  _QuickLocationData(
                     organizationId: hierarchy.id,
                     organizationName: hierarchy.name,
                     siteId: site.id,
@@ -81,7 +92,6 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                     buildingName: building.name,
                     floorId: floor.id,
                     floorName: floor.name,
-                    floorLevel: floor.level,
                   ),
       ];
 
@@ -94,7 +104,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
               siteId: site.id,
               siteName: site.name,
               buildingCount: site.buildings.length,
-              publishedFloorCount: site.buildings
+              readyFloorCount: site.buildings
                   .expand((building) => building.floors)
                   .where((floor) => floor.hasPublishedMap)
                   .length,
@@ -104,186 +114,116 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FB),
+      backgroundColor: _bg,
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: _accent))
             : _error != null
                 ? _OverviewError(message: _error!, onRetry: _loadOverview)
-                : Stack(
-                    children: [
-                      RefreshIndicator(
-                        onRefresh: _loadOverview,
-                  child: ListView(
-                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 130),
-                          children: [
-                            Row(
-                              children: [
-                                const _BrandMark(),
-                                const SizedBox(width: 10),
-                                const Text(
-                                  'BuLocation',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF2155D6),
-                                  ),
-                                ),
-                                const Spacer(),
-                                CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: const Color(0xFFD9E2F6),
-                                  child: Text(
-                                    _initials(
-                                      widget.profile?.fullName ??
-                                          widget.profile?.userName ??
-                                          'BL',
-                                    ),
-                                    style: const TextStyle(
-                                      color: Color(0xFF24314F),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            InkWell(
-                              onTap: () => widget.onOpenMaps(null),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                height: 64,
-                                padding: const EdgeInsets.symmetric(horizontal: 18),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.search_rounded,
-                                        color: Color(0xFF7D879C)),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _organizations.isEmpty
-                                            ? 'Harita secin veya QR okutun'
-                                            : 'Yerleske veya bina secin',
-                                        style: const TextStyle(
-                                          fontSize: 17,
-                                          color: Color(0xFF8C95A8),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF2155D6),
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_outward_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 34),
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Yayinlanan Haritalar',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF1E2639),
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () => widget.onOpenMaps(null),
-                                  child: const Text('Tum Haritalari Gor'),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            if (_publishedFloors.isEmpty)
-                              const _EmptyBlock(
-                                title: 'Yayinlanmis kat haritasi yok',
-                                subtitle: 'Admin panelinden harita yayina alindiginda burada gorunecek.',
-                              )
-                            else
-                              SizedBox(
-                                height: 224,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: _publishedFloors.length,
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(width: 14),
-                                  itemBuilder: (context, index) {
-                                    final item = _publishedFloors[index];
-                                    return _PublishedFloorCard(
-                                      item: item,
-                                      onTap: () => widget.onOpenMaps(
-                                        MapOpenRequest(
-                                          organizationId: item.organizationId,
-                                          siteId: item.siteId,
-                                          buildingId: item.buildingId,
-                                          floorId: item.floorId,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            const SizedBox(height: 34),
-                            const Text(
-                              'Tum Yerleskeler',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1E2639),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            if (_siteItems.isEmpty)
-                              const _EmptyBlock(
-                                title: 'Yerleske bulunamadi',
-                                subtitle: 'Sistemde yayinlanmis bir yerleske verisi olmadiginda bu alan bos kalir.',
-                              )
-                            else
-                              ..._siteItems.map(
+                : RefreshIndicator(
+                    color: _accent,
+                    backgroundColor: _surface,
+                    onRefresh: _loadOverview,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 120),
+                      children: [
+                        _Header(
+                          initials: _initials(
+                            widget.profile?.fullName ??
+                                widget.profile?.userName ??
+                                'BL',
+                          ),
+                        ),
+                        const SizedBox(height: 34),
+                        const Text(
+                          'Nereye gitmek istiyorsunuz?',
+                          style: TextStyle(
+                            color: _text,
+                            fontSize: 30,
+                            height: 1.05,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _organizations.isEmpty
+                              ? 'Kurum verisi yuklenince QR veya kurum aramasi ile baslayabilirsiniz.'
+                              : 'QR okutun ya da kurum, bina veya kat secerek navigasyona baslayin.',
+                          style: const TextStyle(
+                            color: _soft,
+                            fontSize: 14,
+                            height: 1.55,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _PrimaryAction(
+                          title: 'QR ile basla',
+                          subtitle: 'Bulundugunuz noktayi otomatik acin.',
+                          icon: Icons.qr_code_scanner_rounded,
+                          onTap: () => _showQuickScanner(context),
+                        ),
+                        const SizedBox(height: 12),
+                        _SearchAction(
+                          label: 'Kurum, bina veya kat sec',
+                          onTap: () => widget.onOpenMaps(null),
+                        ),
+                        if (_quickLocations.isNotEmpty) ...[
+                          const SizedBox(height: 34),
+                          _SectionHeader(
+                            title: 'Hizli giris',
+                            actionLabel: 'Tumunu ac',
+                            onAction: () => widget.onOpenMaps(null),
+                          ),
+                          const SizedBox(height: 12),
+                          ..._quickLocations.take(3).map(
                                 (item) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 14),
-                                  child: _SiteListTile(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: _QuickLocationTile(
                                     item: item,
                                     onTap: () => widget.onOpenMaps(
                                       MapOpenRequest(
                                         organizationId: item.organizationId,
                                         siteId: item.siteId,
+                                        buildingId: item.buildingId,
+                                        floorId: item.floorId,
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                          ],
+                        ],
+                        const SizedBox(height: 28),
+                        const _SectionHeader(
+                          title: 'Kurumlar',
+                          actionLabel: null,
+                          onAction: null,
                         ),
-                      ),
-                      Positioned(
-                        right: 24,
-                        bottom: 28,
-                        child: FloatingActionButton(
-                          heroTag: 'quick-qr',
-                          backgroundColor: const Color(0xFF2155D6),
-                          foregroundColor: Colors.white,
-                          onPressed: () => _showQuickScanner(context),
-                          child: const Icon(Icons.qr_code_scanner_rounded),
-                        ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        if (_siteItems.isEmpty)
+                          const _EmptyBlock(
+                            title: 'Kurum bulunamadi',
+                            subtitle:
+                                'Yetkili oldugunuz kurumlar burada listelenecek.',
+                          )
+                        else
+                          ..._siteItems.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _SiteListTile(
+                                item: item,
+                                onTap: () => widget.onOpenMaps(
+                                  MapOpenRequest(
+                                    organizationId: item.organizationId,
+                                    siteId: item.siteId,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
       ),
     );
@@ -325,25 +265,196 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
   }
 }
 
-class _BrandMark extends StatelessWidget {
-  const _BrandMark();
+class _Header extends StatelessWidget {
+  const _Header({required this.initials});
+
+  final String initials;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF0FF),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: const Icon(Icons.qr_code_2_rounded, color: Color(0xFF2155D6)),
+    return Row(
+      children: [
+        Image.asset(
+          'assets/logo_removed_bg.png',
+          height: 34,
+          fit: BoxFit.contain,
+        ),
+        const Spacer(),
+        Container(
+          width: 42,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _line),
+          ),
+          child: Text(
+            initials,
+            style: const TextStyle(
+              color: _text,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _PublishedFloorCardData {
-  const _PublishedFloorCardData({
+class _PrimaryAction extends StatelessWidget {
+  const _PrimaryAction({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Ink(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: _accent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: _text, size: 28),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: _text,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: _text.withValues(alpha: 0.74),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_rounded, color: _text),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchAction extends StatelessWidget {
+  const _SearchAction({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Ink(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: _surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _line),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search_rounded, color: _muted),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: _soft,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const Icon(Icons.tune_rounded, color: _muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              color: _muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2.4,
+            ),
+          ),
+        ),
+        if (actionLabel != null)
+          TextButton(
+            onPressed: onAction,
+            style: TextButton.styleFrom(
+              foregroundColor: _soft,
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(actionLabel!),
+          ),
+      ],
+    );
+  }
+}
+
+class _QuickLocationData {
+  const _QuickLocationData({
     required this.organizationId,
     required this.organizationName,
     required this.siteId,
@@ -352,7 +463,6 @@ class _PublishedFloorCardData {
     required this.buildingName,
     required this.floorId,
     required this.floorName,
-    required this.floorLevel,
   });
 
   final String organizationId;
@@ -363,108 +473,25 @@ class _PublishedFloorCardData {
   final String buildingName;
   final String floorId;
   final String floorName;
-  final int floorLevel;
 }
 
-class _PublishedFloorCard extends StatelessWidget {
-  const _PublishedFloorCard({
+class _QuickLocationTile extends StatelessWidget {
+  const _QuickLocationTile({
     required this.item,
     required this.onTap,
   });
 
-  final _PublishedFloorCardData item;
+  final _QuickLocationData item;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return _DarkTile(
+      icon: Icons.map_outlined,
+      title: item.buildingName,
+      subtitle: '${item.siteName} - ${item.floorName}',
+      meta: item.organizationName,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: 280,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 116,
-              decoration: const BoxDecoration(
-                color: Color(0xFFDCE6FA),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 18,
-                    top: 18,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C9B67),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'YAYINDA',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 11,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Positioned.fill(
-                    child: Icon(
-                      Icons.map_outlined,
-                      size: 58,
-                      color: Color(0xFF6E89C9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.buildingName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E2639),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${item.siteName} · ${item.floorName}',
-                    style: const TextStyle(
-                      color: Color(0xFF5F6B82),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    item.organizationName,
-                    style: const TextStyle(
-                      color: Color(0xFF2155D6),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -476,7 +503,7 @@ class _SiteListItemData {
     required this.siteId,
     required this.siteName,
     required this.buildingCount,
-    required this.publishedFloorCount,
+    required this.readyFloorCount,
   });
 
   final String organizationId;
@@ -484,7 +511,7 @@ class _SiteListItemData {
   final String siteId;
   final String siteName;
   final int buildingCount;
-  final int publishedFloorCount;
+  final int readyFloorCount;
 }
 
 class _SiteListTile extends StatelessWidget {
@@ -498,28 +525,55 @@ class _SiteListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _DarkTile(
+      icon: Icons.location_city_rounded,
+      title: item.siteName,
+      subtitle:
+          '${item.organizationName} - ${item.buildingCount} bina - ${item.readyFloorCount} hazir kat',
+      meta: 'Kurum sec',
+      onTap: onTap,
+    );
+  }
+}
+
+class _DarkTile extends StatelessWidget {
+  const _DarkTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.meta,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String meta;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       child: Ink(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          color: _surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _line),
         ),
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 46,
+              height: 46,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF0FF),
-                borderRadius: BorderRadius.circular(16),
+                color: _surfaceStrong,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _line),
               ),
-              child: const Icon(
-                Icons.location_city_rounded,
-                color: Color(0xFF2155D6),
-              ),
+              child: Icon(icon, color: _soft),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -527,25 +581,46 @@ class _SiteListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.siteName,
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E2639),
+                      color: _text,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
-                    '${item.organizationName} · ${item.buildingCount} bina · ${item.publishedFloorCount} yayinlanan kat',
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6E7890),
+                      color: _muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF9AA4BA)),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  meta.toUpperCase(),
+                  style: const TextStyle(
+                    color: _soft,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Icon(Icons.chevron_right_rounded, color: _muted),
+              ],
+            ),
           ],
         ),
       ),
@@ -565,10 +640,11 @@ class _EmptyBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        color: _surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,17 +652,17 @@ class _EmptyBlock extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
+              color: _text,
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1E2639),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
             style: const TextStyle(
+              color: _muted,
               height: 1.55,
-              color: Color(0xFF6E7890),
             ),
           ),
         ],
@@ -612,19 +688,19 @@ class _OverviewError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 34, color: Color(0xFFC53A3A)),
+            const Icon(Icons.error_outline_rounded, size: 34, color: _soft),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF4D5872)),
+              style: const TextStyle(color: _soft),
             ),
             const SizedBox(height: 18),
             FilledButton(
               onPressed: onRetry,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2155D6),
-                foregroundColor: Colors.white,
+                backgroundColor: _accent,
+                foregroundColor: _text,
               ),
               child: const Text('Tekrar dene'),
             ),
@@ -648,7 +724,7 @@ class _QuickScannerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: _surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
@@ -664,7 +740,7 @@ class _QuickScannerSheet extends StatelessWidget {
                   width: 52,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD6DDEA),
+                    color: _line,
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
@@ -675,15 +751,15 @@ class _QuickScannerSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E2639),
+                  color: _text,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Okutulan QR hangi kat ya da binaya aitse harita otomatik acilir.',
+                'QR hangi kat veya binaya aitse harita otomatik acilir.',
                 style: TextStyle(
                   height: 1.5,
-                  color: Color(0xFF6E7890),
+                  color: _soft,
                 ),
               ),
               const SizedBox(height: 18),
@@ -694,7 +770,8 @@ class _QuickScannerSheet extends StatelessWidget {
                   child: MobileScanner(
                     controller: controller,
                     onDetect: (capture) async {
-                      final value = capture.barcodes.firstOrNull?.rawValue?.trim();
+                      final value =
+                          capture.barcodes.firstOrNull?.rawValue?.trim();
                       if (value == null || value.isEmpty) {
                         return;
                       }

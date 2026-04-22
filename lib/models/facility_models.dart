@@ -61,12 +61,14 @@ class SiteHierarchy {
     required this.id,
     required this.code,
     required this.name,
+    required this.siteType,
     required this.buildings,
   });
 
   final String id;
   final String code;
   final String name;
+  final String siteType;
   final List<BuildingHierarchy> buildings;
 
   factory SiteHierarchy.fromJson(Map<String, dynamic> json) {
@@ -74,8 +76,10 @@ class SiteHierarchy {
       id: json['id'] as String,
       code: json['code'] as String,
       name: json['name'] as String,
+      siteType: json['siteType']?.toString() ?? '',
       buildings: ((json['buildings'] as List<dynamic>?) ?? const <dynamic>[])
-          .map((item) => BuildingHierarchy.fromJson(item as Map<String, dynamic>))
+          .map((item) =>
+              BuildingHierarchy.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -86,12 +90,14 @@ class BuildingHierarchy {
     required this.id,
     required this.code,
     required this.name,
+    required this.buildingType,
     required this.floors,
   });
 
   final String id;
   final String code;
   final String name;
+  final String buildingType;
   final List<FloorHierarchy> floors;
 
   factory BuildingHierarchy.fromJson(Map<String, dynamic> json) {
@@ -99,6 +105,7 @@ class BuildingHierarchy {
       id: json['id'] as String,
       code: json['code'] as String,
       name: json['name'] as String,
+      buildingType: json['buildingType']?.toString() ?? '',
       floors: ((json['floors'] as List<dynamic>?) ?? const <dynamic>[])
           .map((item) => FloorHierarchy.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -127,14 +134,15 @@ class FloorHierarchy {
       code: json['code'] as String,
       name: json['name'] as String,
       level: json['level'] as int,
-      mapVersions: ((json['mapVersions'] as List<dynamic>?) ?? const <dynamic>[])
-          .map((item) => MapVersionSummary.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      mapVersions:
+          ((json['mapVersions'] as List<dynamic>?) ?? const <dynamic>[])
+              .map((item) =>
+                  MapVersionSummary.fromJson(item as Map<String, dynamic>))
+              .toList(),
     );
   }
 
-  bool get hasPublishedMap =>
-      mapVersions.any((version) => version.isPublished);
+  bool get hasPublishedMap => mapVersions.any((version) => version.isPublished);
 }
 
 class MapVersionSummary {

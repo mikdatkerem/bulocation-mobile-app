@@ -392,7 +392,7 @@ class MapsScreenState extends State<MapsScreen> {
       setState(() => _busy = false);
       if (_targetPark != null) {
         await _updateRoute(normalizedReferenceId);
-      } else {
+      } else if (_mapPanelMode == MapPanelMode.parking) {
         _showSuggestionDialog();
       }
     } catch (error) {
@@ -754,12 +754,96 @@ class MapsScreenState extends State<MapsScreen> {
     );
   }
 
+  MapPanelMode get _mapPanelMode {
+    final buildingType = _normalizeType(_building?.buildingType);
+    final siteType = _normalizeType(_site?.siteType);
+    final buildingName = _normalizeType(_building?.name);
+    final siteName = _normalizeType(_site?.name);
+    final floorName = _normalizeType(_floor?.name);
+
+    if (buildingType == '4' ||
+        buildingType == 'parking' ||
+        siteType == '2' ||
+        siteType == 'parkingcampus' ||
+        buildingName.contains('otopark') ||
+        buildingName.contains('parking') ||
+        floorName.contains('otopark') ||
+        floorName.contains('parking')) {
+      return MapPanelMode.parking;
+    }
+
+    if (siteType == '1' ||
+        siteType == 'hospital' ||
+        buildingType == '2' ||
+        buildingType == 'clinic' ||
+        buildingType == '3' ||
+        buildingType == 'emergency' ||
+        siteName.contains('hastane') ||
+        siteName.contains('hospital') ||
+        buildingName.contains('hastane') ||
+        buildingName.contains('hospital')) {
+      return MapPanelMode.hospital;
+    }
+
+    if (siteType == '3' ||
+        siteType == 'mall' ||
+        siteName.contains('avm') ||
+        siteName.contains('mall') ||
+        buildingName.contains('avm') ||
+        buildingName.contains('mall')) {
+      return MapPanelMode.mall;
+    }
+
+    return MapPanelMode.other;
+  }
+
+  List<MapNode> get _destinationNodes {
+    final mode = _mapPanelMode;
+    final nodes = _mapNodes
+        .where((node) =>
+            !node.isQr && (mode == MapPanelMode.parking || !node.isPark))
+        .toList();
+
+    nodes.sort((left, right) {
+      final leftScore = _nodeSortScore(left);
+      final rightScore = _nodeSortScore(right);
+      if (leftScore != rightScore) {
+        return leftScore.compareTo(rightScore);
+      }
+      return left.label.compareTo(right.label);
+    });
+
+    return nodes;
+  }
+
+  int _nodeSortScore(MapNode node) {
+    return switch (node.type) {
+      NodeType.entrance => 0,
+      NodeType.exit => 1,
+      NodeType.other => 2,
+      NodeType.park => 3,
+      NodeType.qr => 4,
+    };
+  }
+
+  String _normalizeType(String? value) {
+    return (value ?? '')
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[\s_\-]'), '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final emptyCount =
         _occupancy.values.where((value) => value == false).length;
     final fullCount = _occupancy.values.where((value) => value == true).length;
     final hasMap = _map != null;
+    final panelMode = _mapPanelMode;
+    final destinationNodes = _destinationNodes;
+    final mapBottomInset = hasMap
+        ? MediaQuery.of(context).size.height * ParkBottomSheet.peekSize + 12
+        : 0.0;
     final activeNodeId = _lastScan == null
         ? null
         : _displayNodes
@@ -827,7 +911,8 @@ class MapsScreenState extends State<MapsScreen> {
                         ),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                            padding:
+                                EdgeInsets.fromLTRB(12, 12, 12, mapBottomInset),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -879,6 +964,7 @@ class MapsScreenState extends State<MapsScreen> {
                           ParkBottomSheet.fullSize,
                       child: ParkBottomSheet(
                         controller: _sheetController,
+                        mode: panelMode,
                         occupancyMap: _occupancy,
                         targetPark: _targetPark,
                         parkedAt: _parkedAt,
@@ -944,6 +1030,7 @@ class MapsScreenState extends State<MapsScreen> {
                           unawaited(_selectParkingNearEntrance());
                         },
                         parks: _mapNodes.where((node) => node.isPark).toList(),
+                        destinations: destinationNodes,
                       ),
                     ),
                   ),
