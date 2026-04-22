@@ -7,12 +7,14 @@ import '../services/facility_service.dart';
 
 const _bg = Color(0xFF060708);
 const _surface = Color(0xFF0D1013);
-const _surfaceStrong = Color(0xFF11161D);
 const _line = Color(0x1AF5F3EF);
 const _text = Color(0xFFF5F3EF);
+const _ink = Color(0xFF171A20);
 const _muted = Color(0xFF8F96A3);
 const _soft = Color(0xFFD7D2CA);
 const _accent = Color(0xFF1836B9);
+const _card = Color(0xFFF5F3EF);
+const _cardMuted = Color(0xFF69717F);
 
 class HomeOverviewScreen extends StatefulWidget {
   const HomeOverviewScreen({
@@ -125,7 +127,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                     backgroundColor: _surface,
                     onRefresh: _loadOverview,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 120),
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 116),
                       children: [
                         _Header(
                           initials: _initials(
@@ -134,7 +136,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                                 'BL',
                           ),
                         ),
-                        const SizedBox(height: 34),
+                        const SizedBox(height: 30),
                         const Text(
                           'Nereye gitmek istiyorsunuz?',
                           style: TextStyle(
@@ -170,7 +172,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                           onTap: () => widget.onOpenMaps(null),
                         ),
                         if (_quickLocations.isNotEmpty) ...[
-                          const SizedBox(height: 34),
+                          const SizedBox(height: 32),
                           _SectionHeader(
                             title: 'Hizli giris',
                             actionLabel: 'Tumunu ac',
@@ -194,7 +196,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                                 ),
                               ),
                         ],
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 26),
                         const _SectionHeader(
                           title: 'Kurumlar',
                           actionLabel: null,
@@ -285,14 +287,14 @@ class _Header extends StatelessWidget {
           height: 42,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: _surface,
+            color: _card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _line),
+            border: Border.all(color: const Color(0x1F000000)),
           ),
           child: Text(
             initials,
             style: const TextStyle(
-              color: _text,
+              color: _ink,
               fontWeight: FontWeight.w800,
               fontSize: 13,
             ),
@@ -386,25 +388,25 @@ class _SearchAction extends StatelessWidget {
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: _surface,
+          color: _card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _line),
+          border: Border.all(color: const Color(0x12000000)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search_rounded, color: _muted),
+            const Icon(Icons.search_rounded, color: _cardMuted),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
                 style: const TextStyle(
-                  color: _soft,
+                  color: _ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            const Icon(Icons.tune_rounded, color: _muted),
+            const Icon(Icons.tune_rounded, color: _cardMuted),
           ],
         ),
       ),
@@ -559,9 +561,16 @@ class _DarkTile extends StatelessWidget {
       child: Ink(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _surface,
+          color: _card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _line),
+          border: Border.all(color: const Color(0x12000000)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x18000000),
+              blurRadius: 18,
+              offset: Offset(0, 10),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -569,11 +578,10 @@ class _DarkTile extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: _surfaceStrong,
+                color: const Color(0xFFE8ECF6),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _line),
               ),
-              child: Icon(icon, color: _soft),
+              child: Icon(icon, color: _accent),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -585,7 +593,7 @@ class _DarkTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: _text,
+                      color: _ink,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -596,7 +604,7 @@ class _DarkTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: _muted,
+                      color: _cardMuted,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -611,14 +619,14 @@ class _DarkTile extends StatelessWidget {
                 Text(
                   meta.toUpperCase(),
                   style: const TextStyle(
-                    color: _soft,
+                    color: _accent,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.1,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Icon(Icons.chevron_right_rounded, color: _muted),
+                const Icon(Icons.chevron_right_rounded, color: _cardMuted),
               ],
             ),
           ],
@@ -642,9 +650,9 @@ class _EmptyBlock extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _surface,
+        color: _card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _line),
+        border: Border.all(color: const Color(0x12000000)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,7 +660,7 @@ class _EmptyBlock extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: _text,
+              color: _ink,
               fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
@@ -661,7 +669,7 @@ class _EmptyBlock extends StatelessWidget {
           Text(
             subtitle,
             style: const TextStyle(
-              color: _muted,
+              color: _cardMuted,
               height: 1.55,
             ),
           ),

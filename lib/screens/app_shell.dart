@@ -44,18 +44,18 @@ class _AppShellState extends State<AppShell> {
           : SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
                 child: Container(
-                  height: 78,
+                  height: 66,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0D1013),
-                    borderRadius: BorderRadius.circular(28),
+                    color: const Color(0xFF111418),
+                    borderRadius: BorderRadius.circular(22),
                     border: Border.all(color: const Color(0x1AF5F3EF)),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x66000000),
-                        blurRadius: 24,
-                        offset: Offset(0, 12),
+                        color: Color(0x4D000000),
+                        blurRadius: 18,
+                        offset: Offset(0, 8),
                       ),
                     ],
                   ),
@@ -122,18 +122,18 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? const Color(0xFF2155D6) : const Color(0xFF98A2B8);
+    final color = selected ? const Color(0xFFF5F3EF) : const Color(0xFF8F96A3);
 
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
-          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
           decoration: BoxDecoration(
             color: selected ? const Color(0xFF1836B9) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -142,13 +142,13 @@ class _NavItem extends StatelessWidget {
                 selected ? activeIcon : icon,
                 color: selected ? const Color(0xFFF5F3EF) : color,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? const Color(0xFFF5F3EF) : color,
+                  color: color,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                  fontSize: 12,
+                  fontSize: 11,
                 ),
               ),
             ],
