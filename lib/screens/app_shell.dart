@@ -35,54 +35,58 @@ class _AppShellState extends State<AppShell> {
     ];
 
     return Scaffold(
+      backgroundColor: const Color(0xFF060708),
       body: IndexedStack(
         index: _currentIndex,
         children: pages,
       ),
       bottomNavigationBar: _currentIndex == 1
           ? null
-          : SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
-                child: Container(
-                  height: 66,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF111418),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0x1AF5F3EF)),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x4D000000),
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      _NavItem(
-                        icon: Icons.home_outlined,
-                        activeIcon: Icons.home_rounded,
-                        label: 'Ana Sayfa',
-                        selected: _currentIndex == 0,
-                        onTap: () => setState(() => _currentIndex = 0),
-                      ),
-                      _NavItem(
-                        icon: Icons.map_outlined,
-                        activeIcon: Icons.map_rounded,
-                        label: 'Bul',
-                        selected: _currentIndex == 1,
-                        onTap: () => setState(() => _currentIndex = 1),
-                      ),
-                      _NavItem(
-                        icon: Icons.person_outline_rounded,
-                        activeIcon: Icons.person_rounded,
-                        label: 'Profil',
-                        selected: _currentIndex == 2,
-                        onTap: () => setState(() => _currentIndex = 2),
-                      ),
-                    ],
+          : ColoredBox(
+              color: const Color(0xFF060708),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
+                  child: Container(
+                    height: 66,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF060708),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: const Color(0x1AF5F3EF)),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x4D000000),
+                          blurRadius: 18,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        _NavItem(
+                          icon: Icons.home_outlined,
+                          activeIcon: Icons.home_rounded,
+                          label: 'Ana Sayfa',
+                          selected: _currentIndex == 0,
+                          onTap: () => setState(() => _currentIndex = 0),
+                        ),
+                        _NavItem(
+                          icon: Icons.map_outlined,
+                          activeIcon: Icons.map_rounded,
+                          label: 'Bul',
+                          selected: _currentIndex == 1,
+                          onTap: () => setState(() => _currentIndex = 1),
+                        ),
+                        _NavItem(
+                          icon: Icons.person_outline_rounded,
+                          activeIcon: Icons.person_rounded,
+                          label: 'Profil',
+                          selected: _currentIndex == 2,
+                          onTap: () => setState(() => _currentIndex = 2),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

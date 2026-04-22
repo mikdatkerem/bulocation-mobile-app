@@ -127,27 +127,10 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                     backgroundColor: _surface,
                     onRefresh: _loadOverview,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 116),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 116),
                       children: [
-                        _Header(
-                          initials: _initials(
-                            widget.profile?.fullName ??
-                                widget.profile?.userName ??
-                                'BL',
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        const Text(
-                          'Nereye gitmek istiyorsunuz?',
-                          style: TextStyle(
-                            color: _text,
-                            fontSize: 30,
-                            height: 1.05,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                        const _Header(),
+                        const SizedBox(height: 18),
                         Text(
                           _organizations.isEmpty
                               ? 'Kurum verisi yuklenince QR veya kurum aramasi ile baslayabilirsiniz.'
@@ -251,56 +234,29 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
 
     await scanner.dispose();
   }
-
-  String _initials(String input) {
-    final parts = input
-        .split(RegExp(r'\s+'))
-        .where((item) => item.trim().isNotEmpty)
-        .toList();
-    if (parts.isEmpty) {
-      return 'BL';
-    }
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-  }
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.initials});
-
-  final String initials;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Image.asset(
-          'assets/logo_removed_bg.png',
-          height: 34,
-          fit: BoxFit.contain,
-        ),
-        const Spacer(),
-        Container(
-          width: 42,
-          height: 42,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _card,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0x1F000000)),
-          ),
-          child: Text(
-            initials,
-            style: const TextStyle(
-              color: _ink,
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
+    return SizedBox(
+      height: 66,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Transform.translate(
+          offset: const Offset(0, -18),
+          child: Transform.scale(
+            scale: 1.55,
+            child: Image.asset(
+              'assets/logo_removed_bg.png',
+              height: 76,
+              fit: BoxFit.contain,
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
