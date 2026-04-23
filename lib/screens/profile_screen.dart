@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/app_session_controller.dart';
 import 'verify_email_screen.dart';
 
-part 'profile/profile_header.dart';
 part 'profile/profile_menu_tile.dart';
-part 'profile/profile_stat.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.sessionController});
@@ -15,106 +13,149 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = sessionController.profile;
-    final fullName = profile?.fullName.isNotEmpty == true
+    final fullName = profile?.fullName.trim().isNotEmpty == true
         ? profile!.fullName
-        : profile?.userName ?? 'Kullanici';
+        : profile?.userName ?? 'Kullanıcı';
+    final initials = _initials(fullName);
+    final roleLabels = profile?.roles.isNotEmpty == true
+        ? profile!.roles
+        : const <String>['Kullanıcı'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Profil',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
           children: [
-            Center(
+            Row(
+              children: [
+                const Text(
+                  'Profil',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFFFF),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: const Icon(
+                    Icons.verified_user_outlined,
+                    color: Color(0xFF6366F1),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x120F172A),
+                    blurRadius: 24,
+                    offset: Offset(0, 14),
+                  ),
+                ],
+              ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
+                  Row(
                     children: [
                       Container(
-                        width: 108,
-                        height: 108,
+                        width: 72,
+                        height: 72,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFD8E0EF),
-                          border: Border.all(color: Colors.white, width: 4),
+                          borderRadius: BorderRadius.circular(22),
+                          color: const Color(0xFFEEF2FF),
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          _initials(fullName),
+                          initials,
                           style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF233353),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF4338CA),
                           ),
                         ),
                       ),
-                      Positioned(
-                        right: 2,
-                        bottom: 2,
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2155D6),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                          ),
-                          child: const Icon(
-                            Icons.edit_outlined,
-                            color: Colors.white,
-                            size: 16,
-                          ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              fullName,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              profile?.email ?? '-',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
-                  Text(
-                    fullName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A2236),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    profile?.email ?? 'profil@bulocation.dev',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF687287),
-                    ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final role in roleLabels)
+                        _RoleChip(label: _normalizeRole(role)),
+                      _StatusChip(
+                        label: profile?.emailVerified == true
+                            ? 'E-posta doğrulandı'
+                            : 'E-posta doğrulanmadı',
+                        positive: profile?.emailVerified == true,
+                      ),
+                      _StatusChip(
+                        label: profile?.isActive == false
+                            ? 'Pasif hesap'
+                            : 'Aktif hesap',
+                        positive: profile?.isActive != false,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 28),
             if (profile != null && !profile.emailVerified) ...[
+              const SizedBox(height: 18),
               Container(
-                margin: const EdgeInsets.only(bottom: 20),
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFF1DEAA)),
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.mark_email_unread_outlined,
-                      color: Color(0xFF9E6A00),
+                      color: Color(0xFFA16207),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
@@ -122,16 +163,19 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'E-posta dogrulama bekleniyor',
+                            'E-posta doğrulaması bekleniyor',
                             style: TextStyle(
+                              color: Color(0xFF713F12),
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF5C4300),
                             ),
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Sifirlama ve guvenlik akislari icin hesabini dogrula.',
-                            style: TextStyle(color: Color(0xFF7A5E16)),
+                            'Şifre sıfırlama ve güvenlik akışları için hesabınızı doğrulayın.',
+                            style: TextStyle(
+                              color: Color(0xFF92400E),
+                              height: 1.4,
+                            ),
                           ),
                         ],
                       ),
@@ -147,102 +191,75 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const Text('Dogrula'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFA16207),
+                      ),
+                      child: const Text(
+                        'Doğrula',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
-            const Row(
-              children: [
-                Expanded(
-                  child: _ProfileStat(
-                    icon: Icons.local_parking_rounded,
-                    value: '42',
-                    label: 'TOPLAM\nPARK',
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: _ProfileStat(
-                    icon: Icons.schedule_rounded,
-                    value: '12sa',
-                    label: 'KAZANILAN\nZAMAN',
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: _ProfileStat(
-                    icon: Icons.star_border_rounded,
-                    value: 'P4',
-                    label: 'FAVORI\nYER',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2155D6),
-                borderRadius: BorderRadius.circular(24),
+            const SizedBox(height: 18),
+            const Text(
+              'Hesap',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.8,
               ),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Premium Uyelik',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Yillik Plan - 12 Ay',
-                          style: TextStyle(
-                            color: Color(0xFFDCE6FF),
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: () {},
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF2155D6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text('Yonet'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const _ProfileMenuTile(
-              icon: Icons.history_rounded,
-              title: 'Gecmis Islemler',
-            ),
-            const _ProfileMenuTile(
-              icon: Icons.credit_card_rounded,
-              title: 'Odeme Yontemleri',
-            ),
-            const _ProfileMenuTile(
-              icon: Icons.settings_outlined,
-              title: 'Uygulama Ayarlari',
             ),
             const SizedBox(height: 10),
             _ProfileMenuTile(
+              icon: Icons.badge_outlined,
+              title: 'Kullanıcı adı',
+              subtitle: profile?.userName ?? '-',
+            ),
+            _ProfileMenuTile(
+              icon: Icons.mail_outline_rounded,
+              title: 'E-posta adresi',
+              subtitle: profile?.email ?? '-',
+            ),
+            _ProfileMenuTile(
+              icon: Icons.admin_panel_settings_outlined,
+              title: 'Rol bilgisi',
+              subtitle: roleLabels.map(_normalizeRole).join(', '),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'İşlemler',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.8,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (profile != null && !profile.emailVerified)
+              _ProfileMenuTile(
+                icon: Icons.verified_outlined,
+                title: 'E-posta doğrulama',
+                subtitle: 'Doğrulama ekranını aç',
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => VerifyEmailScreen(
+                        sessionController: sessionController,
+                        email: profile.email,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            _ProfileMenuTile(
               icon: Icons.logout_rounded,
-              title: 'Cikis Yap',
+              title: 'Çıkış yap',
+              subtitle: 'Bu cihazdaki oturumu kapat',
               destructive: true,
               onTap: sessionController.signOut,
             ),
@@ -255,6 +272,76 @@ class ProfileScreen extends StatelessWidget {
   static String _initials(String name) {
     final parts =
         name.trim().split(RegExp(r'\s+')).where((part) => part.isNotEmpty);
-    return parts.take(2).map((part) => part[0].toUpperCase()).join();
+    final initials = parts.take(2).map((part) => part[0].toUpperCase()).join();
+    return initials.isEmpty ? 'BK' : initials;
+  }
+
+  static String _normalizeRole(String role) {
+    return switch (role.toLowerCase()) {
+      'superadmin' => 'Süper Admin',
+      'organizationadmin' => 'Organizasyon Admini',
+      'admin' => 'Admin',
+      'viewer' => 'İzleyici',
+      _ => 'Kullanıcı',
+    };
+  }
+}
+
+class _RoleChip extends StatelessWidget {
+  const _RoleChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF4338CA),
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
+    required this.label,
+    required this.positive,
+  });
+
+  final String label;
+  final bool positive;
+
+  @override
+  Widget build(BuildContext context) {
+    final background =
+        positive ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2);
+    final foreground =
+        positive ? const Color(0xFF15803D) : const Color(0xFFB91C1C);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: foreground,
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+      ),
+    );
   }
 }

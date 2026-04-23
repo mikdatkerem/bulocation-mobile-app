@@ -97,47 +97,6 @@ class _PrimaryAction extends StatelessWidget {
   }
 }
 
-class _SearchAction extends StatelessWidget {
-  const _SearchAction({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x12000000)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.search_rounded, color: _cardMuted),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: _ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const Icon(Icons.tune_rounded, color: _cardMuted),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,

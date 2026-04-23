@@ -93,7 +93,7 @@ class MapSelectionPanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
-                _PickerField<OrganizationSummary>(
+                _SearchField<OrganizationSummary>(
                   label: 'Kurum',
                   value: organizations
                       .where((item) => item.id == selectedOrganizationId)
@@ -103,15 +103,17 @@ class MapSelectionPanel extends StatelessWidget {
                   title: (item) => item.name,
                 ),
                 const SizedBox(height: 12),
-                _PickerField<SiteHierarchy>(
+                _SearchField<SiteHierarchy>(
                   label: 'Yerleşke',
-                  value: sites.where((item) => item.id == selectedSiteId).firstOrNull,
+                  value: sites
+                      .where((item) => item.id == selectedSiteId)
+                      .firstOrNull,
                   items: sites,
                   onChanged: (item) => onSiteChanged(item?.id),
                   title: (item) => item.name,
                 ),
                 const SizedBox(height: 12),
-                _PickerField<BuildingHierarchy>(
+                _SearchField<BuildingHierarchy>(
                   label: 'Bina',
                   value: buildings
                       .where((item) => item.id == selectedBuildingId)
@@ -121,9 +123,11 @@ class MapSelectionPanel extends StatelessWidget {
                   title: (item) => item.name,
                 ),
                 const SizedBox(height: 12),
-                _PickerField<FloorHierarchy>(
+                _SearchField<FloorHierarchy>(
                   label: 'Kat',
-                  value: floors.where((item) => item.id == selectedFloorId).firstOrNull,
+                  value: floors
+                      .where((item) => item.id == selectedFloorId)
+                      .firstOrNull,
                   items: floors,
                   onChanged: (item) => onFloorChanged(item?.id),
                   title: (item) => item.name,
@@ -137,8 +141,8 @@ class MapSelectionPanel extends StatelessWidget {
   }
 }
 
-class _PickerField<T> extends StatefulWidget {
-  const _PickerField({
+class _SearchField<T> extends StatelessWidget {
+  const _SearchField({
     required this.label,
     required this.value,
     required this.items,
@@ -153,66 +157,8 @@ class _PickerField<T> extends StatefulWidget {
   final String Function(T item) title;
 
   @override
-  State<_PickerField<T>> createState() => _PickerFieldState<T>();
-}
-
-class _PickerFieldState<T> extends State<_PickerField<T>> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-  String _query = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: _selectedText);
-    _focusNode = FocusNode()
-      ..addListener(() {
-        if (!_focusNode.hasFocus && mounted) {
-          setState(() {});
-        }
-      });
-  }
-
-  @override
-  void didUpdateWidget(covariant _PickerField<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.value != oldWidget.value || widget.items != oldWidget.items) {
-      final nextText = _selectedText;
-      if (_controller.text != nextText && _query.isEmpty) {
-        _controller.text = nextText;
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  String get _selectedText {
-    final value = widget.value;
-    return value == null ? '' : widget.title(value);
-  }
-
-  List<T> get _filteredItems {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) {
-      return const [];
-    }
-
-    return widget.items
-        .where((item) => widget.title(item).toLowerCase().contains(query))
-        .toList(growable: false);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final enabled = widget.items.isNotEmpty;
-    final filteredItems = _filteredItems;
-    final showResults = enabled && _focusNode.hasFocus && _query.trim().isNotEmpty;
+    final enabled = items.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +166,7 @@ class _PickerFieldState<T> extends State<_PickerField<T>> {
         Padding(
           padding: const EdgeInsets.only(left: 2, bottom: 8),
           child: Text(
-            widget.label,
+            label,
             style: const TextStyle(
               color: Color(0xFF64748B),
               fontSize: 12,
@@ -229,141 +175,302 @@ class _PickerFieldState<T> extends State<_PickerField<T>> {
             ),
           ),
         ),
-        TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          enabled: enabled,
-          onChanged: (value) {
-            setState(() => _query = value);
-          },
-          decoration: InputDecoration(
-            hintText: enabled ? '${widget.label} yazın' : '${widget.label} yok',
-            hintStyle: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontWeight: FontWeight.w600,
+        InkWell(
+          onTap: enabled
+              ? () async {
+                  final selected = await showModalBottomSheet<T?>(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => _SearchSheet<T>(
+                      label: label,
+                      items: items,
+                      value: value,
+                      title: title,
+                    ),
+                  );
+
+                  if (selected != null) {
+                    onChanged(selected);
+                  }
+                }
+              : null,
+          borderRadius: BorderRadius.circular(10),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+            decoration: BoxDecoration(
+              color:
+                  enabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color:
+                    enabled ? const Color(0x00000000) : const Color(0xFFE2E8F0),
+              ),
             ),
-            prefixIcon: const Icon(
-              Icons.search_rounded,
-              color: Color(0xFF64748B),
-            ),
-            suffixIcon: _controller.text.isEmpty
-                ? null
-                : IconButton(
-                    onPressed: () {
-                      _controller.clear();
-                      setState(() => _query = '');
-                      widget.onChanged(null);
-                    },
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: Color(0xFF94A3B8),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF64748B),
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    value == null ? '$label arayın' : title(value as T),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: value == null
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF0F172A),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-            filled: true,
-            fillColor: enabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFF6366F1), width: 1.2),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: enabled
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF94A3B8),
+                ),
+              ],
             ),
           ),
         ),
-        if (showResults) ...[
-          const SizedBox(height: 8),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+      ],
+    );
+  }
+}
+
+class _SearchSheet<T> extends StatefulWidget {
+  const _SearchSheet({
+    required this.label,
+    required this.items,
+    required this.value,
+    required this.title,
+  });
+
+  final String label;
+  final List<T> items;
+  final T? value;
+  final String Function(T item) title;
+
+  @override
+  State<_SearchSheet<T>> createState() => _SearchSheetState<T>();
+}
+
+class _SearchSheetState<T> extends State<_SearchSheet<T>> {
+  late final TextEditingController _controller;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _query.trim().toLowerCase();
+    final filteredItems = query.isEmpty
+        ? <T>[]
+        : widget.items
+            .where((item) => widget.title(item).toLowerCase().contains(query))
+            .toList(growable: false);
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, 12, 12, bottomInset + 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1A0F172A),
+              blurRadius: 28,
+              offset: Offset(0, 16),
             ),
-            child: filteredItems.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    child: Text(
-                      'Sonuç bulunamadı.',
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontWeight: FontWeight.w600,
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 5,
+                margin: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${widget.label} ara',
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                  )
-                : ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 220),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.all(8),
-                      itemCount: filteredItems.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 6),
-                      itemBuilder: (context, index) {
-                        final item = filteredItems[index];
-                        final selected = widget.value == item;
-
-                        return InkWell(
-                          onTap: () {
-                            _controller.text = widget.title(item);
-                            _query = '';
-                            widget.onChanged(item);
-                            _focusNode.unfocus();
-                            setState(() {});
-                          },
-                          borderRadius: BorderRadius.circular(10),
-                          child: Ink(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? const Color(0xFFEEF2FF)
-                                  : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: selected
-                                    ? const Color(0xFF6366F1)
-                                    : const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    widget.title(item),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: selected
-                                          ? const Color(0xFF4338CA)
-                                          : const Color(0xFF0F172A),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      onChanged: (value) => setState(() => _query = value),
+                      decoration: InputDecoration(
+                        hintText: '${widget.label} yazın',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF64748B),
+                        ),
+                        suffixIcon: _query.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  _controller.clear();
+                                  setState(() => _query = '');
+                                },
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: Color(0xFF94A3B8),
                                 ),
-                                if (selected)
-                                  const Icon(
-                                    Icons.check_rounded,
-                                    color: Color(0xFF6366F1),
-                                    size: 18,
-                                  ),
-                              ],
+                              ),
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF6366F1),
+                            width: 1.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 360),
+                  child: query.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 8, 16, 28),
+                          child: Text(
+                            'Aramaya başlayın.',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
+                        )
+                      : filteredItems.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.fromLTRB(16, 8, 16, 28),
+                              child: Text(
+                                'Sonuç bulunamadı.',
+                                style: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 6),
+                              itemBuilder: (context, index) {
+                                final item = filteredItems[index];
+                                final selected = widget.value == item;
+
+                                return InkWell(
+                                  onTap: () => Navigator.of(context).pop(item),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Ink(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? const Color(0xFFEEF2FF)
+                                          : const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: selected
+                                            ? const Color(0xFF6366F1)
+                                            : const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            widget.title(item),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: selected
+                                                  ? const Color(0xFF4338CA)
+                                                  : const Color(0xFF0F172A),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        if (selected)
+                                          const Icon(
+                                            Icons.check_rounded,
+                                            color: Color(0xFF6366F1),
+                                            size: 18,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ],
+        ),
+      ),
     );
   }
 }

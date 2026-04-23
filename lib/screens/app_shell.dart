@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../app/app_session_controller.dart';
@@ -48,44 +50,54 @@ class _AppShellState extends State<AppShell> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
-                  child: Container(
-                    height: 66,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFFFF),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x1A0F172A),
-                          blurRadius: 22,
-                          offset: Offset(0, 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                      child: Container(
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.76),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFFFFFFF).withValues(alpha: 0.72),
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x140F172A),
+                              blurRadius: 24,
+                              offset: Offset(0, 14),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        _NavItem(
-                          icon: Icons.home_outlined,
-                          activeIcon: Icons.home_rounded,
-                          label: 'Ana Sayfa',
-                          selected: _currentIndex == 0,
-                          onTap: () => setState(() => _currentIndex = 0),
+                        child: Row(
+                          children: [
+                            _NavItem(
+                              icon: Icons.home_outlined,
+                              activeIcon: Icons.home_rounded,
+                              label: 'Ana Sayfa',
+                              selected: _currentIndex == 0,
+                              onTap: () => setState(() => _currentIndex = 0),
+                            ),
+                            _NavItem(
+                              icon: Icons.map_outlined,
+                              activeIcon: Icons.map_rounded,
+                              label: 'Harita',
+                              selected: _currentIndex == 1,
+                              onTap: () => setState(() => _currentIndex = 1),
+                            ),
+                            _NavItem(
+                              icon: Icons.person_outline_rounded,
+                              activeIcon: Icons.person_rounded,
+                              label: 'Profil',
+                              selected: _currentIndex == 2,
+                              onTap: () => setState(() => _currentIndex = 2),
+                            ),
+                          ],
                         ),
-                        _NavItem(
-                          icon: Icons.map_outlined,
-                          activeIcon: Icons.map_rounded,
-                          label: 'Harita',
-                          selected: _currentIndex == 1,
-                          onTap: () => setState(() => _currentIndex = 1),
-                        ),
-                        _NavItem(
-                          icon: Icons.person_outline_rounded,
-                          activeIcon: Icons.person_rounded,
-                          label: 'Profil',
-                          selected: _currentIndex == 2,
-                          onTap: () => setState(() => _currentIndex = 2),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -131,13 +143,20 @@ class _NavItem extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
-          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF6366F1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            color: selected
+                ? const Color(0xFF6366F1).withValues(alpha: 0.96)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: selected
+                ? Border.all(
+                    color: const Color(0xFFFFFFFF).withValues(alpha: 0.42),
+                  )
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
