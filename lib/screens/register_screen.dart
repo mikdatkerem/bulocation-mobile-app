@@ -89,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const AuthLogo(),
                 const SizedBox(height: 0),
                 const Text(
-                  'Yeni hesap olustur',
+                  'Yeni hesap oluştur',
                   style: TextStyle(
                     color: authText,
                     fontFamily: 'Manrope',
@@ -100,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Gerekli bilgileri doldurarak platforma katilin.',
+                  'Gerekli bilgileri doldurarak platforma katılın.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: authMuted,
@@ -119,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: _Field(
+                              child: AuthField(
                                 label: 'AD',
                                 child: TextFormField(
                                   controller: _firstNameController,
@@ -129,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   style: const TextStyle(
                                       color: authText,
                                       fontWeight: FontWeight.w700),
-                                  decoration: authFieldDecoration('Adiniz'),
+                                  decoration: authFieldDecoration('Adınız'),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Ad gerekli.';
@@ -141,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _Field(
+                              child: AuthField(
                                 label: 'SOYAD',
                                 child: TextFormField(
                                   controller: _lastNameController,
@@ -151,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   style: const TextStyle(
                                       color: authText,
                                       fontWeight: FontWeight.w700),
-                                  decoration: authFieldDecoration('Soyadiniz'),
+                                  decoration: authFieldDecoration('Soyadınız'),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Soyad gerekli.';
@@ -164,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        _Field(
+                        AuthField(
                           label: 'KULLANICI ADI',
                           child: TextFormField(
                             controller: _userNameController,
@@ -174,12 +174,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: const TextStyle(
                                 color: authText, fontWeight: FontWeight.w700),
                             decoration: authFieldDecoration(
-                              'kullanici_adi',
+                              'kullanıcı_adı',
                               prefixIcon: Icons.alternate_email_rounded,
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Kullanici adi gerekli.';
+                                return 'Kullanıcı adı gerekli.';
                               }
                               if (value.trim().length < 3) {
                                 return 'En az 3 karakter olmali.';
@@ -189,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _Field(
+                        AuthField(
                           label: 'E-POSTA',
                           child: TextFormField(
                             controller: _emailController,
@@ -208,15 +208,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return 'E-posta adresi gerekli.';
                               }
                               if (!value.contains('@')) {
-                                return 'Gecerli e-posta gir.';
+                                return 'Geçerli e-posta gir.';
                               }
                               return null;
                             },
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _Field(
-                          label: 'SIFRE',
+                        AuthField(
+                          label: 'ŞİFRE',
                           child: TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
@@ -247,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: (value) {
                               final text = value ?? '';
                               if (text.isEmpty) {
-                                return 'Sifre gerekli.';
+                                return 'Şifre gerekli.';
                               }
                               if (text.length < 8) {
                                 return 'En az 8 karakter olmali.';
@@ -255,7 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               if (!RegExp(r'[A-Z]').hasMatch(text) ||
                                   !RegExp(r'[a-z]').hasMatch(text) ||
                                   !RegExp(r'[0-9]').hasMatch(text)) {
-                                return 'Buyuk harf, kucuk harf ve rakam icermeli.';
+                                return 'Büyük harf, küçük harf ve rakam içermeli.';
                               }
                               return null;
                             },
@@ -270,9 +270,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: LinearProgressIndicator(
                                   value: _passwordStrength,
                                   minHeight: 3,
-                                  backgroundColor: const Color(0xFF303234),
-                                  valueColor: const AlwaysStoppedAnimation(
-                                      Color(0xFFB19BFF)),
+                                  backgroundColor: authInputDark,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation(authPrimary),
                                 ),
                               ),
                             ),
@@ -288,8 +288,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        _Field(
-                          label: 'SIFRE TEKRAR',
+                        AuthField(
+                          label: 'ŞİFRE TEKRAR',
                           child: TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
@@ -320,10 +320,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Sifre tekrar gerekli.';
+                                return 'Şifre tekrar gerekli.';
                               }
                               if (value != _passwordController.text) {
-                                return 'Sifreler ayni degil.';
+                                return 'Şifreler aynı değil.';
                               }
                               return null;
                             },
@@ -335,7 +335,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                         const SizedBox(height: 24),
                         AuthPrimaryButton(
-                          label: 'Kaydi Tamamla',
+                          label: 'Kaydı Tamamla',
                           busy: widget.sessionController.isBusy,
                           onPressed: _submit,
                         ),
@@ -357,7 +357,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Zaten uye misin?',
+                      'Zaten üye misin?',
                       style: TextStyle(
                         color: authMuted,
                         fontSize: 12,
@@ -369,13 +369,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ? null
                           : () => Navigator.of(context).maybePop(),
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFFB7BDFF),
+                        foregroundColor: authPrimary,
                         padding: const EdgeInsets.only(left: 6),
                         minimumSize: const Size(0, 28),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: const Text(
-                        'Giris Yap',
+                        'Giriş Yap',
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w900),
                       ),
@@ -387,24 +387,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.child});
-
-  final String label;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AuthLabel(label),
-        child,
-      ],
     );
   }
 }

@@ -35,7 +35,7 @@ class _AppShellState extends State<AppShell> {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF060708),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: IndexedStack(
         index: _currentIndex,
         children: pages,
@@ -43,7 +43,7 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: _currentIndex == 1
           ? null
           : ColoredBox(
-              color: const Color(0xFF060708),
+              color: const Color(0xFFF8FAFC),
               child: SafeArea(
                 top: false,
                 child: Padding(
@@ -51,14 +51,14 @@ class _AppShellState extends State<AppShell> {
                   child: Container(
                     height: 66,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF060708),
+                      color: const Color(0xFFFFFFFF),
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: const Color(0x1AF5F3EF)),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x4D000000),
-                          blurRadius: 18,
-                          offset: Offset(0, 8),
+                          color: Color(0x1A0F172A),
+                          blurRadius: 22,
+                          offset: Offset(0, 10),
                         ),
                       ],
                     ),
@@ -126,7 +126,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? const Color(0xFFF5F3EF) : const Color(0xFF8F96A3);
+    final color = selected ? const Color(0xFFFFFFFF) : const Color(0xFF64748B);
 
     return Expanded(
       child: InkWell(
@@ -136,7 +136,7 @@ class _NavItem extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF1836B9) : Colors.transparent,
+            color: selected ? const Color(0xFF6366F1) : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -144,7 +144,7 @@ class _NavItem extends StatelessWidget {
             children: [
               Icon(
                 selected ? activeIcon : icon,
-                color: selected ? const Color(0xFFF5F3EF) : color,
+                color: color,
               ),
               const SizedBox(height: 4),
               Text(

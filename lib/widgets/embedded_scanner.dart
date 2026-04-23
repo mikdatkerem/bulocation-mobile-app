@@ -28,10 +28,11 @@ class EmbeddedScanner extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: color.withOpacity(0.25), width: 2.5),
+            border:
+                Border.all(color: color.withValues(alpha: 0.25), width: 2.5),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 blurRadius: 14,
                 spreadRadius: 2,
               ),
@@ -63,7 +64,9 @@ class EmbeddedScanner extends StatelessWidget {
                   ),
 
                 // Köşe çerçevesi
-                CustomPaint(painter: _CornerFrame(color: Colors.white70)),
+                const CustomPaint(
+                  painter: _CornerFrame(color: Colors.white70),
+                ),
 
                 // Alt yazı — kamera içinde
                 Positioned(

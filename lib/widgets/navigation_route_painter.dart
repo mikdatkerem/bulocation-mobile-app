@@ -26,7 +26,7 @@ class NavigationRoutePainter extends CustomPainter {
 
     // Gölge çizgisi
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15)
+      ..color = Colors.black.withValues(alpha: 0.15)
       ..strokeWidth = 5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -41,7 +41,7 @@ class NavigationRoutePainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     final glowPaint = Paint()
-      ..color = Colors.lightBlueAccent.withOpacity(0.4 * animation.value)
+      ..color = Colors.lightBlueAccent.withValues(alpha: 0.4 * animation.value)
       ..strokeWidth = 6
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

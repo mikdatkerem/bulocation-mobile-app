@@ -7,6 +7,10 @@ import '../models/graph_data.dart';
 import 'navigation_route_painter.dart';
 import 'pulse_marker.dart';
 
+part 'floor_plan/map_asset_surface.dart';
+part 'floor_plan/park_cell.dart';
+part 'floor_plan/zoom_button.dart';
+
 class FloorPlanWidget extends StatefulWidget {
   const FloorPlanWidget({
     super.key,
@@ -444,143 +448,5 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     }
 
     return '${AppConfig.baseHost}$assetPath';
-  }
-}
-
-class _ZoomButton extends StatelessWidget {
-  const _ZoomButton({
-    required this.icon,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Icon(icon, color: const Color(0xFF182033)),
-        ),
-      ),
-    );
-  }
-}
-
-class _MapAssetSurface extends StatelessWidget {
-  const _MapAssetSurface({required this.url, this.contentType});
-
-  final String url;
-  final String? contentType;
-
-  @override
-  Widget build(BuildContext context) {
-    final headers = ApiClient.buildHeaders(includeJsonContentType: false);
-    final resolvedContentType = contentType?.toLowerCase() ?? 'image/svg+xml';
-
-    if (resolvedContentType.contains('svg') ||
-        url.toLowerCase().endsWith('.svg')) {
-      return SvgPicture.network(
-        url,
-        fit: BoxFit.contain,
-        headers: headers,
-        placeholderBuilder: (_) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    return Image.network(
-      url,
-      fit: BoxFit.contain,
-      headers: headers,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) {
-          return child;
-        }
-
-        return const Center(child: CircularProgressIndicator());
-      },
-      errorBuilder: (_, __, ___) => const Center(
-        child:
-            Icon(Icons.image_not_supported_outlined, color: Color(0xFF7C869C)),
-      ),
-    );
-  }
-}
-
-class _ParkCell extends StatelessWidget {
-  const _ParkCell({
-    super.key,
-    required this.node,
-    required this.isOccupied,
-    required this.isTarget,
-  });
-
-  final MapNode node;
-  final bool? isOccupied;
-  final bool isTarget;
-
-  Color get _cellColor {
-    if (isTarget) {
-      return const Color(0xFF2155D6);
-    }
-    if (isOccupied == null) {
-      return const Color(0xFFB5BECE);
-    }
-    return isOccupied! ? const Color(0xFFE25757) : const Color(0xFF1C9B67);
-  }
-
-  String get _displayText {
-    final label = node.label.trim();
-    if (label.isEmpty) {
-      return node.id.trim();
-    }
-
-    if (label.length <= 6) {
-      return label.toUpperCase();
-    }
-
-    return label.substring(0, 6).toUpperCase();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cellColor = _cellColor;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 280),
-      width: 36,
-      height: 22,
-      decoration: BoxDecoration(
-        color: cellColor,
-        borderRadius: BorderRadius.circular(4),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.8), width: 0.7),
-        boxShadow: [
-          BoxShadow(
-            color: cellColor.withValues(alpha: 0.28),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        _displayText,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: _displayText.length > 4 ? 7 : 8,
-          fontWeight: FontWeight.w700,
-          height: 1,
-        ),
-      ),
-    );
   }
 }

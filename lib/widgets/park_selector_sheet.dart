@@ -163,7 +163,7 @@ class ParkSelectorSheet extends StatelessWidget {
                 },
               ),
             ),
-            SafeArea(top: false, child: const SizedBox.shrink()),
+            const SafeArea(top: false, child: SizedBox.shrink()),
           ],
         ),
       ),

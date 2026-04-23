@@ -57,7 +57,7 @@ class _PulseMarkerState extends State<PulseMarker>
                     height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.red.withOpacity(0.5),
+                      color: Colors.red.withValues(alpha: 0.5),
                     ),
                   ),
                 ),

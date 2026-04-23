@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../app/app_session_controller.dart';
 import 'verify_email_screen.dart';
 
+part 'profile/profile_header.dart';
+part 'profile/profile_menu_tile.dart';
+part 'profile/profile_stat.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.sessionController});
 
@@ -249,106 +253,8 @@ class ProfileScreen extends StatelessWidget {
   }
 
   static String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+')).where((part) => part.isNotEmpty);
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((part) => part.isNotEmpty);
     return parts.take(2).map((part) => part[0].toUpperCase()).join();
-  }
-}
-
-class _ProfileStat extends StatelessWidget {
-  const _ProfileStat({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFF2155D6)),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF20293A),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 11,
-              height: 1.35,
-              letterSpacing: 0.4,
-              color: Color(0xFF67728B),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileMenuTile extends StatelessWidget {
-  const _ProfileMenuTile({
-    required this.icon,
-    required this.title,
-    this.destructive = false,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final bool destructive;
-  final Future<void> Function()? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = destructive ? const Color(0xFFE04F4F) : const Color(0xFF2155D6);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ListTile(
-        onTap: () async => onTap?.call(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: destructive ? const Color(0xFFFFEFEF) : const Color(0xFFEAF0FF),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(icon, color: accent),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: destructive ? const Color(0xFFD73F3F) : const Color(0xFF1B2438),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        trailing: Icon(
-          Icons.chevron_right_rounded,
-          color: destructive ? const Color(0xFFE7A2A2) : const Color(0xFFA0AABE),
-        ),
-      ),
-    );
   }
 }

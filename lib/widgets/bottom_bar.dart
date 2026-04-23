@@ -8,8 +8,9 @@ class BottomBar extends StatelessWidget {
 
   Future<void> _openLinkedIn() async {
     final uri = Uri.parse(_linkedInUrl);
-    if (await canLaunchUrl(uri))
+    if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -22,7 +23,7 @@ class BottomBar extends StatelessWidget {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, -2))
         ],

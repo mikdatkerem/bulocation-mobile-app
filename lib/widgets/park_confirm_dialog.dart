@@ -30,12 +30,19 @@ class ParkConfirmDialog extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.55),
+              color: Colors.white.withValues(alpha: 0.96),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withOpacity(0.15),
+                color: const Color(0xFFE2E8F0),
                 width: 1,
               ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A0F172A),
+                  blurRadius: 22,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -44,11 +51,11 @@ class ParkConfirmDialog extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.local_parking_rounded,
-                      color: Colors.white, size: 20),
+                      color: Color(0xFF6366F1), size: 20),
                 ),
                 const SizedBox(width: 12),
 
@@ -60,13 +67,13 @@ class ParkConfirmDialog extends StatelessWidget {
                     children: [
                       const Text('Park edildi mi?',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF0F172A),
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           )),
                       Text('Alan ${park.id}',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
                             fontSize: 11,
                           )),
                     ],
@@ -82,10 +89,10 @@ class ParkConfirmDialog extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: Colors.white.withOpacity(0.2), width: 1),
+                      border:
+                          Border.all(color: const Color(0xFFE2E8F0), width: 1),
                     ),
                     child: Icon(Icons.close_rounded,
                         color: Colors.red.shade300, size: 20),
@@ -101,7 +108,7 @@ class ParkConfirmDialog extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: Colors.green.shade500.withOpacity(0.9),
+                      color: Colors.green.shade500.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.check_rounded,

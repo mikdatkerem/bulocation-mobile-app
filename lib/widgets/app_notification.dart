@@ -88,12 +88,12 @@ class _AppNotificationBarState extends State<AppNotificationBar>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.12),
+                color: Colors.black.withValues(alpha: 0.12),
                 blurRadius: 24,
                 offset: const Offset(0, 6),
               ),
               BoxShadow(
-                color: accent.withOpacity(0.08),
+                color: accent.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
@@ -120,7 +120,7 @@ class _AppNotificationBarState extends State<AppNotificationBar>
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: accent.withOpacity(0.1),
+                      color: accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(icon, color: accent, size: 20),

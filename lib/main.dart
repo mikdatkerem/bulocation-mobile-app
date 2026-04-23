@@ -51,40 +51,41 @@ class BuLocationApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFFF3F6FB),
+            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF2155D6),
-              secondary: Color(0xFF5B7DE8),
+              primary: Color(0xFF6366F1),
+              secondary: Color(0xFF22D3EE),
               surface: Color(0xFFFFFFFF),
-              onSurface: Color(0xFF182033),
-              outline: Color(0xFFD7DFEE),
+              onSurface: Color(0xFF0F172A),
+              outline: Color(0xFFCBD5E1),
             ),
             fontFamily: 'SF Pro Display',
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
-              foregroundColor: Color(0xFF182033),
+              foregroundColor: Color(0xFF0F172A),
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
               fillColor: Colors.white,
-              hintStyle: const TextStyle(color: Color(0xFFA4AFC3)),
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 18,
                 vertical: 18,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: Color(0xFFE4EAF5)),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: Color(0xFFE4EAF5)),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: Color(0xFF2155D6), width: 1.2),
+                borderSide:
+                    const BorderSide(color: Color(0xFF6366F1), width: 1.2),
               ),
             ),
           ),
