@@ -11,7 +11,7 @@ class _QuickLocationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _DarkTile(
+    return _SurfaceTile(
       icon: Icons.map_outlined,
       title: item.buildingName,
       subtitle: '${item.siteName} - ${item.floorName}',
@@ -32,7 +32,7 @@ class _SiteListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _DarkTile(
+    return _SurfaceTile(
       icon: Icons.location_city_rounded,
       title: item.siteName,
       subtitle:
@@ -43,8 +43,8 @@ class _SiteListTile extends StatelessWidget {
   }
 }
 
-class _DarkTile extends StatelessWidget {
-  const _DarkTile({
+class _SurfaceTile extends StatelessWidget {
+  const _SurfaceTile({
     required this.icon,
     required this.title,
     required this.subtitle,

@@ -125,7 +125,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 116),
                       children: [
                         const _Header(),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
                         Text(
                           _organizations.isEmpty
                               ? 'Kurum verisi yüklenince QR ile başlayabilirsiniz.'

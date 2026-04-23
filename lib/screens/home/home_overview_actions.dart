@@ -6,21 +6,17 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 66,
+      height: 96,
       child: Align(
-        alignment: Alignment.topLeft,
+        alignment: Alignment.centerLeft,
         child: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Transform.translate(
-            offset: const Offset(0, -4),
-            child: Transform.scale(
-              scale: 2.50,
+          padding: const EdgeInsets.only(left: 4, top: 4),
+          child: SizedBox(
+            height: 84,
+            child: Image.asset(
+              'assets/logo_removed_bg.png',
+              fit: BoxFit.contain,
               alignment: Alignment.centerLeft,
-              child: Image.asset(
-                'assets/logo_removed_bg.png',
-                height: 76,
-                fit: BoxFit.contain,
-              ),
             ),
           ),
         ),
@@ -114,12 +110,12 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            title.toUpperCase(),
+            title,
             style: const TextStyle(
               color: _muted,
               fontSize: 12,
               fontWeight: FontWeight.w900,
-              letterSpacing: 2.4,
+              letterSpacing: 1.8,
             ),
           ),
         ),

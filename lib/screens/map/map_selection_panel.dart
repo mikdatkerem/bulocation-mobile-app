@@ -34,6 +34,16 @@ class MapSelectionPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedOrganization = organizations
+        .where((item) => item.id == selectedOrganizationId)
+        .firstOrNull;
+    final selectedSite =
+        sites.where((item) => item.id == selectedSiteId).firstOrNull;
+    final selectedBuilding =
+        buildings.where((item) => item.id == selectedBuildingId).firstOrNull;
+    final selectedFloor =
+        floors.where((item) => item.id == selectedFloorId).firstOrNull;
+
     return Container(
       color: const Color(0xFFF8FAFC),
       child: Align(
@@ -84,7 +94,7 @@ class MapSelectionPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'QR okutursanız ilgili kat otomatik açılır. Elle seçmek için kurum, yerleşke, bina ve katı belirleyin.',
+                  'Önce kurum seçin. Sonrasında yerleşke, bina ve kat adımları sırayla açılır.',
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.5,
@@ -95,43 +105,41 @@ class MapSelectionPanel extends StatelessWidget {
                 const SizedBox(height: 22),
                 _SearchField<OrganizationSummary>(
                   label: 'Kurum',
-                  value: organizations
-                      .where((item) => item.id == selectedOrganizationId)
-                      .firstOrNull,
+                  value: selectedOrganization,
                   items: organizations,
-                  onChanged: (item) => onOrganizationChanged(item?.id),
                   title: (item) => item.name,
+                  onSelected: (item) => onOrganizationChanged(item.id),
                 ),
-                const SizedBox(height: 12),
-                _SearchField<SiteHierarchy>(
-                  label: 'Yerleşke',
-                  value: sites
-                      .where((item) => item.id == selectedSiteId)
-                      .firstOrNull,
-                  items: sites,
-                  onChanged: (item) => onSiteChanged(item?.id),
-                  title: (item) => item.name,
-                ),
-                const SizedBox(height: 12),
-                _SearchField<BuildingHierarchy>(
-                  label: 'Bina',
-                  value: buildings
-                      .where((item) => item.id == selectedBuildingId)
-                      .firstOrNull,
-                  items: buildings,
-                  onChanged: (item) => onBuildingChanged(item?.id),
-                  title: (item) => item.name,
-                ),
-                const SizedBox(height: 12),
-                _SearchField<FloorHierarchy>(
-                  label: 'Kat',
-                  value: floors
-                      .where((item) => item.id == selectedFloorId)
-                      .firstOrNull,
-                  items: floors,
-                  onChanged: (item) => onFloorChanged(item?.id),
-                  title: (item) => item.name,
-                ),
+                if (selectedOrganization != null) ...[
+                  const SizedBox(height: 14),
+                  _SearchField<SiteHierarchy>(
+                    label: 'Yerleşke',
+                    value: selectedSite,
+                    items: sites,
+                    title: (item) => item.name,
+                    onSelected: (item) => onSiteChanged(item.id),
+                  ),
+                ],
+                if (selectedSite != null) ...[
+                  const SizedBox(height: 14),
+                  _SearchField<BuildingHierarchy>(
+                    label: 'Bina',
+                    value: selectedBuilding,
+                    items: buildings,
+                    title: (item) => item.name,
+                    onSelected: (item) => onBuildingChanged(item.id),
+                  ),
+                ],
+                if (selectedBuilding != null) ...[
+                  const SizedBox(height: 14),
+                  _SearchField<FloorHierarchy>(
+                    label: 'Kat',
+                    value: selectedFloor,
+                    items: floors,
+                    title: (item) => item.name,
+                    onSelected: (item) => onFloorChanged(item.id),
+                  ),
+                ],
               ],
             ),
           ),
@@ -146,20 +154,18 @@ class _SearchField<T> extends StatelessWidget {
     required this.label,
     required this.value,
     required this.items,
-    required this.onChanged,
     required this.title,
+    required this.onSelected,
   });
 
   final String label;
   final T? value;
   final List<T> items;
-  final ValueChanged<T?> onChanged;
   final String Function(T item) title;
+  final ValueChanged<T> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    final enabled = items.isNotEmpty;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -176,35 +182,37 @@ class _SearchField<T> extends StatelessWidget {
           ),
         ),
         InkWell(
-          onTap: enabled
-              ? () async {
-                  final selected = await showModalBottomSheet<T?>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => _SearchSheet<T>(
-                      label: label,
-                      items: items,
-                      value: value,
-                      title: title,
+          onTap: items.isEmpty
+              ? null
+              : () async {
+                  final selected = await Navigator.of(context).push<T>(
+                    MaterialPageRoute<T>(
+                      fullscreenDialog: true,
+                      builder: (_) => _SearchPickerPage<T>(
+                        label: label,
+                        items: items,
+                        value: value,
+                        title: title,
+                      ),
                     ),
                   );
 
                   if (selected != null) {
-                    onChanged(selected);
+                    onSelected(selected);
                   }
-                }
-              : null,
+                },
           borderRadius: BorderRadius.circular(10),
           child: Ink(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
             decoration: BoxDecoration(
-              color:
-                  enabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
+              color: items.isEmpty
+                  ? const Color(0xFFF8FAFC)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color:
-                    enabled ? const Color(0x00000000) : const Color(0xFFE2E8F0),
+                color: items.isEmpty
+                    ? const Color(0xFFE2E8F0)
+                    : const Color(0x00000000),
               ),
             ),
             child: Row(
@@ -231,10 +239,10 @@ class _SearchField<T> extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: enabled
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF94A3B8),
+                  Icons.chevron_right_rounded,
+                  color: items.isEmpty
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF6366F1),
                 ),
               ],
             ),
@@ -245,8 +253,8 @@ class _SearchField<T> extends StatelessWidget {
   }
 }
 
-class _SearchSheet<T> extends StatefulWidget {
-  const _SearchSheet({
+class _SearchPickerPage<T> extends StatefulWidget {
+  const _SearchPickerPage({
     required this.label,
     required this.items,
     required this.value,
@@ -259,10 +267,10 @@ class _SearchSheet<T> extends StatefulWidget {
   final String Function(T item) title;
 
   @override
-  State<_SearchSheet<T>> createState() => _SearchSheetState<T>();
+  State<_SearchPickerPage<T>> createState() => _SearchPickerPageState<T>();
 }
 
-class _SearchSheetState<T> extends State<_SearchSheet<T>> {
+class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
   late final TextEditingController _controller;
   String _query = '';
 
@@ -280,197 +288,193 @@ class _SearchSheetState<T> extends State<_SearchSheet<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _query.trim().toLowerCase();
-    final filteredItems = query.isEmpty
-        ? <T>[]
-        : widget.items
-            .where((item) => widget.title(item).toLowerCase().contains(query))
-            .toList(growable: false);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final items = _rankedItems(
+      widget.items,
+      _query,
+      widget.title,
+    );
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, 12, 12, bottomInset + 12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1A0F172A),
-              blurRadius: 28,
-              offset: Offset(0, 16),
-            ),
-          ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF8FAFC),
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          '${widget.label} seçin',
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+          ),
         ),
-        child: SafeArea(
-          top: false,
+      ),
+      body: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 48,
-                height: 5,
-                margin: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${widget.label} ara',
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _controller,
-                      autofocus: true,
-                      onChanged: (value) => setState(() => _query = value),
-                      decoration: InputDecoration(
-                        hintText: '${widget.label} yazın',
-                        hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontWeight: FontWeight.w600,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          color: Color(0xFF64748B),
-                        ),
-                        suffixIcon: _query.isEmpty
-                            ? null
-                            : IconButton(
-                                onPressed: () {
-                                  _controller.clear();
-                                  setState(() => _query = '');
-                                },
-                                icon: const Icon(
-                                  Icons.close_rounded,
-                                  color: Color(0xFF94A3B8),
-                                ),
-                              ),
-                        filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF6366F1),
-                            width: 1.2,
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  hintText: '${widget.label} yazın',
+                  hintStyle: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF64748B),
+                  ),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          onPressed: () {
+                            _controller.clear();
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFF94A3B8),
                           ),
                         ),
-                      ),
+                  filled: true,
+                  fillColor: const Color(0xFFFFFFFF),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF6366F1),
+                      width: 1.2,
                     ),
-                  ],
+                  ),
                 ),
               ),
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 360),
-                  child: query.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.fromLTRB(16, 8, 16, 28),
-                          child: Text(
-                            'Aramaya başlayın.',
-                            style: TextStyle(
-                              color: Color(0xFF64748B),
-                              fontWeight: FontWeight.w600,
+              const SizedBox(height: 16),
+              Expanded(
+                child: _query.trim().isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Aramaya başlayın.',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : items.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Sonuç bulunamadı.',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        )
-                      : filteredItems.isEmpty
-                          ? const Padding(
-                              padding: EdgeInsets.fromLTRB(16, 8, 16, 28),
-                              child: Text(
-                                'Sonuç bulunamadı.',
-                                style: TextStyle(
-                                  color: Color(0xFF64748B),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              shrinkWrap: true,
-                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                              itemCount: filteredItems.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 6),
-                              itemBuilder: (context, index) {
-                                final item = filteredItems[index];
-                                final selected = widget.value == item;
+                          )
+                        : ListView.separated(
+                            itemCount: items.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              final selected = widget.value == item;
 
-                                return InkWell(
-                                  onTap: () => Navigator.of(context).pop(item),
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Ink(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
+                              return InkWell(
+                                onTap: () => Navigator.of(context).pop(item),
+                                borderRadius: BorderRadius.circular(14),
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? const Color(0xFFEEF2FF)
+                                        : const Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
                                       color: selected
-                                          ? const Color(0xFFEEF2FF)
-                                          : const Color(0xFFF8FAFC),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: selected
-                                            ? const Color(0xFF6366F1)
-                                            : const Color(0xFFE2E8F0),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            widget.title(item),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: selected
-                                                  ? const Color(0xFF4338CA)
-                                                  : const Color(0xFF0F172A),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ),
-                                        if (selected)
-                                          const Icon(
-                                            Icons.check_rounded,
-                                            color: Color(0xFF6366F1),
-                                            size: 18,
-                                          ),
-                                      ],
+                                          ? const Color(0xFF6366F1)
+                                          : const Color(0xFFE2E8F0),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          widget.title(item),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: selected
+                                                ? const Color(0xFF4338CA)
+                                                : const Color(0xFF0F172A),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      if (selected)
+                                        const Icon(
+                                          Icons.check_rounded,
+                                          color: Color(0xFF6366F1),
+                                          size: 18,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  List<T> _rankedItems(
+    List<T> items,
+    String query,
+    String Function(T item) title,
+  ) {
+    final normalized = query.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return const [];
+    }
+
+    final startsWith = <T>[];
+    final contains = <T>[];
+
+    for (final item in items) {
+      final value = title(item).toLowerCase();
+      if (value.startsWith(normalized)) {
+        startsWith.add(item);
+      } else if (value.contains(normalized)) {
+        contains.add(item);
+      }
+    }
+
+    int compare(T a, T b) =>
+        title(a).toLowerCase().compareTo(title(b).toLowerCase());
+
+    startsWith.sort(compare);
+    contains.sort(compare);
+
+    return [...startsWith, ...contains];
   }
 }
