@@ -117,7 +117,7 @@ class MapsScreenState extends MapsScreenStateBase
                 MapScreenBody(
                   hasMap: hasMap,
                   isBusy: _busy,
-                  buildingTitle: _building?.name ?? 'Bina secin',
+                  buildingTitle: _building?.name ?? 'Bina seçin',
                   mapBottomInset: mapBottomInset,
                   activeNodeId: activeNodeId,
                   displayNodes: _displayNodes,

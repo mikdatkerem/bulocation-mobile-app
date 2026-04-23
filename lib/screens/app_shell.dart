@@ -74,7 +74,7 @@ class _AppShellState extends State<AppShell> {
                         _NavItem(
                           icon: Icons.map_outlined,
                           activeIcon: Icons.map_rounded,
-                          label: 'Bul',
+                          label: 'Harita',
                           selected: _currentIndex == 1,
                           onTap: () => setState(() => _currentIndex = 1),
                         ),

@@ -84,21 +84,21 @@ class _NavigationActions extends StatelessWidget {
         if (_isParking)
           _ActionCard(
             icon: Icons.near_me_rounded,
-            title: 'Bana En\nYakin',
+            title: 'Bana En\nYakın',
             enabled: true,
             onTap: onNearestToUser,
           ),
         if (_isParking)
           _ActionCard(
             icon: Icons.local_hospital_outlined,
-            title: 'Hastane\nGirisi',
+            title: 'Hastane\nGirişi',
             enabled: true,
             onTap: onNearestToHospital,
           ),
         if (_isParking)
           _ActionCard(
             icon: Icons.directions_car_outlined,
-            title: 'Aracima\nGit',
+            title: 'Aracıma\nGit',
             enabled: hasParkedCar,
             onTap: onNavigateToCar,
           ),
@@ -111,7 +111,7 @@ class _NavigationActions extends StatelessWidget {
           ),
         _ActionCard(
           icon: Icons.logout_rounded,
-          title: 'Cikisa Git',
+          title: 'Çıkışa Git',
           enabled: true,
           onTap: onNavigateToExit,
         ),

@@ -228,7 +228,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                         if (widget.targetPark != null) ...[
                           const SizedBox(height: 12),
                           _GhostAction(
-                            label: 'Rotayi Temizle',
+                            label: 'Rotayı Temizle',
                             onTap: widget.onClearNav,
                           ),
                         ],

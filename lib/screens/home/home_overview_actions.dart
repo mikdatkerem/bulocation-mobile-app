@@ -8,15 +8,19 @@ class _Header extends StatelessWidget {
     return SizedBox(
       height: 66,
       child: Align(
-        alignment: Alignment.topCenter,
-        child: Transform.translate(
-          offset: const Offset(0, -4),
-          child: Transform.scale(
-            scale: 2.50,
-            child: Image.asset(
-              'assets/logo_removed_bg.png',
-              height: 76,
-              fit: BoxFit.contain,
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Transform.translate(
+            offset: const Offset(0, -4),
+            child: Transform.scale(
+              scale: 2.50,
+              alignment: Alignment.centerLeft,
+              child: Image.asset(
+                'assets/logo_removed_bg.png',
+                height: 76,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),

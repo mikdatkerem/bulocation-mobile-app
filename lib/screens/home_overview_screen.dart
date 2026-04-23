@@ -128,8 +128,8 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                         const SizedBox(height: 18),
                         Text(
                           _organizations.isEmpty
-                              ? 'Kurum verisi yuklenince QR veya kurum aramasi ile baslayabilirsiniz.'
-                              : 'QR okutun ya da kurum, bina veya kat secerek navigasyona baslayin.',
+                              ? 'Kurum verisi yüklenince QR ile başlayabilirsiniz.'
+                              : 'QR okutun ya da aşağıdaki yayınlanan haritalardan başlayın.',
                           style: const TextStyle(
                             color: _soft,
                             fontSize: 14,
@@ -139,21 +139,16 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                         ),
                         const SizedBox(height: 24),
                         _PrimaryAction(
-                          title: 'QR ile basla',
-                          subtitle: 'Bulundugunuz noktayi otomatik acin.',
+                          title: 'QR ile başla',
+                          subtitle: 'Bulunduğunuz noktayı otomatik açın.',
                           icon: Icons.qr_code_scanner_rounded,
                           onTap: () => _showQuickScanner(context),
-                        ),
-                        const SizedBox(height: 12),
-                        _SearchAction(
-                          label: 'Kurum, bina veya kat sec',
-                          onTap: () => widget.onOpenMaps(null),
                         ),
                         if (_quickLocations.isNotEmpty) ...[
                           const SizedBox(height: 32),
                           _SectionHeader(
-                            title: 'Hizli giris',
-                            actionLabel: 'Tumunu ac',
+                            title: 'Hızlı giriş',
+                            actionLabel: 'Tümünü aç',
                             onAction: () => widget.onOpenMaps(null),
                           ),
                           const SizedBox(height: 12),
@@ -183,9 +178,9 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                         const SizedBox(height: 12),
                         if (_siteItems.isEmpty)
                           const _EmptyBlock(
-                            title: 'Kurum bulunamadi',
+                            title: 'Kurum bulunamadı',
                             subtitle:
-                                'Yetkili oldugunuz kurumlar burada listelenecek.',
+                                'Yetkili olduğunuz kurumlar burada listelenecek.',
                           )
                         else
                           ..._siteItems.map(

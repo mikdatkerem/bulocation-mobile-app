@@ -193,7 +193,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       }
     } catch (error) {
       if (mounted) {
-        _showError('Park durumu yuklenemedi: $error');
+        _showError('Park durumu yüklenemedi: $error');
       }
     }
   }

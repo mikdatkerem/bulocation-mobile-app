@@ -163,7 +163,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
         .firstOrNull;
 
     if (site == null || building == null || floor == null) {
-      throw Exception('QR baglami icin kat bulunamadi.');
+      throw Exception('QR bağlamı için kat bulunamadı.');
     }
 
     if (_floor?.id != floor.id || _hierarchy?.id != hierarchy.id) {
@@ -218,7 +218,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       if (multiRoute == null || multiRoute.segments.isEmpty) {
-        _showError('Bu konumdan hedefe rota bulunamadi.');
+        _showError('Bu konumdan hedefe rota bulunamadı.');
         return;
       }
 
@@ -298,7 +298,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       final result =
           await _pathfinder.findBestExitRoute(fromReferenceId: _lastScan!);
       if (result == null || result.segments.isEmpty) {
-        _showError('Cikis rotasi bulunamadi.');
+        _showError('Çıkış rotası bulunamadı.');
         return;
       }
 
@@ -326,7 +326,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       );
 
       if (result == null || result.segments.isEmpty) {
-        _showError('Giris yakin uygun park alani bulunamadi.');
+        _showError('Giriş yakın uygun park alanı bulunamadı.');
         return;
       }
 
@@ -352,7 +352,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
-      _showError('Giris yakin park onerisi alinamadi: $error');
+      _showError('Giriş yakın park önerisi alınamadı: $error');
     }
   }
 

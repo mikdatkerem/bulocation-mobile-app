@@ -36,8 +36,8 @@ class _SiteListTile extends StatelessWidget {
       icon: Icons.location_city_rounded,
       title: item.siteName,
       subtitle:
-          '${item.organizationName} - ${item.buildingCount} bina - ${item.readyFloorCount} hazir kat',
-      meta: 'Kurum sec',
+          '${item.organizationName} - ${item.buildingCount} bina - ${item.readyFloorCount} hazır kat',
+      meta: 'Kurum seç',
       onTap: onTap,
     );
   }
