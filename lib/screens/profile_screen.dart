@@ -16,203 +16,51 @@ class ProfileScreen extends StatelessWidget {
     final fullName = profile?.fullName.trim().isNotEmpty == true
         ? profile!.fullName
         : profile?.userName ?? 'Kullanıcı';
-    final initials = _initials(fullName);
     final roleLabels = profile?.roles.isNotEmpty == true
-        ? profile!.roles
+        ? profile!.roles.map(_normalizeRole).toList(growable: false)
         : const <String>['Kullanıcı'];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
           children: [
-            Row(
-              children: [
-                const Text(
-                  'Profil',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFFFF),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: const Icon(
-                    Icons.verified_user_outlined,
-                    color: Color(0xFF6366F1),
-                  ),
-                ),
-              ],
+            const Text(
+              'Profil',
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF0F172A),
+              ),
             ),
-            const SizedBox(height: 22),
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x120F172A),
-                    blurRadius: 24,
-                    offset: Offset(0, 14),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          color: const Color(0xFFEEF2FF),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          initials,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF4338CA),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              fullName,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              profile?.email ?? '-',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final role in roleLabels)
-                        _RoleChip(label: _normalizeRole(role)),
-                      _StatusChip(
-                        label: profile?.emailVerified == true
-                            ? 'E-posta doğrulandı'
-                            : 'E-posta doğrulanmadı',
-                        positive: profile?.emailVerified == true,
-                      ),
-                      _StatusChip(
-                        label: profile?.isActive == false
-                            ? 'Pasif hesap'
-                            : 'Aktif hesap',
-                        positive: profile?.isActive != false,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            const SizedBox(height: 18),
+            _ProfileHeroCard(
+              initials: _initials(fullName),
+              fullName: fullName,
+              email: profile?.email ?? '-',
+              primaryRole: roleLabels.first,
+              emailVerified: profile?.emailVerified == true,
+              isActive: profile?.isActive != false,
             ),
             if (profile != null && !profile.emailVerified) ...[
-              const SizedBox(height: 18),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.mark_email_unread_outlined,
-                      color: Color(0xFFA16207),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'E-posta doğrulaması bekleniyor',
-                            style: TextStyle(
-                              color: Color(0xFF713F12),
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Şifre sıfırlama ve güvenlik akışları için hesabınızı doğrulayın.',
-                            style: TextStyle(
-                              color: Color(0xFF92400E),
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
+              const SizedBox(height: 16),
+              _VerificationCard(
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => VerifyEmailScreen(
+                        sessionController: sessionController,
+                        email: profile.email,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => VerifyEmailScreen(
-                              sessionController: sessionController,
-                              email: profile.email,
-                            ),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFFA16207),
-                      ),
-                      child: const Text(
-                        'Doğrula',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
             const SizedBox(height: 18),
-            const Text(
-              'Hesap',
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.8,
-              ),
-            ),
+            const _SectionLabel('Hesap'),
             const SizedBox(height: 10),
             _ProfileMenuTile(
               icon: Icons.badge_outlined,
@@ -227,18 +75,16 @@ class ProfileScreen extends StatelessWidget {
             _ProfileMenuTile(
               icon: Icons.admin_panel_settings_outlined,
               title: 'Rol bilgisi',
-              subtitle: roleLabels.map(_normalizeRole).join(', '),
+              subtitle: roleLabels.join(', '),
+            ),
+            _ProfileMenuTile(
+              icon: Icons.verified_user_outlined,
+              title: 'Hesap durumu',
+              subtitle:
+                  profile?.isActive == false ? 'Pasif hesap' : 'Aktif hesap',
             ),
             const SizedBox(height: 18),
-            const Text(
-              'İşlemler',
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.8,
-              ),
-            ),
+            const _SectionLabel('İşlemler'),
             const SizedBox(height: 10),
             if (profile != null && !profile.emailVerified)
               _ProfileMenuTile(
@@ -287,47 +133,217 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({required this.label});
+class _ProfileHeroCard extends StatelessWidget {
+  const _ProfileHeroCard({
+    required this.initials,
+    required this.fullName,
+    required this.email,
+    required this.primaryRole,
+    required this.emailVerified,
+    required this.isActive,
+  });
 
-  final String label;
+  final String initials;
+  final String fullName;
+  final String email;
+  final String primaryRole;
+  final bool emailVerified;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF2FF),
-        borderRadius: BorderRadius.circular(999),
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x120F172A),
+            blurRadius: 24,
+            offset: Offset(0, 14),
+          ),
+        ],
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF4338CA),
-          fontWeight: FontWeight.w800,
-          fontSize: 12,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: const Color(0xFFEEF2FF),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF4338CA),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fullName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      email,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _InfoChip(
+                label: primaryRole,
+                background: const Color(0xFFEEF2FF),
+                foreground: const Color(0xFF4338CA),
+              ),
+              _InfoChip(
+                label: emailVerified
+                    ? 'E-posta doğrulandı'
+                    : 'E-posta doğrulanmadı',
+                background: emailVerified
+                    ? const Color(0xFFECFDF5)
+                    : const Color(0xFFFEF2F2),
+                foreground: emailVerified
+                    ? const Color(0xFF15803D)
+                    : const Color(0xFFB91C1C),
+              ),
+              _InfoChip(
+                label: isActive ? 'Aktif hesap' : 'Pasif hesap',
+                background: isActive
+                    ? const Color(0xFFE0F2FE)
+                    : const Color(0xFFF8FAFC),
+                foreground: isActive
+                    ? const Color(0xFF0369A1)
+                    : const Color(0xFF64748B),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.label,
-    required this.positive,
-  });
+class _VerificationCard extends StatelessWidget {
+  const _VerificationCard({required this.onTap});
 
-  final String label;
-  final bool positive;
+  final Future<void> Function() onTap;
 
   @override
   Widget build(BuildContext context) {
-    final background =
-        positive ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2);
-    final foreground =
-        positive ? const Color(0xFF15803D) : const Color(0xFFB91C1C);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.mark_email_unread_outlined,
+            color: Color(0xFFA16207),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'E-posta doğrulaması bekleniyor',
+                  style: TextStyle(
+                    color: Color(0xFF713F12),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Şifre sıfırlama ve güvenlik işlemleri için hesabınızı doğrulayın.',
+                  style: TextStyle(
+                    color: Color(0xFF92400E),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () async => onTap(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFA16207),
+            ),
+            child: const Text(
+              'Doğrula',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFF64748B),
+        fontSize: 12,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 1.8,
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
