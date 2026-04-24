@@ -6,13 +6,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 96,
+      height: 112,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Padding(
           padding: const EdgeInsets.only(left: 4, top: 4),
           child: SizedBox(
-            height: 84,
+            height: 98,
             child: Image.asset(
               'assets/logo_removed_bg.png',
               fit: BoxFit.contain,
