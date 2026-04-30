@@ -1,4 +1,14 @@
-enum NodeType { qr, park, entrance, exit, other }
+enum NodeType {
+  qr,
+  park,
+  entrance,
+  exit,
+  elevator,
+  stair,
+  parkingEntrance,
+  parkingExit,
+  other,
+}
 
 class MapNode {
   const MapNode({
@@ -47,7 +57,11 @@ class MapNode {
       2 => NodeType.qr,
       3 => NodeType.entrance,
       4 => NodeType.exit,
+      5 => NodeType.elevator,
+      6 => NodeType.stair,
       8 => NodeType.park,
+      9 => NodeType.parkingEntrance,
+      10 => NodeType.parkingExit,
       _ => NodeType.other,
     };
 
@@ -66,6 +80,13 @@ class MapNode {
 
   bool get isPark => type == NodeType.park;
   bool get isQr => type == NodeType.qr;
+  bool get isConnector =>
+      type == NodeType.entrance ||
+      type == NodeType.exit ||
+      type == NodeType.elevator ||
+      type == NodeType.stair ||
+      type == NodeType.parkingEntrance ||
+      type == NodeType.parkingExit;
 
   double resolveX(double mapWidth) => x;
   double resolveY(double mapHeight) => y;

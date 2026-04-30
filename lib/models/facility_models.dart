@@ -234,6 +234,68 @@ class PublishedMapData {
   }
 }
 
+class FacilityDestinationSearchResult {
+  const FacilityDestinationSearchResult({
+    required this.mapVersionId,
+    required this.floorId,
+    required this.floorName,
+    required this.buildingId,
+    required this.buildingName,
+    required this.siteId,
+    required this.siteName,
+    required this.nodeId,
+    required this.nodeCode,
+    required this.nodeLabel,
+    required this.nodeType,
+    required this.pixelX,
+    required this.pixelY,
+    required this.normalizedX,
+    required this.normalizedY,
+    required this.externalReferenceId,
+    required this.isAccessible,
+  });
+
+  final String mapVersionId;
+  final String floorId;
+  final String floorName;
+  final String buildingId;
+  final String buildingName;
+  final String siteId;
+  final String siteName;
+  final String nodeId;
+  final String nodeCode;
+  final String nodeLabel;
+  final int nodeType;
+  final double pixelX;
+  final double pixelY;
+  final double normalizedX;
+  final double normalizedY;
+  final String? externalReferenceId;
+  final bool isAccessible;
+
+  factory FacilityDestinationSearchResult.fromJson(Map<String, dynamic> json) {
+    return FacilityDestinationSearchResult(
+      mapVersionId: json['mapVersionId'] as String,
+      floorId: json['floorId'] as String,
+      floorName: json['floorName'] as String,
+      buildingId: json['buildingId'] as String,
+      buildingName: json['buildingName'] as String,
+      siteId: json['siteId'] as String,
+      siteName: json['siteName'] as String,
+      nodeId: json['nodeId'] as String,
+      nodeCode: json['nodeCode'] as String,
+      nodeLabel: json['nodeLabel'] as String,
+      nodeType: json['nodeType'] as int,
+      pixelX: (json['pixelX'] as num).toDouble(),
+      pixelY: (json['pixelY'] as num).toDouble(),
+      normalizedX: (json['normalizedX'] as num).toDouble(),
+      normalizedY: (json['normalizedY'] as num).toDouble(),
+      externalReferenceId: json['externalReferenceId'] as String?,
+      isAccessible: json['isAccessible'] as bool? ?? true,
+    );
+  }
+}
+
 class QrScanContext {
   const QrScanContext({
     required this.referenceId,

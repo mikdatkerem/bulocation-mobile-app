@@ -53,6 +53,34 @@ class FacilityService {
     }
   }
 
+  Future<List<FacilityDestinationSearchResult>> searchBuildingDestinations(
+    String buildingId, {
+    String? query,
+    int limit = 50,
+  }) async {
+    try {
+      final qp = <String, dynamic>{
+        'limit': limit,
+        if (query != null && query.trim().isNotEmpty) 'query': query.trim(),
+      };
+      final response = await _dio.get<List<dynamic>>(
+        '/client/facilities/buildings/$buildingId/destinations/search',
+        queryParameters: qp,
+      );
+      return response.data!
+          .map(
+            (item) => FacilityDestinationSearchResult.fromJson(
+              item as Map<String, dynamic>,
+            ),
+          )
+          .toList();
+    } on DioException catch (error) {
+      throw ApiException(
+        _extractMessage(error, 'Bina hedef listesi yuklenemedi.'),
+      );
+    }
+  }
+
   String _extractMessage(DioException error, String fallback) {
     final body = error.response?.data;
     final detail = body is Map<String, dynamic> ? body['detail']?.toString() : null;

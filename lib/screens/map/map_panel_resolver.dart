@@ -73,9 +73,13 @@ int _nodeSortScore(MapNode node) {
   return switch (node.type) {
     NodeType.entrance => 0,
     NodeType.exit => 1,
-    NodeType.other => 2,
-    NodeType.park => 3,
-    NodeType.qr => 4,
+    NodeType.elevator => 2,
+    NodeType.stair => 2,
+    NodeType.parkingEntrance => 2,
+    NodeType.parkingExit => 2,
+    NodeType.other => 3,
+    NodeType.park => 4,
+    NodeType.qr => 5,
   };
 }
 
