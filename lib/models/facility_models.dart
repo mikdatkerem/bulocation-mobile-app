@@ -294,6 +294,19 @@ class FacilityDestinationSearchResult {
       isAccessible: json['isAccessible'] as bool? ?? true,
     );
   }
+
+  MapNode toMapNode() {
+    return MapNode.fromDestination(
+      id: nodeCode,
+      label: floorName == nodeLabel ? nodeLabel : '$nodeLabel · $floorName',
+      nodeType: nodeType,
+      pixelX: pixelX,
+      pixelY: pixelY,
+      normalizedX: normalizedX,
+      normalizedY: normalizedY,
+      externalReferenceId: externalReferenceId,
+    );
+  }
 }
 
 class QrScanContext {

@@ -53,6 +53,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _targetPark = null;
       _displayNodes = const [];
       _mapNodes = const [];
+      _buildingDestinations = const [];
       _displayMapAssetPath = null;
       _displayMapAssetContentType = null;
       _displayMapWidth = null;
@@ -102,6 +103,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _targetPark = null;
       _displayNodes = const [];
       _mapNodes = const [];
+      _buildingDestinations = const [];
       _displayMapAssetPath = null;
       _displayMapAssetContentType = null;
       _displayMapWidth = null;
@@ -130,6 +132,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _targetPark = null;
       _displayNodes = const [];
       _mapNodes = const [];
+      _buildingDestinations = const [];
       _displayMapAssetPath = null;
       _displayMapAssetContentType = null;
       _displayMapWidth = null;
@@ -171,6 +174,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _targetPark = null;
       _displayNodes = const [];
       _mapNodes = const [];
+      _buildingDestinations = const [];
       _displayMapAssetPath = null;
       _displayMapAssetContentType = null;
       _displayMapWidth = null;
@@ -214,6 +218,26 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     return publishedMap;
   }
 
+  Future<List<MapNode>> _loadBuildingDestinations(String buildingId) async {
+    late final List<FacilityDestinationSearchResult> results;
+    try {
+      results = await _facilityService.searchBuildingDestinations(
+        buildingId,
+        limit: 100,
+      );
+    } catch (_) {
+      return const [];
+    }
+
+    final nodes = results
+        .where((item) => item.externalReferenceId != null)
+        .map((item) => item.toMapNode())
+        .toList()
+      ..sort((left, right) => left.label.compareTo(right.label));
+
+    return nodes;
+  }
+
   @override
   Future<void> _applySelection({
     required OrganizationHierarchy hierarchy,
@@ -227,6 +251,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     final publishedMap = await _getPublishedMap(floor.id);
+    final buildingDestinations = await _loadBuildingDestinations(building.id);
 
     if (!mounted) {
       return;
@@ -241,6 +266,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _map = publishedMap;
       _displayNodes = publishedMap.nodes;
       _mapNodes = publishedMap.nodes;
+      _buildingDestinations = buildingDestinations;
       _displayMapAssetPath = publishedMap.assetPath;
       _displayMapAssetContentType = publishedMap.assetContentType;
       _displayMapWidth = publishedMap.width;

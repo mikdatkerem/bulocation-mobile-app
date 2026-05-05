@@ -119,6 +119,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
         _targetPark = null;
         _displayNodes = const [];
         _mapNodes = const [];
+        _buildingDestinations = const [];
         _displayMapAssetPath = null;
         _displayMapAssetContentType = null;
         _displayMapWidth = null;
@@ -229,7 +230,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
-      _showError('Rota hesaplanamadi: $error');
+      _showError('Rota hesaplanamadı: $error');
     }
   }
 
@@ -417,8 +418,22 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
   MapPanelMode get _mapPanelMode =>
       resolveMapPanelMode(site: _site, building: _building, floor: _floor);
 
-  List<MapNode> get _destinationNodes =>
-      resolveDestinationNodes(mapNodes: _mapNodes, mode: _mapPanelMode);
+  List<MapNode> get _destinationNodes {
+    final nodes = _buildingDestinations.isNotEmpty
+        ? _buildingDestinations
+        : resolveDestinationNodes(mapNodes: _mapNodes, mode: _mapPanelMode);
+    final activeReference = _lastScan?.toUpperCase();
+
+    if (activeReference == null) {
+      return nodes;
+    }
+
+    return nodes
+        .where((node) =>
+            (node.externalReferenceId ?? node.id).toUpperCase() !=
+            activeReference)
+        .toList();
+  }
 
   void _selectParkTarget(MapNode park) {
     _sheetController.animateTo(

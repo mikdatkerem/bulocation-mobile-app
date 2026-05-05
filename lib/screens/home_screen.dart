@@ -44,6 +44,7 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
   PublishedMapData? _map;
   List<MapNode> _displayNodes = const [];
   List<MapNode> _mapNodes = const [];
+  List<MapNode> _buildingDestinations = const [];
   String? _displayMapAssetPath;
   String? _displayMapAssetContentType;
   int? _displayMapWidth;

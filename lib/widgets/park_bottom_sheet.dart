@@ -83,9 +83,10 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
 
   String get _destinationTitle {
     return switch (widget.mode) {
-      MapPanelMode.parking => 'Park Alanlari',
-      MapPanelMode.hospital => 'Bolumler',
-      MapPanelMode.mall => 'Magazalar',
+      MapPanelMode.parking =>
+        widget.destinations.isNotEmpty ? 'Hedefler' : 'Park Alanları',
+      MapPanelMode.hospital => 'Bölümler',
+      MapPanelMode.mall => 'Mağazalar',
       MapPanelMode.other => 'Noktalar',
     };
   }
@@ -111,7 +112,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
-    final targets = _isParking ? widget.parks : widget.destinations;
+    final targets = _targetsForPanel();
 
     if (!_isParking && _showDestinations && targets.isEmpty) {
       _showDestinations = false;
@@ -242,5 +243,28 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
         );
       },
     );
+  }
+
+  List<MapNode> _targetsForPanel() {
+    if (!_isParking) {
+      return widget.destinations;
+    }
+
+    if (widget.destinations.isEmpty) {
+      return widget.parks;
+    }
+
+    final nodesByKey = <String, MapNode>{};
+    for (final park in widget.parks) {
+      nodesByKey[(park.externalReferenceId ?? park.id).toUpperCase()] = park;
+    }
+    for (final destination in widget.destinations) {
+      nodesByKey[(destination.externalReferenceId ?? destination.id)
+          .toUpperCase()] = destination;
+    }
+
+    final nodes = nodesByKey.values.toList()
+      ..sort((left, right) => left.label.compareTo(right.label));
+    return nodes;
   }
 }

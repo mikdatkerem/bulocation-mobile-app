@@ -33,6 +33,7 @@ class _TargetGrid extends StatelessWidget {
             (target.externalReferenceId ?? target.id).toUpperCase();
         final isOccupied = occupancyMap[targetKey];
         final isTarget = targetPark?.id == target.id;
+        final isParkTarget = isParking && target.isPark;
 
         return InkWell(
           onTap: () => onSelected(target),
@@ -66,7 +67,7 @@ class _TargetGrid extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                if (isParking)
+                if (isParkTarget)
                   Container(
                     width: 8,
                     height: 8,
@@ -103,15 +104,15 @@ class _TargetGrid extends StatelessWidget {
 
   IconData _iconForNode(MapNode node) {
     return switch (node.type) {
-    NodeType.entrance => Icons.login_rounded,
-    NodeType.exit => Icons.logout_rounded,
-    NodeType.elevator => Icons.elevator_rounded,
-    NodeType.stair => Icons.stairs_rounded,
-    NodeType.parkingEntrance => Icons.local_parking_rounded,
-    NodeType.parkingExit => Icons.exit_to_app_rounded,
-    NodeType.park => Icons.local_parking_rounded,
-    NodeType.qr => Icons.qr_code_2_rounded,
-    NodeType.other => Icons.place_rounded,
-  };
+      NodeType.entrance => Icons.login_rounded,
+      NodeType.exit => Icons.logout_rounded,
+      NodeType.elevator => Icons.elevator_rounded,
+      NodeType.stair => Icons.stairs_rounded,
+      NodeType.parkingEntrance => Icons.local_parking_rounded,
+      NodeType.parkingExit => Icons.exit_to_app_rounded,
+      NodeType.park => Icons.local_parking_rounded,
+      NodeType.qr => Icons.qr_code_2_rounded,
+      NodeType.other => Icons.place_rounded,
+    };
   }
 }
