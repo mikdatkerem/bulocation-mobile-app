@@ -33,12 +33,12 @@ class PathfindingService {
         return null;
       }
       if (error.response?.statusCode == 401) {
-        throw const ApiException('Kimlik dogrulama hatasi');
+        throw const ApiException('Kimlik doğrulama hatası');
       }
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data['detail']?.toString())
           : null;
-      throw ApiException(detail ?? error.message ?? 'Rota hesaplanamadi');
+      throw ApiException(detail ?? error.message ?? 'Rota hesaplanamadı');
     }
   }
 
@@ -62,12 +62,14 @@ class PathfindingService {
         return null;
       }
       if (error.response?.statusCode == 401) {
-        throw const ApiException('Kimlik dogrulama hatasi');
+        throw const ApiException('Kimlik doğrulama hatası');
       }
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data['detail']?.toString())
           : null;
-      throw ApiException(detail ?? error.message ?? 'Cok katli rota hesaplanamadi');
+      throw ApiException(
+        detail ?? error.message ?? 'Çok katlı rota hesaplanamadı',
+      );
     }
   }
 
@@ -91,7 +93,7 @@ class PathfindingService {
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data['detail']?.toString())
           : null;
-      throw ApiException(detail ?? error.message ?? 'Cikis rotasi hesaplanamadi');
+      throw ApiException(detail ?? error.message ?? 'Çıkış rotası hesaplanamadı');
     }
   }
 
@@ -115,7 +117,9 @@ class PathfindingService {
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data['detail']?.toString())
           : null;
-      throw ApiException(detail ?? error.message ?? 'Giris yakin park onerisi alinamadi');
+      throw ApiException(
+        detail ?? error.message ?? 'Girişe yakın park önerisi alınamadı',
+      );
     }
   }
 

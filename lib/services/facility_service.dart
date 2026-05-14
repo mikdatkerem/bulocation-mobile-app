@@ -16,7 +16,7 @@ class FacilityService {
           .map((item) => OrganizationSummary.fromJson(item as Map<String, dynamic>))
           .toList();
     } on DioException catch (error) {
-      throw ApiException(_extractMessage(error, 'Organizasyonlar yuklenemedi.'));
+      throw ApiException(_extractMessage(error, 'Organizasyonlar yüklenemedi.'));
     }
   }
 
@@ -27,7 +27,7 @@ class FacilityService {
       );
       return OrganizationHierarchy.fromJson(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_extractMessage(error, 'Organizasyon detayi yuklenemedi.'));
+      throw ApiException(_extractMessage(error, 'Organizasyon detayı yüklenemedi.'));
     }
   }
 
@@ -38,7 +38,7 @@ class FacilityService {
       );
       return PublishedMapData.fromJson(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_extractMessage(error, 'Yayinlanmis harita yuklenemedi.'));
+      throw ApiException(_extractMessage(error, 'Yayınlanmış harita yüklenemedi.'));
     }
   }
 
@@ -49,7 +49,7 @@ class FacilityService {
       );
       return QrScanContext.fromJson(response.data!);
     } on DioException catch (error) {
-      throw ApiException(_extractMessage(error, 'QR baglami cozulemedi.'));
+      throw ApiException(_extractMessage(error, 'QR bağlamı çözülemedi.'));
     }
   }
 
@@ -76,7 +76,7 @@ class FacilityService {
           .toList();
     } on DioException catch (error) {
       throw ApiException(
-        _extractMessage(error, 'Bina hedef listesi yuklenemedi.'),
+        _extractMessage(error, 'Bina hedef listesi yüklenemedi.'),
       );
     }
   }
