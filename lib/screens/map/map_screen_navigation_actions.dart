@@ -26,11 +26,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
   Future<void> openByQrReference(String referenceId) async {
     final normalizedReferenceId = _normalizeQrReference(referenceId);
-    if (normalizedReferenceId.isEmpty) {
-      return;
-    }
-
-    if (_busy) {
+    if (normalizedReferenceId.isEmpty || _busy) {
       return;
     }
 
@@ -196,16 +192,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       if (result != null) {
-        setState(() {
-          _multiRoute = null;
-          _activeRouteSegmentIndex = 0;
-          _route = result.nodes;
-          _displayNodes = _mapNodes;
-          _displayMapAssetPath = _map?.assetPath;
-          _displayMapAssetContentType = _map?.assetContentType;
-          _displayMapWidth = _map?.width;
-          _displayMapHeight = _map?.height;
-        });
+        _applySingleFloorRoute(result);
         return;
       }
 
@@ -232,6 +219,19 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     } catch (error) {
       _showError('Rota hesaplanamadı: $error');
     }
+  }
+
+  void _applySingleFloorRoute(RouteResult result) {
+    setState(() {
+      _multiRoute = null;
+      _activeRouteSegmentIndex = 0;
+      _route = result.nodes;
+      _displayNodes = _mapNodes;
+      _displayMapAssetPath = _map?.assetPath;
+      _displayMapAssetContentType = _map?.assetContentType;
+      _displayMapWidth = _map?.width;
+      _displayMapHeight = _map?.height;
+    });
   }
 
   Future<void> _showRouteSegment(int index) async {
@@ -291,7 +291,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
   Future<void> _navigateToBestExit() async {
     if (_lastScan == null) {
-      _showError('Once bir QR kodu okutun.');
+      _showError('Önce bir QR kodu okutun.');
       return;
     }
 
@@ -311,13 +311,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
-      _showError('Cikis rotasi hesaplanamadi: $error');
+      _showError('Çıkış rotası hesaplanamadı: $error');
     }
   }
 
   Future<void> _selectParkingNearEntrance() async {
     if (_lastScan == null) {
-      _showError('Once bir QR kodu okutun.');
+      _showError('Önce bir QR kodu okutun.');
       return;
     }
 
@@ -327,7 +327,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       );
 
       if (result == null || result.segments.isEmpty) {
-        _showError('Giriş yakın uygun park alanı bulunamadı.');
+        _showError('Girişe yakın uygun park alanı bulunamadı.');
         return;
       }
 
@@ -353,7 +353,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
-      _showError('Giriş yakın park önerisi alınamadı: $error');
+      _showError('Girişe yakın park önerisi alınamadı: $error');
     }
   }
 
@@ -455,6 +455,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     if (_parkedAt == null || _lastScan == null) {
       return;
     }
+
     setState(() => _targetPark = _parkedAt);
     unawaited(_updateRoute(_lastScan!));
   }
@@ -472,6 +473,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     if (_lastScan == null) {
       return;
     }
+
     final park = _pathfinder.nearestEmptyParkToUser(
       _lastScan!,
       _occupancy,
@@ -480,6 +482,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     if (park == null) {
       return;
     }
+
     setState(() {
       _targetPark = park;
       _multiRoute = null;

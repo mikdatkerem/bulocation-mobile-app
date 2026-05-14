@@ -327,6 +327,88 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     return true;
   }
 
+  Widget _buildViewportControls() {
+    return Positioned(
+      right: 16,
+      bottom: 92,
+      child: Column(
+        children: [
+          _ZoomButton(
+            icon: Icons.add_rounded,
+            onTap: () => _zoom(1.2),
+          ),
+          const SizedBox(height: 10),
+          _ZoomButton(
+            icon: Icons.remove_rounded,
+            onTap: () => _zoom(0.84),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapLayerStack({
+    required List<MapNode> sourceNodes,
+    required MapNode? activeNode,
+  }) {
+    final parkNodes = sourceNodes.where((node) => node.isPark).toList();
+
+    return SizedBox(
+      width: _mapWidth,
+      height: _mapHeight,
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned.fill(
+            child: _MapAssetSurface(
+              url: _resolveMapAssetUrl(),
+              contentType: widget.mapAssetContentType,
+            ),
+          ),
+          if (widget.navigationRoute != null && widget.navigationRoute!.length >= 2)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: NavigationRoutePainter(
+                  routeNodes: widget.navigationRoute!,
+                  svgWidth: _mapWidth,
+                  svgHeight: _mapHeight,
+                  animation: _glowAnimation,
+                ),
+              ),
+            ),
+          ...parkNodes.map(_buildParkCell),
+          if (activeNode != null) _buildActiveNodeMarker(activeNode),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParkCell(MapNode node) {
+    const cellWidth = 36.0;
+    const cellHeight = 22.0;
+    final nodeX = node.resolveX(_mapWidth);
+    final nodeY = node.resolveY(_mapHeight);
+
+    return Positioned(
+      left: nodeX - cellWidth / 2,
+      top: nodeY - cellHeight / 2,
+      child: _ParkCell(
+        key: ValueKey(node.id),
+        node: node,
+        isOccupied: widget.occupancyMap[node.id],
+        isTarget: widget.targetParkId == node.id,
+      ),
+    );
+  }
+
+  Widget _buildActiveNodeMarker(MapNode activeNode) {
+    return Positioned(
+      left: activeNode.resolveX(_mapWidth) - 20,
+      top: activeNode.resolveY(_mapHeight) - 20,
+      child: const PulseMarker(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -346,7 +428,6 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
         }
         final activeNode = _activeNode;
         final sourceNodes = widget.nodes ?? const <MapNode>[];
-        final parkNodes = sourceNodes.where((node) => node.isPark).toList();
 
         return Stack(
           children: [
@@ -364,73 +445,12 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
                 _hasUserMovedViewport = true;
               },
               onInteractionEnd: (_) => _settleViewport(),
-              child: SizedBox(
-                width: _mapWidth,
-                height: _mapHeight,
-                child: Stack(
-                  clipBehavior: Clip.hardEdge,
-                  children: [
-                    Positioned.fill(
-                      child: _MapAssetSurface(
-                        url: _resolveMapAssetUrl(),
-                        contentType: widget.mapAssetContentType,
-                      ),
-                    ),
-                    if (widget.navigationRoute != null &&
-                        widget.navigationRoute!.length >= 2)
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: NavigationRoutePainter(
-                            routeNodes: widget.navigationRoute!,
-                            svgWidth: _mapWidth,
-                            svgHeight: _mapHeight,
-                            animation: _glowAnimation,
-                          ),
-                        ),
-                      ),
-                    ...parkNodes.map((node) {
-                      const cellWidth = 36.0;
-                      const cellHeight = 22.0;
-                      final nodeX = node.resolveX(_mapWidth);
-                      final nodeY = node.resolveY(_mapHeight);
-                      return Positioned(
-                        left: nodeX - cellWidth / 2,
-                        top: nodeY - cellHeight / 2,
-                        child: _ParkCell(
-                          key: ValueKey(node.id),
-                          node: node,
-                          isOccupied: widget.occupancyMap[node.id],
-                          isTarget: widget.targetParkId == node.id,
-                        ),
-                      );
-                    }),
-                    if (activeNode != null)
-                      Positioned(
-                        left: activeNode.resolveX(_mapWidth) - 20,
-                        top: activeNode.resolveY(_mapHeight) - 20,
-                        child: const PulseMarker(),
-                      ),
-                  ],
-                ),
+              child: _buildMapLayerStack(
+                sourceNodes: sourceNodes,
+                activeNode: activeNode,
               ),
             ),
-            Positioned(
-              right: 16,
-              bottom: 92,
-              child: Column(
-                children: [
-                  _ZoomButton(
-                    icon: Icons.add_rounded,
-                    onTap: () => _zoom(1.2),
-                  ),
-                  const SizedBox(height: 10),
-                  _ZoomButton(
-                    icon: Icons.remove_rounded,
-                    onTap: () => _zoom(0.84),
-                  ),
-                ],
-              ),
-            ),
+            _buildViewportControls(),
           ],
         );
       },
