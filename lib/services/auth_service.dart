@@ -17,7 +17,7 @@ class AuthService {
       final response = await _dio.post<Map<String, dynamic>>('/auth/login', data: {
         'emailOrUserName': email.trim(),
         'password': password,
-      });
+      }, options: Options(extra: const {'skipAuthRefresh': true}));
 
       return _toSession(response.data!);
     } on DioException catch (error) {
@@ -42,7 +42,7 @@ class AuthService {
         'firstName': firstName.trim(),
         'lastName': lastName.trim(),
         'password': password,
-      });
+      }, options: Options(extra: const {'skipAuthRefresh': true}));
 
       return _toSession(response.data!);
     } on DioException catch (error) {
@@ -58,6 +58,7 @@ class AuthService {
       final response = await _dio.post<Map<String, dynamic>>(
         '/auth/google',
         data: {'idToken': idToken},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
 
       return _toSession(response.data!);
@@ -74,6 +75,7 @@ class AuthService {
       await _dio.post<void>(
         '/auth/logout',
         data: {'refreshToken': refreshToken},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException {
       // Local session kapanisi icin burada sessiz geciyoruz.
@@ -87,6 +89,7 @@ class AuthService {
       final response = await _dio.post<Map<String, dynamic>>(
         '/auth/refresh-token',
         data: {'refreshToken': refreshToken},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
 
       return _toSession(response.data!);
@@ -103,6 +106,7 @@ class AuthService {
       await _dio.post<void>(
         '/auth/forgot-password',
         data: {'email': email.trim()},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException catch (error) {
       throw _toApiException(
@@ -120,6 +124,7 @@ class AuthService {
       await _dio.post<void>(
         '/auth/reset-password',
         data: {'token': token.trim(), 'newPassword': newPassword},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException catch (error) {
       throw _toApiException(
@@ -134,6 +139,7 @@ class AuthService {
       await _dio.post<void>(
         '/auth/resend-email-verification',
         data: {'email': email.trim()},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException catch (error) {
       throw _toApiException(
@@ -148,6 +154,7 @@ class AuthService {
       await _dio.post<void>(
         '/auth/verify-email',
         data: {'token': token.trim()},
+        options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException catch (error) {
       throw _toApiException(

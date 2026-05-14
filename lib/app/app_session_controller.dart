@@ -9,6 +9,13 @@ import '../services/auth_service.dart';
 import '../services/session_storage.dart';
 
 class AppSessionController extends ChangeNotifier {
+  AppSessionController() {
+    ApiClient.configureAuthHandlers(
+      onRefreshAccessToken: _refreshAccessToken,
+      onSessionExpired: _handleSessionExpired,
+    );
+  }
+
   final AuthService _authService = AuthService();
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final SessionStorage _sessionStorage = SessionStorage();
@@ -78,6 +85,36 @@ class AppSessionController extends ChangeNotifier {
     }
 
     _restoring = false;
+    notifyListeners();
+  }
+
+  Future<String?> _refreshAccessToken() async {
+    final refreshToken = _refreshToken;
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return null;
+    }
+
+    try {
+      final refreshedSession = await _authService.refreshSession(refreshToken);
+      _accessToken = refreshedSession.accessToken;
+      _refreshToken = refreshedSession.refreshToken;
+      _profile = refreshedSession.profile;
+      await _sessionStorage.writeSession(refreshedSession);
+      notifyListeners();
+      return refreshedSession.accessToken;
+    } catch (_) {
+      await clearSession(notify: false, clearError: false);
+      return null;
+    }
+  }
+
+  Future<void> _handleSessionExpired() async {
+    if (!isAuthenticated && _errorMessage == 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.') {
+      return;
+    }
+
+    _errorMessage = 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.';
+    await clearSession(notify: false, clearError: false);
     notifyListeners();
   }
 
@@ -286,11 +323,16 @@ class AppSessionController extends ChangeNotifier {
     }
   }
 
-  Future<void> clearSession({bool notify = true}) async {
+  Future<void> clearSession({
+    bool notify = true,
+    bool clearError = true,
+  }) async {
     _accessToken = null;
     _refreshToken = null;
     _profile = null;
-    _errorMessage = null;
+    if (clearError) {
+      _errorMessage = null;
+    }
     ApiClient.clearAccessToken();
     await _sessionStorage.clear();
     if (notify) {
