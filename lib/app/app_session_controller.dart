@@ -1,24 +1,18 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../main.dart';
 import '../models/auth_models.dart';
 import '../models/exceptions.dart';
 import '../services/auth_service.dart';
+import '../services/session_storage.dart';
 
 class AppSessionController extends ChangeNotifier {
-  static const _accessTokenKey = 'auth.accessToken';
-  static const _refreshTokenKey = 'auth.refreshToken';
-  static const _profileKey = 'auth.profile';
-
   final AuthService _authService = AuthService();
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final SessionStorage _sessionStorage = SessionStorage();
 
-  SharedPreferences? _prefs;
   bool _restoring = true;
   bool _busy = false;
   String? _errorMessage;
@@ -42,14 +36,10 @@ class AppSessionController extends ChangeNotifier {
   }
 
   Future<void> restore() async {
-    _prefs = await SharedPreferences.getInstance();
-    _accessToken = _prefs!.getString(_accessTokenKey);
-    _refreshToken = _prefs!.getString(_refreshTokenKey);
-    final profileRaw = _prefs!.getString(_profileKey);
-
-    if (profileRaw != null) {
-      _profile = UserProfile.fromJson(jsonDecode(profileRaw) as Map<String, dynamic>);
-    }
+    final storedSession = await _sessionStorage.read();
+    _accessToken = storedSession.accessToken;
+    _refreshToken = storedSession.refreshToken;
+    _profile = storedSession.profile;
 
     if (_accessToken?.isNotEmpty == true) {
       ApiClient.setAccessToken(_accessToken);
@@ -64,11 +54,12 @@ class AppSessionController extends ChangeNotifier {
           _accessToken = refreshedSession.accessToken;
           _refreshToken = refreshedSession.refreshToken;
           _profile = refreshedSession.profile;
-          await _prefs!.setString(_accessTokenKey, refreshedSession.accessToken);
-          await _prefs!.setString(_refreshTokenKey, refreshedSession.refreshToken);
+          await _sessionStorage.writeSession(refreshedSession);
         }
 
-        await _prefs!.setString(_profileKey, jsonEncode(_profile!.toJson()));
+        if (_profile != null) {
+          await _sessionStorage.writeProfile(_profile!);
+        }
       } catch (_) {
         if (_refreshToken?.isNotEmpty == true) {
           try {
@@ -76,9 +67,7 @@ class AppSessionController extends ChangeNotifier {
             _accessToken = refreshedSession.accessToken;
             _refreshToken = refreshedSession.refreshToken;
             _profile = refreshedSession.profile;
-            await _prefs!.setString(_accessTokenKey, refreshedSession.accessToken);
-            await _prefs!.setString(_refreshTokenKey, refreshedSession.refreshToken);
-            await _prefs!.setString(_profileKey, jsonEncode(_profile!.toJson()));
+            await _sessionStorage.writeSession(refreshedSession);
           } catch (_) {
             await clearSession(notify: false);
           }
@@ -106,9 +95,7 @@ class AppSessionController extends ChangeNotifier {
       _refreshToken = session.refreshToken;
       _profile = session.profile;
 
-      await _prefs?.setString(_accessTokenKey, session.accessToken);
-      await _prefs?.setString(_refreshTokenKey, session.refreshToken);
-      await _prefs?.setString(_profileKey, jsonEncode(session.profile.toJson()));
+      await _sessionStorage.writeSession(session);
 
       _busy = false;
       notifyListeners();
@@ -149,9 +136,7 @@ class AppSessionController extends ChangeNotifier {
       _refreshToken = session.refreshToken;
       _profile = session.profile;
 
-      await _prefs?.setString(_accessTokenKey, session.accessToken);
-      await _prefs?.setString(_refreshTokenKey, session.refreshToken);
-      await _prefs?.setString(_profileKey, jsonEncode(session.profile.toJson()));
+      await _sessionStorage.writeSession(session);
 
       _busy = false;
       notifyListeners();
@@ -189,9 +174,7 @@ class AppSessionController extends ChangeNotifier {
       _refreshToken = session.refreshToken;
       _profile = session.profile;
 
-      await _prefs?.setString(_accessTokenKey, session.accessToken);
-      await _prefs?.setString(_refreshTokenKey, session.refreshToken);
-      await _prefs?.setString(_profileKey, jsonEncode(session.profile.toJson()));
+      await _sessionStorage.writeSession(session);
 
       _busy = false;
       notifyListeners();
@@ -290,7 +273,7 @@ class AppSessionController extends ChangeNotifier {
           isActive: _profile!.isActive,
           roles: _profile!.roles,
         );
-        await _prefs?.setString(_profileKey, jsonEncode(_profile!.toJson()));
+        await _sessionStorage.writeProfile(_profile!);
       }
     } catch (error) {
       _errorMessage = error is ApiException
@@ -309,9 +292,7 @@ class AppSessionController extends ChangeNotifier {
     _profile = null;
     _errorMessage = null;
     ApiClient.clearAccessToken();
-    await _prefs?.remove(_accessTokenKey);
-    await _prefs?.remove(_refreshTokenKey);
-    await _prefs?.remove(_profileKey);
+    await _sessionStorage.clear();
     if (notify) {
       notifyListeners();
     }
