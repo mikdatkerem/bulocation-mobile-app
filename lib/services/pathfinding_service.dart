@@ -156,11 +156,7 @@ class PathfindingService {
 
   Map<String, List<MapNode>> getParkGroups(Iterable<MapNode> nodes) {
     final parks = nodes.where((node) => node.isPark).toList()
-      ..sort((left, right) {
-        final leftNum = int.tryParse(left.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        final rightNum = int.tryParse(right.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        return leftNum.compareTo(rightNum);
-      });
+      ..sort((left, right) => compareNodeLabelsNatural(left.label, right.label));
 
     return {'A': parks};
   }

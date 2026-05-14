@@ -10,6 +10,63 @@ enum NodeType {
   other,
 }
 
+String normalizeSearchText(String value) {
+  const replacements = {
+    '\u00E7': 'c',
+    '\u011F': 'g',
+    '\u0131': 'i',
+    '\u00F6': 'o',
+    '\u015F': 's',
+    '\u00FC': 'u',
+  };
+
+  final lower = value.trim().toLowerCase().replaceAllMapped(
+        RegExp(r'[\u00E7\u011F\u0131\u00F6\u015F\u00FC]'),
+        (match) => replacements[match.group(0)] ?? match.group(0)!,
+      );
+
+  return lower;
+}
+
+int compareNodeLabelsNatural(String left, String right) {
+  final leftNormalized = normalizeSearchText(left);
+  final rightNormalized = normalizeSearchText(right);
+  final chunkPattern = RegExp(r'(\d+|\D+)');
+  final leftChunks = chunkPattern
+      .allMatches(leftNormalized)
+      .map((match) => match.group(0)!)
+      .toList();
+  final rightChunks = chunkPattern
+      .allMatches(rightNormalized)
+      .map((match) => match.group(0)!)
+      .toList();
+  final max = leftChunks.length < rightChunks.length
+      ? leftChunks.length
+      : rightChunks.length;
+
+  for (var index = 0; index < max; index++) {
+    final leftChunk = leftChunks[index];
+    final rightChunk = rightChunks[index];
+    final leftNumber = int.tryParse(leftChunk);
+    final rightNumber = int.tryParse(rightChunk);
+
+    if (leftNumber != null && rightNumber != null) {
+      final result = leftNumber.compareTo(rightNumber);
+      if (result != 0) {
+        return result;
+      }
+      continue;
+    }
+
+    final result = leftChunk.compareTo(rightChunk);
+    if (result != 0) {
+      return result;
+    }
+  }
+
+  return leftChunks.length.compareTo(rightChunks.length);
+}
+
 NodeType nodeTypeFromFacilityInt(int nodeType) {
   return switch (nodeType) {
     2 => NodeType.qr,
@@ -114,8 +171,10 @@ class MapNode {
       type == NodeType.parkingEntrance ||
       type == NodeType.parkingExit;
 
-  double resolveX(double mapWidth) => x;
-  double resolveY(double mapHeight) => y;
+  double resolveX(double mapWidth) =>
+      normalizedX != null ? normalizedX!.clamp(0, 1) * mapWidth : x;
+  double resolveY(double mapHeight) =>
+      normalizedY != null ? normalizedY!.clamp(0, 1) * mapHeight : y;
 }
 
 class MapEdge {

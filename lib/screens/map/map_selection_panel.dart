@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/facility_models.dart';
+import '../../models/graph_data.dart';
 
 class MapSelectionPanel extends StatelessWidget {
   const MapSelectionPanel({
@@ -288,11 +289,7 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final items = _rankedItems(
-      widget.items,
-      _query,
-      widget.title,
-    );
+    final items = _rankedItems(widget.items, _query, widget.title);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -452,8 +449,8 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
     String query,
     String Function(T item) title,
   ) {
-    final normalized = query.trim().toLowerCase();
-    if (normalized.isEmpty) {
+    final normalizedQuery = normalizeSearchText(query);
+    if (normalizedQuery.isEmpty) {
       return const [];
     }
 
@@ -461,19 +458,20 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
     final contains = <T>[];
 
     for (final item in items) {
-      final value = title(item).toLowerCase();
-      if (value.startsWith(normalized)) {
+      final normalizedTitle = normalizeSearchText(title(item));
+      if (normalizedTitle.startsWith(normalizedQuery)) {
         startsWith.add(item);
-      } else if (value.contains(normalized)) {
+      } else if (normalizedTitle.contains(normalizedQuery)) {
         contains.add(item);
       }
     }
 
-    int compare(T a, T b) =>
-        title(a).toLowerCase().compareTo(title(b).toLowerCase());
-
-    startsWith.sort(compare);
-    contains.sort(compare);
+    startsWith.sort(
+      (left, right) => compareNodeLabelsNatural(title(left), title(right)),
+    );
+    contains.sort(
+      (left, right) => compareNodeLabelsNatural(title(left), title(right)),
+    );
 
     return [...startsWith, ...contains];
   }
