@@ -40,12 +40,12 @@ class _QuickScannerSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: _text,
+                  color: _ink,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
-                'QR hangi kat veya binaya aitse harita otomatik acilir.',
+                'QR hangi kat veya binaya aitse ilgili harita otomatik açılır.',
                 style: TextStyle(
                   height: 1.5,
                   color: _soft,

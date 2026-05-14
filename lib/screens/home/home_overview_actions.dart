@@ -25,6 +25,94 @@ class _Header extends StatelessWidget {
   }
 }
 
+class _IntroPanel extends StatelessWidget {
+  const _IntroPanel({
+    required this.greeting,
+    required this.headline,
+    required this.description,
+    required this.primaryLabel,
+    required this.secondaryLabel,
+  });
+
+  final String greeting;
+  final String headline;
+  final String description;
+  final String primaryLabel;
+  final String secondaryLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          greeting,
+          style: const TextStyle(
+            color: _soft,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          headline,
+          style: const TextStyle(
+            color: _ink,
+            fontSize: 34,
+            height: 1.08,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          description,
+          style: const TextStyle(
+            color: _soft,
+            fontSize: 14,
+            height: 1.6,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            _MetricPill(label: primaryLabel),
+            const SizedBox(width: 10),
+            _MetricPill(label: secondaryLabel),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _MetricPill extends StatelessWidget {
+  const _MetricPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _line),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: _ink,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
 class _PrimaryAction extends StatelessWidget {
   const _PrimaryAction({
     required this.title,
@@ -48,6 +136,13 @@ class _PrimaryAction extends StatelessWidget {
         decoration: BoxDecoration(
           color: _accent,
           borderRadius: BorderRadius.circular(24),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x226366F1),
+              blurRadius: 24,
+              offset: Offset(0, 12),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -123,7 +218,7 @@ class _SectionHeader extends StatelessWidget {
           TextButton(
             onPressed: onAction,
             style: TextButton.styleFrom(
-              foregroundColor: _soft,
+                foregroundColor: _soft,
               padding: EdgeInsets.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),

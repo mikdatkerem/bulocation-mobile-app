@@ -35,6 +35,16 @@ class ProfileScreen extends StatelessWidget {
                 color: Color(0xFF0F172A),
               ),
             ),
+            const SizedBox(height: 10),
+            const Text(
+              'Hesabınızı, erişim durumunuzu ve güvenlik adımlarını buradan yönetin.',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 18),
             _ProfileHeroCard(
               initials: _initials(fullName),
@@ -60,7 +70,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 18),
-            const _SectionLabel('Hesap'),
+            const _SectionLabel('Hesap bilgileri'),
             const SizedBox(height: 10),
             _ProfileMenuTile(
               icon: Icons.badge_outlined,
@@ -74,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             _ProfileMenuTile(
               icon: Icons.admin_panel_settings_outlined,
-              title: 'Rol bilgisi',
+              title: 'Rol',
               subtitle: roleLabels.join(', '),
             ),
             _ProfileMenuTile(

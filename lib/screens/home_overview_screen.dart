@@ -74,6 +74,35 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
     }
   }
 
+  String get _displayName {
+    final profile = widget.profile;
+    if (profile == null) {
+      return 'Merhaba';
+    }
+
+    if (profile.firstName.trim().isNotEmpty) {
+      return 'Merhaba, ${profile.firstName.trim()}';
+    }
+
+    if (profile.fullName.trim().isNotEmpty) {
+      return 'Merhaba, ${profile.fullName.trim()}';
+    }
+
+    return 'Merhaba';
+  }
+
+  int get _publishedFloorCount => _quickLocations.length;
+
+  int get _siteCount => _siteItems.length;
+
+  String get _introDescription {
+    if (_organizations.isEmpty) {
+      return 'QR ile başlayın. Kurum erişimleri tanımlandığında yayınlanan katlar burada listelenecek.';
+    }
+
+    return 'QR okutun ya da yayınlanmış katlardan birini seçerek yönlendirmeyi hemen başlatın.';
+  }
+
   List<_QuickLocationData> get _quickLocations => [
         for (final hierarchy in _hierarchies)
           for (final site in hierarchy.sites)
@@ -125,17 +154,13 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 116),
                       children: [
                         const _Header(),
-                        const SizedBox(height: 12),
-                        Text(
-                          _organizations.isEmpty
-                              ? 'Kurum verisi yüklenince QR ile başlayabilirsiniz.'
-                              : 'QR okutun ya da aşağıdaki yayınlanan haritalardan başlayın.',
-                          style: const TextStyle(
-                            color: _soft,
-                            fontSize: 14,
-                            height: 1.55,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 8),
+                        _IntroPanel(
+                          greeting: _displayName,
+                          headline: 'Yolculuğu başlatın.',
+                          description: _introDescription,
+                          primaryLabel: '$_publishedFloorCount hazır kat',
+                          secondaryLabel: '$_siteCount yerleşke',
                         ),
                         const SizedBox(height: 24),
                         _PrimaryAction(
@@ -144,14 +169,23 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                           icon: Icons.qr_code_scanner_rounded,
                           onTap: () => _showQuickScanner(context),
                         ),
-                        if (_quickLocations.isNotEmpty) ...[
-                          const SizedBox(height: 32),
-                          _SectionHeader(
-                            title: 'Hızlı giriş',
-                            actionLabel: 'Tümünü aç',
-                            onAction: () => widget.onOpenMaps(null),
-                          ),
-                          const SizedBox(height: 12),
+                        const SizedBox(height: 32),
+                        _SectionHeader(
+                          title: 'Hazır haritalar',
+                          actionLabel:
+                              _quickLocations.length > 3 ? 'Tümünü aç' : null,
+                          onAction: _quickLocations.length > 3
+                              ? () => widget.onOpenMaps(null)
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        if (_quickLocations.isEmpty)
+                          const _EmptyBlock(
+                            title: 'Henüz yayınlanan kat yok',
+                            subtitle:
+                                'Bir kurum seçildiğinde veya yeni kat yayınlandığında hızlı başlangıç burada görünecek.',
+                          )
+                        else
                           ..._quickLocations.take(3).map(
                                 (item) => Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
@@ -168,10 +202,9 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                                   ),
                                 ),
                               ),
-                        ],
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 28),
                         const _SectionHeader(
-                          title: 'Kurumlar',
+                          title: 'Yerleşkeler',
                           actionLabel: null,
                           onAction: null,
                         ),
@@ -180,23 +213,23 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                           const _EmptyBlock(
                             title: 'Kurum bulunamadı',
                             subtitle:
-                                'Yetkili olduğunuz kurumlar burada listelenecek.',
+                                'Yetkili olduğunuz kurum ve yerleşkeler burada listelenecek.',
                           )
                         else
                           ..._siteItems.map(
-                            (item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _SiteListTile(
-                                item: item,
-                                onTap: () => widget.onOpenMaps(
-                                  MapOpenRequest(
-                                    organizationId: item.organizationId,
-                                    siteId: item.siteId,
+                                (item) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: _SiteListTile(
+                                    item: item,
+                                    onTap: () => widget.onOpenMaps(
+                                      MapOpenRequest(
+                                        organizationId: item.organizationId,
+                                        siteId: item.siteId,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
                       ],
                     ),
                   ),

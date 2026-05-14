@@ -15,7 +15,8 @@ class _QuickLocationTile extends StatelessWidget {
       icon: Icons.map_outlined,
       title: item.buildingName,
       subtitle: '${item.siteName} - ${item.floorName}',
-      meta: item.organizationName,
+      meta: 'Haritayı aç',
+      caption: item.organizationName,
       onTap: onTap,
     );
   }
@@ -37,7 +38,7 @@ class _SiteListTile extends StatelessWidget {
       title: item.siteName,
       subtitle:
           '${item.organizationName} - ${item.buildingCount} bina - ${item.readyFloorCount} hazır kat',
-      meta: 'Kurum seç',
+      meta: 'Yerleşkeyi aç',
       onTap: onTap,
     );
   }
@@ -49,6 +50,7 @@ class _SurfaceTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.meta,
+    this.caption,
     required this.onTap,
   });
 
@@ -56,6 +58,7 @@ class _SurfaceTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final String meta;
+  final String? caption;
   final VoidCallback onTap;
 
   @override
@@ -93,6 +96,20 @@ class _SurfaceTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (caption != null) ...[
+                    Text(
+                      caption!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: _accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                  ],
                   Text(
                     title,
                     maxLines: 1,
