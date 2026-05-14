@@ -4,8 +4,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../models/facility_models.dart';
 import '../../models/graph_data.dart';
 import '../../widgets/embedded_scanner.dart';
-import '../../widgets/floor_plan_widget.dart';
-import 'map_selection_panel.dart';
+import 'map_screen_content_card.dart';
+import 'map_screen_header.dart';
 
 class MapScreenBody extends StatelessWidget {
   const MapScreenBody({
@@ -79,42 +79,11 @@ class MapScreenBody extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF182033),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      buildingTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF182033),
-                      ),
-                    ),
-                  ),
-                  if (hasMap)
-                    IconButton(
-                      onPressed: onClearSelectedMap,
-                      icon: const Icon(Icons.layers_clear_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF182033),
-                      ),
-                    ),
-                ],
-              ),
+            MapScreenHeader(
+              title: buildingTitle,
+              hasMap: hasMap,
+              onBack: onBack,
+              onClearSelectedMap: onClearSelectedMap,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -124,45 +93,29 @@ class MapScreenBody extends StatelessWidget {
                 isLoading: isBusy,
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(12, 12, 12, mapBottomInset),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(28),
-                    child: hasMap
-                        ? FloorPlanWidget(
-                            visitedIds: const {},
-                            activeZoneId: activeNodeId,
-                            navigationRoute: navigationRoute,
-                            occupancyMap: occupancy,
-                            nodes: displayNodes,
-                            mapAssetPath: mapAssetPath,
-                            mapAssetContentType: mapAssetContentType,
-                            mapWidth: mapWidth,
-                            mapHeight: mapHeight,
-                          )
-                        : MapSelectionPanel(
-                            organizations: organizations,
-                            selectedOrganizationId: selectedOrganizationId,
-                            sites: sites,
-                            selectedSiteId: selectedSiteId,
-                            buildings: buildings,
-                            selectedBuildingId: selectedBuildingId,
-                            floors: floors,
-                            selectedFloorId: selectedFloorId,
-                            onOrganizationChanged: onOrganizationChanged,
-                            onSiteChanged: onSiteChanged,
-                            onBuildingChanged: onBuildingChanged,
-                            onFloorChanged: onFloorChanged,
-                          ),
-                  ),
-                ),
-              ),
+            MapScreenContentCard(
+              hasMap: hasMap,
+              mapBottomInset: mapBottomInset,
+              activeNodeId: activeNodeId,
+              displayNodes: displayNodes,
+              navigationRoute: navigationRoute,
+              occupancy: occupancy,
+              mapAssetPath: mapAssetPath,
+              mapAssetContentType: mapAssetContentType,
+              mapWidth: mapWidth,
+              mapHeight: mapHeight,
+              organizations: organizations,
+              selectedOrganizationId: selectedOrganizationId,
+              sites: sites,
+              selectedSiteId: selectedSiteId,
+              buildings: buildings,
+              selectedBuildingId: selectedBuildingId,
+              floors: floors,
+              selectedFloorId: selectedFloorId,
+              onOrganizationChanged: onOrganizationChanged,
+              onSiteChanged: onSiteChanged,
+              onBuildingChanged: onBuildingChanged,
+              onFloorChanged: onFloorChanged,
             ),
           ],
         ),
