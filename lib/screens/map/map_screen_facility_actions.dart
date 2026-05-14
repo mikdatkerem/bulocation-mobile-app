@@ -3,7 +3,11 @@ part of '../home_screen.dart';
 mixin _MapScreenFacilityActions on MapsScreenStateBase {
   Future<void> _bootstrap() async {
     await _loadFacilityContext();
-    await _parkingService.startListening();
+    try {
+      await _parkingService.startListening();
+    } catch (_) {
+      // Canli doluluk akisi gec baglansa bile temel ekran kullanilabilsin.
+    }
   }
 
   Future<void> _loadFacilityContext() async {
@@ -43,22 +47,13 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     setState(() {
       _loading = true;
-      _hierarchy = null;
-      _site = null;
-      _building = null;
-      _floor = null;
-      _map = null;
-      _route = null;
-      _multiRoute = null;
-      _targetPark = null;
-      _displayNodes = const [];
-      _mapNodes = const [];
-      _buildingDestinations = const [];
-      _displayMapAssetPath = null;
-      _displayMapAssetContentType = null;
-      _displayMapWidth = null;
-      _displayMapHeight = null;
-      _occupancy = {};
+      _resetMapViewState(
+        clearHierarchy: true,
+        clearSite: true,
+        clearBuilding: true,
+        clearFloor: true,
+        clearLastScan: true,
+      );
     });
 
     try {
@@ -95,20 +90,11 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     setState(() {
       _site = site;
-      _building = null;
-      _floor = null;
-      _map = null;
-      _route = null;
-      _multiRoute = null;
-      _targetPark = null;
-      _displayNodes = const [];
-      _mapNodes = const [];
-      _buildingDestinations = const [];
-      _displayMapAssetPath = null;
-      _displayMapAssetContentType = null;
-      _displayMapWidth = null;
-      _displayMapHeight = null;
-      _occupancy = {};
+      _resetMapViewState(
+        clearBuilding: true,
+        clearFloor: true,
+        clearLastScan: true,
+      );
     });
   }
 
@@ -125,19 +111,10 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     setState(() {
       _building = building;
-      _floor = null;
-      _map = null;
-      _route = null;
-      _multiRoute = null;
-      _targetPark = null;
-      _displayNodes = const [];
-      _mapNodes = const [];
-      _buildingDestinations = const [];
-      _displayMapAssetPath = null;
-      _displayMapAssetContentType = null;
-      _displayMapWidth = null;
-      _displayMapHeight = null;
-      _occupancy = {};
+      _resetMapViewState(
+        clearFloor: true,
+        clearLastScan: true,
+      );
     });
   }
 
@@ -155,32 +132,31 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       return;
     }
 
-    await _applySelection(
-      hierarchy: _hierarchy!,
-      site: _site!,
-      building: _building!,
-      floor: floor,
-    );
+    try {
+      await _applySelection(
+        hierarchy: _hierarchy!,
+        site: _site!,
+        building: _building!,
+        floor: floor,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() => _loading = false);
+      _showError(error);
+    }
   }
 
   void _clearSelectedMap() {
     setState(() {
-      _site = null;
-      _building = null;
-      _floor = null;
-      _map = null;
-      _route = null;
-      _multiRoute = null;
-      _targetPark = null;
-      _displayNodes = const [];
-      _mapNodes = const [];
-      _buildingDestinations = const [];
-      _displayMapAssetPath = null;
-      _displayMapAssetContentType = null;
-      _displayMapWidth = null;
-      _displayMapHeight = null;
-      _occupancy = {};
-      _lastScan = null;
+      _resetMapViewState(
+        clearSite: true,
+        clearBuilding: true,
+        clearFloor: true,
+        clearLastScan: true,
+      );
     });
   }
 
@@ -273,10 +249,12 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _displayMapHeight = publishedMap.height;
       _loading = false;
       _targetPark = null;
+      _parkedAt = null;
       _route = null;
       _multiRoute = null;
       _activeRouteSegmentIndex = 0;
       _lastScan = null;
+      _lastScanTime = null;
     });
 
     await _loadOccupancy();

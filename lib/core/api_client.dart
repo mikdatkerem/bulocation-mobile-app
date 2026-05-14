@@ -12,6 +12,7 @@ class ApiClient {
   static Future<void> Function()? _onSessionExpired;
 
   static Dio get instance => _dio;
+  static String? get accessToken => _accessToken;
 
   static void setAccessToken(String? accessToken) {
     _accessToken = accessToken;

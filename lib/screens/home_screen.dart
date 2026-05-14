@@ -62,6 +62,46 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
   DateTime? _lastScanTime;
   Map<String, bool> _occupancy = {};
 
+  void _resetMapViewState({
+    bool clearHierarchy = false,
+    bool clearSite = false,
+    bool clearBuilding = false,
+    bool clearFloor = false,
+    bool clearLastScan = false,
+  }) {
+    if (clearHierarchy) {
+      _hierarchy = null;
+    }
+    if (clearSite) {
+      _site = null;
+    }
+    if (clearBuilding) {
+      _building = null;
+    }
+    if (clearFloor) {
+      _floor = null;
+    }
+    if (clearLastScan) {
+      _lastScan = null;
+      _lastScanTime = null;
+    }
+
+    _map = null;
+    _targetPark = null;
+    _parkedAt = null;
+    _route = null;
+    _multiRoute = null;
+    _activeRouteSegmentIndex = 0;
+    _displayNodes = const [];
+    _mapNodes = const [];
+    _buildingDestinations = const [];
+    _displayMapAssetPath = null;
+    _displayMapAssetContentType = null;
+    _displayMapWidth = null;
+    _displayMapHeight = null;
+    _occupancy = {};
+  }
+
   void _showError(Object error);
   void _showParkConfirmDialog(String spotId);
   Map<String, bool> _normalizeOccupancy(Map<String, bool> occupancy);
