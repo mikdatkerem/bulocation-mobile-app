@@ -124,11 +124,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: TextFormField(
                                   controller: _firstNameController,
                                   textInputAction: TextInputAction.next,
-                                  onChanged: (_) => widget.sessionController
-                                      .clearErrorMessage(),
+                                  onChanged: (_) =>
+                                      widget.sessionController.clearErrorMessage(),
                                   style: const TextStyle(
-                                      color: authText,
-                                      fontWeight: FontWeight.w700),
+                                    color: authText,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                   decoration: authFieldDecoration('Adınız'),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
@@ -146,12 +147,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: TextFormField(
                                   controller: _lastNameController,
                                   textInputAction: TextInputAction.next,
-                                  onChanged: (_) => widget.sessionController
-                                      .clearErrorMessage(),
+                                  onChanged: (_) =>
+                                      widget.sessionController.clearErrorMessage(),
                                   style: const TextStyle(
-                                      color: authText,
-                                      fontWeight: FontWeight.w700),
-                                  decoration: authFieldDecoration('Soyadınız'),
+                                    color: authText,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  decoration: authFieldDecoration(
+                                    'Soyadınız',
+                                  ),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Soyad gerekli.';
@@ -172,9 +176,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onChanged: (_) =>
                                 widget.sessionController.clearErrorMessage(),
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
-                              'kullanıcı_adı',
+                              'kullanici_adi',
                               prefixIcon: Icons.alternate_email_rounded,
                             ),
                             validator: (value) {
@@ -182,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return 'Kullanıcı adı gerekli.';
                               }
                               if (value.trim().length < 3) {
-                                return 'En az 3 karakter olmali.';
+                                return 'En az 3 karakter olmalı.';
                               }
                               return null;
                             },
@@ -198,7 +204,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onChanged: (_) =>
                                 widget.sessionController.clearErrorMessage(),
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
                               'ornek@email.com',
                               prefixIcon: Icons.email_rounded,
@@ -226,14 +234,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               setState(() {});
                             },
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
                               suffixIcon: IconButton(
                                 onPressed: () {
-                                  setState(() =>
-                                      _obscurePassword = !_obscurePassword);
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
                                 },
                                 icon: Icon(
                                   _obscurePassword
@@ -250,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return 'Şifre gerekli.';
                               }
                               if (text.length < 8) {
-                                return 'En az 8 karakter olmali.';
+                                return 'En az 8 karakter olmalı.';
                               }
                               if (!RegExp(r'[A-Z]').hasMatch(text) ||
                                   !RegExp(r'[a-z]').hasMatch(text) ||
@@ -298,7 +309,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 widget.sessionController.clearErrorMessage(),
                             onFieldSubmitted: (_) => _submit(),
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
@@ -377,7 +390,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: const Text(
                         'Giriş Yap',
                         style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w900),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],

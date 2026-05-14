@@ -109,7 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             onChanged: (_) =>
                                 widget.sessionController.clearErrorMessage(),
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
                               'invalid@mail',
                               prefixIcon: Icons.email_rounded,
@@ -149,8 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: const Text(
                                   'Şifremi unuttum',
                                   style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
                             ],
@@ -161,7 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             onChanged: (_) =>
                                 widget.sessionController.clearErrorMessage(),
                             style: const TextStyle(
-                                color: authText, fontWeight: FontWeight.w700),
+                              color: authText,
+                              fontWeight: FontWeight.w700,
+                            ),
                             decoration: authFieldDecoration(
                               '........',
                               prefixIcon: Icons.lock_rounded,
@@ -245,7 +250,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text(
                         'Kayıt Ol',
                         style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w900),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],
