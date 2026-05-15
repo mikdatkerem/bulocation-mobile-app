@@ -14,7 +14,7 @@ class _QuickLocationTile extends StatelessWidget {
     return _SurfaceTile(
       icon: Icons.map_outlined,
       title: item.buildingName,
-      subtitle: '${item.siteName} - ${item.floorName}',
+      subtitle: '${item.siteName} · ${item.floorName}',
       meta: 'Haritayı aç',
       caption: item.organizationName,
       onTap: onTap,
@@ -37,7 +37,7 @@ class _SiteListTile extends StatelessWidget {
       icon: Icons.location_city_rounded,
       title: item.siteName,
       subtitle:
-          '${item.organizationName} - ${item.buildingCount} bina - ${item.readyFloorCount} hazır kat',
+          '${item.organizationName} · ${item.buildingCount} bina · ${item.readyFloorCount} hazır kat',
       meta: 'Yerleşkeyi aç',
       onTap: onTap,
     );
@@ -65,16 +65,16 @@ class _SurfaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Ink(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: _card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x12000000)),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: _line),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x18000000),
+              color: Color(0x0F0F172A),
               blurRadius: 18,
               offset: Offset(0, 10),
             ),
@@ -83,11 +83,11 @@ class _SurfaceTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8ECF6),
-                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: _accent),
             ),
@@ -173,8 +173,8 @@ class _EmptyBlock extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: _card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0x12000000)),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

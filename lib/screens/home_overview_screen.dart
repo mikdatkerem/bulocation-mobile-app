@@ -27,8 +27,14 @@ class HomeOverviewScreen extends StatefulWidget {
   State<HomeOverviewScreen> createState() => _HomeOverviewScreenState();
 }
 
-class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
+class _HomeOverviewScreenState extends State<HomeOverviewScreen>
+    with SingleTickerProviderStateMixin {
   final _facilityService = FacilityService();
+
+  late final AnimationController _pulseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2600),
+  )..repeat(reverse: true);
 
   bool _loading = true;
   String? _error;
@@ -39,6 +45,12 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
   void initState() {
     super.initState();
     _loadOverview();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadOverview() async {
@@ -97,10 +109,10 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
 
   String get _introDescription {
     if (_organizations.isEmpty) {
-      return 'QR ile başlayın. Kurum erişimleri tanımlandığında yayınlanan katlar burada listelenecek.';
+      return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında yayınlanan katlar burada görünecek.';
     }
 
-    return 'QR okutun ya da yayınlanmış katlardan birini seçerek yönlendirmeyi hemen başlatın.';
+    return 'Binanın girişindeki veya bulunduğunuz kattaki QR kodunu okutun. Doğru harita anında açılsın.';
   }
 
   List<_QuickLocationData> get _quickLocations => [
@@ -151,29 +163,30 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                     backgroundColor: _surface,
                     onRefresh: _loadOverview,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 116),
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 136),
                       children: [
                         const _Header(),
-                        const SizedBox(height: 8),
-                        _IntroPanel(
+                        const SizedBox(height: 6),
+                        _HeroScene(
                           greeting: _displayName,
-                          headline: 'Yolculuğu başlatın.',
                           description: _introDescription,
-                          primaryLabel: '$_publishedFloorCount hazır kat',
-                          secondaryLabel: '$_siteCount yerleşke',
+                          readyFloorCount: _publishedFloorCount,
+                          siteCount: _siteCount,
+                          pulse: _pulseController,
+                          onPrimaryTap: () => _showQuickScanner(context),
                         ),
-                        const SizedBox(height: 24),
-                        _PrimaryAction(
-                          title: 'QR ile başla',
-                          subtitle: 'Bulunduğunuz noktayı otomatik açın.',
-                          icon: Icons.qr_code_scanner_rounded,
-                          onTap: () => _showQuickScanner(context),
+                        const SizedBox(height: 26),
+                        _ManualSelectionPanel(
+                          onTap: () => widget.onOpenMaps(null),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 28),
                         _SectionHeader(
-                          title: 'Hazır haritalar',
+                          title: 'Hazır başlangıçlar',
                           actionLabel:
-                              _quickLocations.length > 3 ? 'Tümünü aç' : null,
+                              _quickLocations.length > 3 ? 'Tümünü gör' : null,
                           onAction: _quickLocations.length > 3
                               ? () => widget.onOpenMaps(null)
                               : null,
@@ -183,7 +196,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                           const _EmptyBlock(
                             title: 'Henüz yayınlanan kat yok',
                             subtitle:
-                                'Bir kurum seçildiğinde veya yeni kat yayınlandığında hızlı başlangıç burada görünecek.',
+                                'İlk yayınlanan katlar hazır olduğunda hızlı başlangıçlar burada görünecek.',
                           )
                         else
                           ..._quickLocations.take(3).map(
@@ -204,7 +217,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                               ),
                         const SizedBox(height: 28),
                         const _SectionHeader(
-                          title: 'Yerleşkeler',
+                          title: 'Kurum ve yerleşkeler',
                           actionLabel: null,
                           onAction: null,
                         ),
@@ -217,19 +230,19 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                           )
                         else
                           ..._siteItems.map(
-                                (item) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: _SiteListTile(
-                                    item: item,
-                                    onTap: () => widget.onOpenMaps(
-                                      MapOpenRequest(
-                                        organizationId: item.organizationId,
-                                        siteId: item.siteId,
-                                      ),
-                                    ),
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _SiteListTile(
+                                item: item,
+                                onTap: () => widget.onOpenMaps(
+                                  MapOpenRequest(
+                                    organizationId: item.organizationId,
+                                    siteId: item.siteId,
                                   ),
                                 ),
                               ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

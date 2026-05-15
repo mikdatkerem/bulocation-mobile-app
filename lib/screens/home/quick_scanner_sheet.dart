@@ -14,7 +14,7 @@ class _QuickScannerSheet extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
         top: false,
@@ -38,8 +38,8 @@ class _QuickScannerSheet extends StatelessWidget {
               const Text(
                 'QR okut',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
                   color: _ink,
                 ),
               ),
@@ -47,25 +47,39 @@ class _QuickScannerSheet extends StatelessWidget {
               const Text(
                 'QR hangi kat veya binaya aitse ilgili harita otomatik açılır.',
                 style: TextStyle(
-                  height: 1.5,
+                  height: 1.55,
                   color: _soft,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 18),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: SizedBox(
-                  height: 320,
-                  child: MobileScanner(
-                    controller: controller,
-                    onDetect: (capture) async {
-                      final value =
-                          capture.barcodes.firstOrNull?.rawValue?.trim();
-                      if (value == null || value.isEmpty) {
-                        return;
-                      }
-                      await onDetect(value);
-                    },
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0x306366F1)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x140F172A),
+                      blurRadius: 20,
+                      offset: Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: SizedBox(
+                    height: 320,
+                    child: MobileScanner(
+                      controller: controller,
+                      onDetect: (capture) async {
+                        final value =
+                            capture.barcodes.firstOrNull?.rawValue?.trim();
+                        if (value == null || value.isEmpty) {
+                          return;
+                        }
+                        await onDetect(value);
+                      },
+                    ),
                   ),
                 ),
               ),
