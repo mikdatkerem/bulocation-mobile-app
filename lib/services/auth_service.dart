@@ -193,13 +193,13 @@ class AuthService {
   String _mapLoginMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'auth.invalid_credentials':
-        return 'E-posta veya kullanici adi ya da sifre hatali.';
+        return 'E-posta veya kullanıcı adı ya da şifre hatalı.';
       case 'auth.account_locked':
         return 'Hesap gecici olarak kilitlendi. Bir sure sonra tekrar deneyin.';
       case 'auth.account_inactive':
-        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+        return 'Hesabınız aktif değil. Yönetici ile iletişime geçin.';
       case 'validation_failed':
-        return _firstValidationMessage(error) ?? 'Form alanlarini kontrol edin.';
+        return _firstValidationMessage(error) ?? 'Form alanlarını kontrol edin.';
     }
 
     final detail = _problemDetail(error);
@@ -209,15 +209,15 @@ class AuthService {
   String _mapProfileMessage(DioException error) {
     return _problemDetail(error) ??
         error.message ??
-        'Kullanici profili yuklenemedi.';
+        'Kullanıcı profili yüklenemedi.';
   }
 
   String _mapRegisterMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'conflict.email_in_use':
-        return 'Bu e-posta adresi zaten kullaniliyor.';
+        return 'Bu e-posta adresi zaten kullanılıyor.';
       case 'conflict.username_in_use':
-        return 'Bu kullanici adi zaten kullaniliyor.';
+        return 'Bu kullanıcı adı zaten kullanılıyor.';
       case 'validation_failed':
         return _firstValidationMessage(error) ?? 'Kayıt alanlarını kontrol edin.';
     }
