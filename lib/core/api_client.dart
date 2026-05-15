@@ -105,7 +105,7 @@ class ApiClient {
 
           if (error.response?.statusCode == 401) {
             error = error.copyWith(
-              message: 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.',
+              message: 'Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.',
             );
           }
           handler.next(error);

@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Hesabınızı, erişim durumunuzu ve güvenlik adımlarını buradan yönetin.',
+              'Hesabınızı, erişim durumunuzu ve güvenlik adımlarınızı buradan yönetin.',
               style: TextStyle(
                 color: Color(0xFF64748B),
                 fontSize: 14,
@@ -90,8 +90,7 @@ class ProfileScreen extends StatelessWidget {
             _ProfileMenuTile(
               icon: Icons.verified_user_outlined,
               title: 'Hesap durumu',
-              subtitle:
-                  profile?.isActive == false ? 'Pasif hesap' : 'Aktif hesap',
+              subtitle: profile?.isActive == false ? 'Pasif hesap' : 'Aktif hesap',
             ),
             const SizedBox(height: 18),
             const _SectionLabel('İşlemler'),
@@ -248,12 +247,10 @@ class _ProfileHeroCard extends StatelessWidget {
               ),
               _InfoChip(
                 label: isActive ? 'Aktif hesap' : 'Pasif hesap',
-                background: isActive
-                    ? const Color(0xFFE0F2FE)
-                    : const Color(0xFFF8FAFC),
-                foreground: isActive
-                    ? const Color(0xFF0369A1)
-                    : const Color(0xFF64748B),
+                background:
+                    isActive ? const Color(0xFFE0F2FE) : const Color(0xFFF8FAFC),
+                foreground:
+                    isActive ? const Color(0xFF0369A1) : const Color(0xFF64748B),
               ),
             ],
           ),

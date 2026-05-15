@@ -67,7 +67,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('E-posta Dogrulama')),
+      appBar: AppBar(title: const Text('E-posta Doğrulama')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -86,7 +86,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'E-postana gonderilen dogrulama kodunu gir. Gerekirse yeniden gonderebilirsin.',
+                  'E-postana gönderilen doğrulama kodunu gir. Gerekirse yeniden gönderebilirsin.',
                   style: TextStyle(
                     color: Color(0xFF667086),
                     fontSize: 15,
@@ -97,12 +97,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   controller: _tokenController,
                   onChanged: (_) => widget.sessionController.clearErrorMessage(),
                   decoration: const InputDecoration(
-                    labelText: 'Dogrulama Kodu',
-                    hintText: 'Kodu yapistir',
+                    labelText: 'Doğrulama Kodu',
+                    hintText: 'Kodu yapıştır',
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Dogrulama kodu gerekli.';
+                      return 'Doğrulama kodu gerekli.';
                     }
                     return null;
                   },
@@ -113,12 +113,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ],
                 if (_verified) ...[
                   const SizedBox(height: 16),
-                  const _Message(message: 'E-posta adresin dogrulandi.'),
+                  const _Message(message: 'E-posta adresin doğrulandı.'),
                 ],
                 if (_resent) ...[
                   const SizedBox(height: 16),
                   const _Message(
-                    message: 'Dogrulama e-postasi tekrar gonderildi.',
+                    message: 'Doğrulama e-postası tekrar gönderildi.',
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -135,7 +135,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
-                        : const Text('E-postayi Dogrula'),
+                        : const Text('E-postayı Doğrula'),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -146,7 +146,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
                     ),
-                    child: const Text('Kodu Yeniden Gonder'),
+                    child: const Text('Kodu Yeniden Gönder'),
                   ),
                 ),
               ],

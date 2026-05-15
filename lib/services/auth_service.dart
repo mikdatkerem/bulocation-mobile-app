@@ -78,7 +78,7 @@ class AuthService {
         options: Options(extra: const {'skipAuthRefresh': true}),
       );
     } on DioException {
-      // Local session kapanisi icin burada sessiz geciyoruz.
+      // Local session kapanışı için burada sessiz geçiyoruz.
     } finally {
       ApiClient.clearAccessToken();
     }
@@ -203,7 +203,7 @@ class AuthService {
     }
 
     final detail = _problemDetail(error);
-    return detail ?? error.message ?? 'Giris sirasinda bir hata olustu.';
+    return detail ?? error.message ?? 'Giriş sırasında bir hata oluştu.';
   }
 
   String _mapProfileMessage(DioException error) {
@@ -219,35 +219,35 @@ class AuthService {
       case 'conflict.username_in_use':
         return 'Bu kullanici adi zaten kullaniliyor.';
       case 'validation_failed':
-        return _firstValidationMessage(error) ?? 'Kayit alanlarini kontrol edin.';
+        return _firstValidationMessage(error) ?? 'Kayıt alanlarını kontrol edin.';
     }
 
     return _problemDetail(error) ??
         error.message ??
-        'Kayit olusturulurken bir hata olustu.';
+        'Kayıt oluşturulurken bir hata oluştu.';
   }
 
   String _mapGoogleMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'auth.google_not_configured':
-        return 'Google ile giris bu ortamda aktif degil.';
+        return 'Google ile giriş bu ortamda aktif değil.';
       case 'auth.invalid_credentials':
-        return 'Google hesabi dogrulanamadi.';
+        return 'Google hesabı doğrulanamadı.';
       case 'auth.account_inactive':
-        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+        return 'Hesabınız aktif değil. Yönetici ile iletişime geçin.';
       default:
         return _problemDetail(error) ??
             error.message ??
-            'Google ile giris yapilirken bir hata olustu.';
+            'Google ile giriş yapılırken bir hata oluştu.';
     }
   }
 
   String _mapRefreshMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'invalid_token':
-        return 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.';
+        return 'Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.';
       case 'auth.account_inactive':
-        return 'Hesabiniz aktif degil. Yonetici ile iletisime gecin.';
+        return 'Hesabınız aktif değil. Yönetici ile iletişime geçin.';
       default:
         return _problemDetail(error) ??
             error.message ??
@@ -257,47 +257,47 @@ class AuthService {
 
   String _mapForgotPasswordMessage(DioException error) {
     if (_problemCode(error) == 'validation_failed') {
-      return _firstValidationMessage(error) ?? 'Gecerli bir e-posta adresi girin.';
+      return _firstValidationMessage(error) ?? 'Geçerli bir e-posta adresi girin.';
     }
 
     return _problemDetail(error) ??
         error.message ??
-        'Sifre sifirlama talebi gonderilemedi.';
+        'Şifre sıfırlama talebi gönderilemedi.';
   }
 
   String _mapResetPasswordMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'invalid_token':
-        return 'Sifre sifirlama kodu gecersiz veya suresi dolmus.';
+        return 'Şifre sıfırlama kodu geçersiz veya süresi dolmuş.';
       case 'validation_failed':
-        return _firstValidationMessage(error) ?? 'Yeni sifre alanlarini kontrol edin.';
+        return _firstValidationMessage(error) ?? 'Yeni şifre alanlarını kontrol edin.';
       default:
         return _problemDetail(error) ??
             error.message ??
-            'Sifre guncellenemedi.';
+            'Şifre güncellenemedi.';
     }
   }
 
   String _mapResendVerificationMessage(DioException error) {
     if (_problemCode(error) == 'validation_failed') {
-      return _firstValidationMessage(error) ?? 'Gecerli bir e-posta adresi girin.';
+      return _firstValidationMessage(error) ?? 'Geçerli bir e-posta adresi girin.';
     }
 
     return _problemDetail(error) ??
         error.message ??
-        'Dogrulama e-postasi yeniden gonderilemedi.';
+        'Doğrulama e-postası yeniden gönderilemedi.';
   }
 
   String _mapVerifyEmailMessage(DioException error) {
     switch (_problemCode(error)) {
       case 'invalid_token':
-        return 'Dogrulama kodu gecersiz veya suresi dolmus.';
+        return 'Doğrulama kodu geçersiz veya süresi dolmuş.';
       case 'validation_failed':
-        return _firstValidationMessage(error) ?? 'Dogrulama kodunu kontrol edin.';
+        return _firstValidationMessage(error) ?? 'Doğrulama kodunu kontrol edin.';
       default:
         return _problemDetail(error) ??
             error.message ??
-            'E-posta dogrulanamadi.';
+            'E-posta doğrulanamadı.';
     }
   }
 

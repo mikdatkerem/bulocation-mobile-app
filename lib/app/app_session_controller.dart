@@ -109,11 +109,12 @@ class AppSessionController extends ChangeNotifier {
   }
 
   Future<void> _handleSessionExpired() async {
-    if (!isAuthenticated && _errorMessage == 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.') {
+    if (!isAuthenticated &&
+        _errorMessage == 'Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.') {
       return;
     }
 
-    _errorMessage = 'Oturumunuzun suresi doldu. Lutfen yeniden giris yapin.';
+    _errorMessage = 'Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.';
     await clearSession(notify: false, clearError: false);
     notifyListeners();
   }

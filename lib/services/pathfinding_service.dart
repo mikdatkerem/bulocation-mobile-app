@@ -11,6 +11,46 @@ class PathfindingService {
 
   final Dio _dio;
 
+  Map<String, List<MapNode>> getParkGroups(List<MapNode> nodes) {
+    final parks = nodes.where((node) => node.isPark).toList()
+      ..sort((left, right) => compareNodeLabelsNatural(left.label, right.label));
+    return {'parks': parks};
+  }
+
+  MapNode? nearestEmptyParkToUser(
+    String fromReferenceId,
+    Map<String, bool> occupancyMap,
+    List<MapNode> nodes,
+  ) {
+    final source = nodes.where((node) {
+      final reference = (node.externalReferenceId ?? node.id).toUpperCase();
+      return reference == fromReferenceId.toUpperCase();
+    }).firstOrNull;
+
+    if (source == null) {
+      return null;
+    }
+
+    final availableParks = nodes.where(
+      (node) => node.isPark && occupancyMap[node.id] == false,
+    );
+
+    MapNode? bestPark;
+    var bestDistance = double.infinity;
+
+    for (final park in availableParks) {
+      final dx = source.x - park.x;
+      final dy = source.y - park.y;
+      final distance = sqrt(dx * dx + dy * dy);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestPark = park;
+      }
+    }
+
+    return bestPark;
+  }
+
   Future<RouteResult?> findFacilityRoute({
     required String floorId,
     required String fromReferenceId,
@@ -123,49 +163,171 @@ class PathfindingService {
     }
   }
 
-  MapNode? nearestEmptyParkToUser(
-    String fromNodeId,
-    Map<String, bool> occupancyMap,
-    Iterable<MapNode> nodes,
-  ) {
-    final sourceNodes = nodes.toList();
-    final from = sourceNodes.where((node) => node.id == fromNodeId).firstOrNull;
-    if (from == null) {
-      return null;
+  Future<RecommendedRouteResult?> findRecommendedParkingNearestToUser({
+    required String fromReferenceId,
+    bool accessibleOnly = false,
+  }) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/navigation/facility-recommended-parking-nearest-to-user',
+        queryParameters: {
+          'fromReferenceId': fromReferenceId,
+          'accessibleOnly': accessibleOnly,
+        },
+      );
+      return RecommendedRouteResult.fromJson(response.data!);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) {
+        return null;
+      }
+      final detail = error.response?.data is Map<String, dynamic>
+          ? (error.response!.data['detail']?.toString())
+          : null;
+      throw ApiException(
+        detail ?? error.message ?? 'Size en yakın park önerisi alınamadı',
+      );
     }
-    return _nearestEmptyPark(from, occupancyMap, sourceNodes);
   }
 
-  MapNode? _nearestEmptyPark(
-    MapNode from,
-    Map<String, bool> occupancyMap,
-    Iterable<MapNode> nodes,
-  ) {
-    final emptyParks = nodes
-        .where((node) => node.isPark && occupancyMap[node.id] == false)
-        .toList();
-    if (emptyParks.isEmpty) {
-      return null;
+  Future<RecommendedRouteResult?> findRecommendedParkingNearParkingEntrance({
+    required String fromReferenceId,
+    bool accessibleOnly = false,
+  }) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/navigation/facility-recommended-parking-near-parking-entrance',
+        queryParameters: {
+          'fromReferenceId': fromReferenceId,
+          'accessibleOnly': accessibleOnly,
+        },
+      );
+      return RecommendedRouteResult.fromJson(response.data!);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) {
+        return null;
+      }
+      final detail = error.response?.data is Map<String, dynamic>
+          ? (error.response!.data['detail']?.toString())
+          : null;
+      throw ApiException(
+        detail ?? error.message ?? 'Girişe en yakın park önerisi alınamadı',
+      );
     }
+  }
 
-    emptyParks.sort(
-      (left, right) => _euclidean(from, left).compareTo(_euclidean(from, right)),
+  Future<MapNode?> findClosestAvailableParking(
+    String fromNodeId,
+    List<MapNode> nodes,
+    List<MapEdge> edges,
+    Map<String, bool> occupancyMap,
+  ) async {
+    final availableParks = nodes.where(
+      (node) => node.isPark && occupancyMap[node.id] == false,
     );
 
-    return emptyParks.first;
+    MapNode? bestPark;
+    var bestDistance = double.infinity;
+
+    for (final park in availableParks) {
+      final route = _dijkstra(
+        start: fromNodeId,
+        goal: park.id,
+        nodes: nodes,
+        edges: edges,
+      );
+      if (route == null) {
+        continue;
+      }
+
+      if (route.distance < bestDistance) {
+        bestDistance = route.distance;
+        bestPark = park;
+      }
+    }
+
+    return bestPark;
   }
 
-  double _euclidean(MapNode a, MapNode b) =>
-      sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+  _RouteComputationResult? _dijkstra({
+    required String start,
+    required String goal,
+    required List<MapNode> nodes,
+    required List<MapEdge> edges,
+  }) {
+    final adjacency = <String, List<String>>{};
+    for (final edge in edges) {
+      adjacency.putIfAbsent(edge.from, () => <String>[]).add(edge.to);
+      adjacency.putIfAbsent(edge.to, () => <String>[]).add(edge.from);
+    }
 
-  Map<String, List<MapNode>> getParkGroups(Iterable<MapNode> nodes) {
-    final parks = nodes.where((node) => node.isPark).toList()
-      ..sort((left, right) => compareNodeLabelsNatural(left.label, right.label));
+    final nodeById = {for (final node in nodes) node.id: node};
+    final distances = <String, double>{start: 0};
+    final previous = <String, String?>{};
+    final queue = <String>{start};
 
-    return {'A': parks};
+    while (queue.isNotEmpty) {
+      final current = queue.reduce(
+        (left, right) => (distances[left] ?? double.infinity) <=
+                (distances[right] ?? double.infinity)
+            ? left
+            : right,
+      );
+      queue.remove(current);
+
+      if (current == goal) {
+        break;
+      }
+
+      final currentNode = nodeById[current];
+      if (currentNode == null) {
+        continue;
+      }
+
+      for (final neighbor in adjacency[current] ?? const <String>[]) {
+        final neighborNode = nodeById[neighbor];
+        if (neighborNode == null) {
+          continue;
+        }
+
+        final dx = currentNode.x - neighborNode.x;
+        final dy = currentNode.y - neighborNode.y;
+        final distance = sqrt(dx * dx + dy * dy);
+        final candidate = (distances[current] ?? double.infinity) + distance;
+
+        if (candidate < (distances[neighbor] ?? double.infinity)) {
+          distances[neighbor] = candidate;
+          previous[neighbor] = current;
+          queue.add(neighbor);
+        }
+      }
+    }
+
+    if (!distances.containsKey(goal)) {
+      return null;
+    }
+
+    final route = <String>[];
+    String? current = goal;
+    while (current != null) {
+      route.add(current);
+      current = previous[current];
+    }
+
+    return _RouteComputationResult(
+      distance: distances[goal]!,
+      nodeIds: route.reversed.toList(),
+    );
   }
+}
 
-  void dispose() {}
+class _RouteComputationResult {
+  const _RouteComputationResult({
+    required this.distance,
+    required this.nodeIds,
+  });
+
+  final double distance;
+  final List<String> nodeIds;
 }
 
 class RouteResult {
@@ -173,9 +335,9 @@ class RouteResult {
     required this.nodes,
     required this.distanceMeters,
     required this.distanceLabel,
-    this.mapAssetPath,
-    this.mapWidth,
-    this.mapHeight,
+    required this.mapAssetPath,
+    required this.mapWidth,
+    required this.mapHeight,
   });
 
   final List<MapNode> nodes;

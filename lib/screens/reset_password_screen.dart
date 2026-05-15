@@ -60,7 +60,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Yeni Sifre Belirle')),
+      appBar: AppBar(title: const Text('Yeni Şifre Belirle')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -70,7 +70,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'E-postadaki sifirlama kodunu gir ve yeni sifreni belirle.',
+                  'E-postadaki sıfırlama kodunu gir ve yeni şifreni belirle.',
                   style: TextStyle(
                     color: Color(0xFF667086),
                     fontSize: 15,
@@ -81,12 +81,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   controller: _tokenController,
                   onChanged: (_) => widget.sessionController.clearErrorMessage(),
                   decoration: const InputDecoration(
-                    labelText: 'Sifirlama Kodu',
-                    hintText: 'Kodunu buraya yapistir',
+                    labelText: 'Sıfırlama Kodu',
+                    hintText: 'Kodunu buraya yapıştır',
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Sifirlama kodu gerekli.';
+                      return 'Sıfırlama kodu gerekli.';
                     }
                     return null;
                   },
@@ -97,7 +97,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   obscureText: _obscurePassword,
                   onChanged: (_) => widget.sessionController.clearErrorMessage(),
                   decoration: InputDecoration(
-                    labelText: 'Yeni Sifre',
+                    labelText: 'Yeni Şifre',
                     hintText: 'En az 8 karakter',
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -116,12 +116,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       return 'Yeni sifre gerekli.';
                     }
                     if (text.length < 8) {
-                      return 'Sifre en az 8 karakter olmali.';
+                      return 'Şifre en az 8 karakter olmalı.';
                     }
                     if (!RegExp(r'[A-Z]').hasMatch(text) ||
                         !RegExp(r'[a-z]').hasMatch(text) ||
                         !RegExp(r'[0-9]').hasMatch(text)) {
-                      return 'Sifre buyuk harf, kucuk harf ve rakam icermeli.';
+                      return 'Şifre büyük harf, küçük harf ve rakam içermeli.';
                     }
                     return null;
                   },
@@ -132,8 +132,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   obscureText: _obscureConfirmPassword,
                   onChanged: (_) => widget.sessionController.clearErrorMessage(),
                   decoration: InputDecoration(
-                    labelText: 'Yeni Sifre Tekrari',
-                    hintText: 'Sifreyi tekrar gir',
+                    labelText: 'Yeni Şifre Tekrarı',
+                    hintText: 'Şifreyi tekrar gir',
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
@@ -149,10 +149,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Sifre tekrari gerekli.';
+                      return 'Şifre tekrarı gerekli.';
                     }
                     if (value != _passwordController.text) {
-                      return 'Sifreler ayni degil.';
+                      return 'Şifreler aynı değil.';
                     }
                     return null;
                   },
@@ -164,7 +164,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 if (_completed) ...[
                   const SizedBox(height: 16),
                   const _MessageBox(
-                    message: 'Sifren guncellendi. Artik yeni sifrenle giris yapabilirsin.',
+                    message: 'Şifren güncellendi. Artık yeni şifrenle giriş yapabilirsin.',
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -181,7 +181,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
-                        : const Text('Sifreyi Guncelle'),
+                        : const Text('Şifreyi Güncelle'),
                   ),
                 ),
               ],

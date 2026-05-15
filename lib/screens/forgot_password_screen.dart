@@ -59,7 +59,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final errorMessage = widget.sessionController.errorMessage;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sifre Sifirlama')),
+      appBar: AppBar(title: const Text('Şifre Sıfırlama')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -69,7 +69,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sifre sifirlama baglantisi gonder',
+                  'Şifre sıfırlama bağlantısı gönder',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: const Color(0xFF1B2842),
@@ -77,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Kayitli e-posta adresini gir. Sana sifre yenileme kodu gonderecegiz.',
+                  'Kayıtlı e-posta adresini gir. Sana şifre yenileme kodu göndereceğiz.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: const Color(0xFF667086),
                   ),
@@ -96,7 +96,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       return 'E-posta adresi gerekli.';
                     }
                     if (!value.contains('@')) {
-                      return 'Gecerli bir e-posta adresi gir.';
+                      return 'Geçerli bir e-posta adresi gir.';
                     }
                     return null;
                   },
@@ -112,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
                   const _AuthMessageBox(
                     message:
-                        'E-posta sistemde kayitliysa sifre sifirlama kodu gonderildi.',
+                        'E-posta sistemde kayıtlıysa şifre sıfırlama kodu gönderildi.',
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -129,7 +129,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
-                        : const Text('Sifirlama Kodu Gonder'),
+                        : const Text('Sıfırlama Kodu Gönder'),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -149,7 +149,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
                     ),
-                    child: const Text('Kodum Var, Sifreyi Yenile'),
+                    child: const Text('Kodum Var, Şifreyi Yenile'),
                   ),
                 ),
               ],
