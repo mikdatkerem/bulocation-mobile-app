@@ -31,6 +31,7 @@ class SessionStorage {
   static const _accessTokenKey = 'auth.accessToken';
   static const _refreshTokenKey = 'auth.refreshToken';
   static const _profileKey = 'auth.profile';
+  static const _homeGuideSeenKey = 'app.homeGuideSeen';
 
   final FlutterSecureStorage _secureStorage;
 
@@ -77,6 +78,15 @@ class SessionStorage {
   }) async {
     await _secureStorage.write(key: _accessTokenKey, value: accessToken);
     await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+  }
+
+  Future<bool> isHomeGuideSeen() async {
+    final raw = await _secureStorage.read(key: _homeGuideSeenKey);
+    return raw == 'true';
+  }
+
+  Future<void> markHomeGuideSeen() async {
+    await _secureStorage.write(key: _homeGuideSeenKey, value: 'true');
   }
 
   Future<void> clear() async {

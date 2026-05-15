@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../app/app_session_controller.dart';
 import '../models/facility_models.dart';
+import '../services/session_storage.dart';
 import 'home_overview_screen.dart';
+import 'home_guide_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 
@@ -20,6 +22,26 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
   final GlobalKey<MapsScreenState> _mapsKey = GlobalKey<MapsScreenState>();
+  final SessionStorage _sessionStorage = SessionStorage();
+  bool _guideReady = false;
+  bool _showGuide = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGuideState();
+  }
+
+  Future<void> _loadGuideState() async {
+    final seen = await _sessionStorage.isHomeGuideSeen();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _guideReady = true;
+      _showGuide = !seen;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +60,17 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
-      ),
-      bottomNavigationBar: _currentIndex == 1
+      body: !_guideReady
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+            )
+          : _showGuide
+              ? HomeGuideScreen(onComplete: _completeGuide)
+              : IndexedStack(
+                  index: _currentIndex,
+                  children: pages,
+                ),
+      bottomNavigationBar: _currentIndex == 1 || _showGuide || !_guideReady
           ? null
           : ColoredBox(
               color: const Color(0xFFF8FAFC),
@@ -118,6 +146,14 @@ class _AppShellState extends State<AppShell> {
     if (request != null) {
       await _mapsKey.currentState?.openSelection(request);
     }
+  }
+
+  Future<void> _completeGuide() async {
+    await _sessionStorage.markHomeGuideSeen();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _showGuide = false);
   }
 }
 
