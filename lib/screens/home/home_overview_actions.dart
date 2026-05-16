@@ -42,54 +42,72 @@ class _HeroScene extends StatelessWidget {
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, _) => SizedBox(
-        height: 540,
+        height: 560,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             Positioned(
-              top: 8,
-              left: -14,
+              top: 10,
+              left: -12,
               child: _GlowOrb(
-                size: 140,
-                color: const Color(0x1A6366F1),
-                offset: Offset(-18, 12 * pulse.value),
+                size: 156,
+                color: const Color(0x146366F1),
+                offset: Offset(-14, 10 * pulse.value),
               ),
             ),
             Positioned(
-              top: 148,
-              right: -4,
+              top: 174,
+              right: -10,
               child: _GlowOrb(
-                size: 170,
-                color: const Color(0x1222D3EE),
-                offset: Offset(10, -8 * pulse.value),
+                size: 182,
+                color: const Color(0x1022D3EE),
+                offset: Offset(12, -9 * pulse.value),
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  greeting,
-                  style: const TextStyle(
-                    color: _soft,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.1,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: _line),
+                  ),
+                  child: Text(
+                    greeting,
+                    style: const TextStyle(
+                      color: _soft,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 const Text(
                   'Harita\nkapıda başlasın.',
                   style: TextStyle(
                     color: _ink,
-                    fontSize: 46,
+                    fontSize: 48,
                     height: 0.94,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -2.1,
+                    letterSpacing: -2.2,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
+                const Text(
+                  'QR tabanlı başlangıç',
+                  style: TextStyle(
+                    color: _accent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 320),
+                  constraints: const BoxConstraints(maxWidth: 330),
                   child: Text(
                     description,
                     style: const TextStyle(
@@ -110,7 +128,7 @@ class _HeroScene extends StatelessWidget {
                     const _MetricPill(label: 'QR ile anında açılış'),
                   ],
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 30),
                 Expanded(
                   child: Stack(
                     clipBehavior: Clip.none,
@@ -191,7 +209,7 @@ class _QrStage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final haloScale = 0.96 + (pulse.value * 0.08);
-    final ringOpacity = 0.28 + (pulse.value * 0.18);
+    final ringOpacity = 0.26 + (pulse.value * 0.18);
 
     return SizedBox(
       height: 248,
@@ -201,8 +219,8 @@ class _QrStage extends StatelessWidget {
           Transform.scale(
             scale: haloScale,
             child: Container(
-              width: 256,
-              height: 256,
+              width: 264,
+              height: 264,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
@@ -216,12 +234,12 @@ class _QrStage extends StatelessWidget {
             ),
           ),
           Container(
-            width: 296,
-            height: 208,
+            width: 302,
+            height: 210,
             decoration: BoxDecoration(
               color: const Color(0xFFF6F8FF),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: const Color(0x356366F1)),
+              borderRadius: BorderRadius.circular(42),
+              border: Border.all(color: const Color(0x306366F1)),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x140F172A),
@@ -232,10 +250,10 @@ class _QrStage extends StatelessWidget {
             ),
           ),
           Transform.rotate(
-            angle: -0.12,
+            angle: -0.1,
             child: Container(
-              width: 152,
-              height: 152,
+              width: 156,
+              height: 156,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(36),
                 gradient: const LinearGradient(
@@ -246,24 +264,17 @@ class _QrStage extends StatelessWidget {
                     Color(0xFFDDE5FF),
                   ],
                 ),
-                border: Border.all(color: const Color(0x3A6366F1)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x146366F1),
-                    blurRadius: 22,
-                    offset: Offset(0, 16),
-                  ),
-                ],
+                border: Border.all(color: const Color(0x336366F1)),
               ),
             ),
           ),
           Container(
-            width: 172,
-            height: 172,
+            width: 176,
+            height: 176,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(38),
-              border: Border.all(color: const Color(0x3F6366F1), width: 1.4),
+              borderRadius: BorderRadius.circular(40),
+              border: Border.all(color: const Color(0x3B6366F1), width: 1.4),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x140F172A),
@@ -434,7 +445,7 @@ class _MetricPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.82),
+        color: Colors.white.withValues(alpha: 0.84),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: _line),
       ),
@@ -575,7 +586,7 @@ class _ManualSelectionPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Manuel seçim',
+            'MANUEL SEÇİM',
             style: TextStyle(
               color: _muted,
               fontSize: 12,

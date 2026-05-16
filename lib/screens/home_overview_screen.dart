@@ -178,7 +178,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
                           pulse: _pulseController,
                           onPrimaryTap: () => _showQuickScanner(context),
                         ),
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 24),
                         _ManualSelectionPanel(
                           onTap: () => widget.onOpenMaps(null),
                         ),
