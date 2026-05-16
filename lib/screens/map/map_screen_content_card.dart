@@ -57,6 +57,35 @@ class MapScreenContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final child = hasMap
+        ? FloorPlanWidget(
+            key: const ValueKey('floor-plan'),
+            visitedIds: const {},
+            activeZoneId: activeNodeId,
+            navigationRoute: navigationRoute,
+            occupancyMap: occupancy,
+            nodes: displayNodes,
+            mapAssetPath: mapAssetPath,
+            mapAssetContentType: mapAssetContentType,
+            mapWidth: mapWidth,
+            mapHeight: mapHeight,
+          )
+        : MapSelectionPanel(
+            key: const ValueKey('map-selection'),
+            organizations: organizations,
+            selectedOrganizationId: selectedOrganizationId,
+            sites: sites,
+            selectedSiteId: selectedSiteId,
+            buildings: buildings,
+            selectedBuildingId: selectedBuildingId,
+            floors: floors,
+            selectedFloorId: selectedFloorId,
+            onOrganizationChanged: onOrganizationChanged,
+            onSiteChanged: onSiteChanged,
+            onBuildingChanged: onBuildingChanged,
+            onFloorChanged: onFloorChanged,
+          );
+
     return Expanded(
       child: Padding(
         padding: EdgeInsets.fromLTRB(12, 12, 12, mapBottomInset),
@@ -64,35 +93,34 @@ class MapScreenContentCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(28),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x100F172A),
+                blurRadius: 24,
+                offset: Offset(0, 12),
+              ),
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
-            child: hasMap
-                ? FloorPlanWidget(
-                    visitedIds: const {},
-                    activeZoneId: activeNodeId,
-                    navigationRoute: navigationRoute,
-                    occupancyMap: occupancy,
-                    nodes: displayNodes,
-                    mapAssetPath: mapAssetPath,
-                    mapAssetContentType: mapAssetContentType,
-                    mapWidth: mapWidth,
-                    mapHeight: mapHeight,
-                  )
-                : MapSelectionPanel(
-                    organizations: organizations,
-                    selectedOrganizationId: selectedOrganizationId,
-                    sites: sites,
-                    selectedSiteId: selectedSiteId,
-                    buildings: buildings,
-                    selectedBuildingId: selectedBuildingId,
-                    floors: floors,
-                    selectedFloorId: selectedFloorId,
-                    onOrganizationChanged: onOrganizationChanged,
-                    onSiteChanged: onSiteChanged,
-                    onBuildingChanged: onBuildingChanged,
-                    onFloorChanged: onFloorChanged,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(
+                      begin: 0.985,
+                      end: 1,
+                    ).animate(animation),
+                    child: child,
                   ),
+                );
+              },
+              child: child,
+            ),
           ),
         ),
       ),
