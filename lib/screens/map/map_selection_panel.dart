@@ -45,22 +45,38 @@ class MapSelectionPanel extends StatelessWidget {
     final selectedFloor =
         floors.where((item) => item.id == selectedFloorId).firstOrNull;
 
-    return Container(
-      color: const Color(0xFFF8FAFC),
+    final completedSteps = [
+      selectedOrganization != null,
+      selectedSite != null,
+      selectedBuilding != null,
+      selectedFloor != null,
+    ].where((value) => value).length;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFF),
+            Color(0xFFF3F6FC),
+          ],
+        ),
+      ),
       child: Align(
         alignment: Alignment.center,
         child: Padding(
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.all(18),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 420),
+            constraints: const BoxConstraints(maxWidth: 430),
             padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              color: Colors.white.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x1A0F172A),
+                  color: Color(0x140F172A),
                   blurRadius: 30,
                   offset: Offset(0, 18),
                 ),
@@ -70,42 +86,70 @@ class MapSelectionPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.map_rounded,
-                    color: Color(0xFF6366F1),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEF2FF),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.map_rounded,
+                        color: Color(0xFF6366F1),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'MANUEL SEÇİM',
+                            style: TextStyle(
+                              color: Color(0xFF6366F1),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            completedSteps == 0
+                                ? 'Harita seçin'
+                                : '$completedSteps/4 adım tamamlandı',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 const Text(
-                  'Harita seçin',
+                  'Önce kurum seçin. Sonrasında yerleşke, bina ve kat adımları sırasıyla açılır.',
                   style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.6,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Önce kurum seçin. Sonrasında yerleşke, bina ve kat adımları sırayla açılır.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.5,
+                    fontSize: 14,
+                    height: 1.55,
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 18),
+                _StepMeter(
+                  currentStep: completedSteps,
+                  labels: const ['Kurum', 'Yerleşke', 'Bina', 'Kat'],
+                ),
                 const SizedBox(height: 22),
                 _SearchField<OrganizationSummary>(
                   label: 'Kurum',
+                  helper: 'İlk adım. Arama ile kurum seçin.',
                   value: selectedOrganization,
                   items: organizations,
                   title: (item) => item.name,
@@ -115,6 +159,7 @@ class MapSelectionPanel extends StatelessWidget {
                   const SizedBox(height: 14),
                   _SearchField<SiteHierarchy>(
                     label: 'Yerleşke',
+                    helper: 'Seçilen kuruma ait yerleşkeler',
                     value: selectedSite,
                     items: sites,
                     title: (item) => item.name,
@@ -125,6 +170,7 @@ class MapSelectionPanel extends StatelessWidget {
                   const SizedBox(height: 14),
                   _SearchField<BuildingHierarchy>(
                     label: 'Bina',
+                    helper: 'Seçilen yerleşkeye ait binalar',
                     value: selectedBuilding,
                     items: buildings,
                     title: (item) => item.name,
@@ -135,6 +181,7 @@ class MapSelectionPanel extends StatelessWidget {
                   const SizedBox(height: 14),
                   _SearchField<FloorHierarchy>(
                     label: 'Kat',
+                    helper: 'Haritayı açmak için son adım',
                     value: selectedFloor,
                     items: floors,
                     title: (item) => item.name,
@@ -150,9 +197,76 @@ class MapSelectionPanel extends StatelessWidget {
   }
 }
 
+class _StepMeter extends StatelessWidget {
+  const _StepMeter({
+    required this.currentStep,
+    required this.labels,
+  });
+
+  final int currentStep;
+  final List<String> labels;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(labels.length, (index) {
+        final active = index < currentStep;
+        final current = index == currentStep && currentStep < labels.length;
+
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: active || current
+                    ? const Color(0xFFEEF2FF)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: active || current
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    active
+                        ? Icons.check_circle_rounded
+                        : current
+                            ? Icons.adjust_rounded
+                            : Icons.circle_outlined,
+                    size: 18,
+                    color: active || current
+                        ? const Color(0xFF6366F1)
+                        : const Color(0xFF94A3B8),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    labels[index],
+                    style: TextStyle(
+                      color: active || current
+                          ? const Color(0xFF4338CA)
+                          : const Color(0xFF94A3B8),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
 class _SearchField<T> extends StatelessWidget {
   const _SearchField({
     required this.label,
+    required this.helper,
     required this.value,
     required this.items,
     required this.title,
@@ -160,6 +274,7 @@ class _SearchField<T> extends StatelessWidget {
   });
 
   final String label;
+  final String helper;
   final T? value;
   final List<T> items;
   final String Function(T item) title;
@@ -167,34 +282,59 @@ class _SearchField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = items.isEmpty;
+    final hasValue = value != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 2, bottom: 8),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.4,
-            ),
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.4,
           ),
         ),
+        const SizedBox(height: 6),
+        Text(
+          helper,
+          style: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
         InkWell(
-          onTap: items.isEmpty
+          onTap: isDisabled
               ? null
               : () async {
                   final selected = await Navigator.of(context).push<T>(
-                    MaterialPageRoute<T>(
-                      fullscreenDialog: true,
-                      builder: (_) => _SearchPickerPage<T>(
+                    PageRouteBuilder<T>(
+                      pageBuilder: (_, __, ___) => _SearchPickerPage<T>(
                         label: label,
                         items: items,
                         value: value,
                         title: title,
                       ),
+                      transitionsBuilder: (_, animation, __, child) {
+                        final curved = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        );
+                        return FadeTransition(
+                          opacity: curved,
+                          child: SlideTransition(
+                            position: Tween(
+                              begin: const Offset(0, 0.04),
+                              end: Offset.zero,
+                            ).animate(curved),
+                            child: child,
+                          ),
+                        );
+                      },
                     ),
                   );
 
@@ -202,26 +342,37 @@ class _SearchField<T> extends StatelessWidget {
                     onSelected(selected);
                   }
                 },
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(20),
           child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: items.isEmpty
-                  ? const Color(0xFFF8FAFC)
-                  : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(10),
+              color:
+                  hasValue ? const Color(0xFFF8FAFF) : const Color(0xFFF9FBFF),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: items.isEmpty
-                    ? const Color(0xFFE2E8F0)
-                    : const Color(0x00000000),
+                color: hasValue
+                    ? const Color(0xFFCBD5FF)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.search_rounded,
-                  color: Color(0xFF64748B),
-                  size: 20,
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: hasValue
+                        ? const Color(0xFFEEF2FF)
+                        : const Color(0xFFFFFFFF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: isDisabled
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF6366F1),
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -233,15 +384,15 @@ class _SearchField<T> extends StatelessWidget {
                       color: value == null
                           ? const Color(0xFF94A3B8)
                           : const Color(0xFF0F172A),
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.chevron_right_rounded,
-                  color: items.isEmpty
+                  Icons.arrow_forward_rounded,
+                  color: isDisabled
                       ? const Color(0xFFCBD5E1)
                       : const Color(0xFF6366F1),
                 ),
@@ -292,9 +443,9 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
     final items = _rankedItems(widget.items, _query, widget.title);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF6F8FD),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: const Color(0xFFF6F8FD),
         surfaceTintColor: Colors.transparent,
         title: Text(
           '${widget.label} seçin',
@@ -311,53 +462,93 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                onChanged: (value) => setState(() => _query = value),
-                decoration: InputDecoration(
-                  hintText: '${widget.label} yazın',
-                  hintStyle: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: Color(0xFF64748B),
-                  ),
-                  suffixIcon: _query.isEmpty
-                      ? null
-                      : IconButton(
-                          onPressed: () {
-                            _controller.clear();
-                            setState(() => _query = '');
-                          },
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: Color(0xFF94A3B8),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x100F172A),
+                      blurRadius: 18,
+                      offset: Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${widget.label.toUpperCase()} ARA',
+                      style: const TextStyle(
+                        color: Color(0xFF6366F1),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Aramaya harf yazarak başlayın. Sonuçlar anında filtrelenir.',
+                      style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 13,
+                        height: 1.45,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      onChanged: (value) => setState(() => _query = value),
+                      decoration: InputDecoration(
+                        hintText: '${widget.label} yazın',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF64748B),
+                        ),
+                        suffixIcon: _query.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  _controller.clear();
+                                  setState(() => _query = '');
+                                },
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF6366F1),
+                            width: 1.2,
                           ),
                         ),
-                  filled: true,
-                  fillColor: const Color(0xFFFFFFFF),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF6366F1),
-                      width: 1.2,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -392,7 +583,7 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
 
                               return InkWell(
                                 onTap: () => Navigator.of(context).pop(item),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(18),
                                 child: Ink(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -402,7 +593,7 @@ class _SearchPickerPageState<T> extends State<_SearchPickerPage<T>> {
                                     color: selected
                                         ? const Color(0xFFEEF2FF)
                                         : const Color(0xFFFFFFFF),
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(18),
                                     border: Border.all(
                                       color: selected
                                           ? const Color(0xFF6366F1)
