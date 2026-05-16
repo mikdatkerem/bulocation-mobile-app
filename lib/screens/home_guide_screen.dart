@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class HomeGuideScreen extends StatefulWidget {
@@ -12,48 +14,73 @@ class HomeGuideScreen extends StatefulWidget {
   State<HomeGuideScreen> createState() => _HomeGuideScreenState();
 }
 
-class _HomeGuideScreenState extends State<HomeGuideScreen> {
+class _HomeGuideScreenState extends State<HomeGuideScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
+
+  late final AnimationController _ambientController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 4200),
+  )..repeat(reverse: true);
 
   int _currentIndex = 0;
   bool _finishing = false;
 
   static const _slides = [
     _GuideSlideData(
-      eyebrow: 'ADIM 1',
-      title: 'QR ile\nbaşlayın',
+      stepLabel: 'ADIM 1',
+      title: 'QR ile başlayın',
+      headline: 'Harita girişte açılsın.',
       description:
           'Binanın girişindeki veya bulunduğunuz kattaki QR kodunu okutun. Uygulama doğru haritayı otomatik açsın.',
       cta: 'Devam et',
       accent: Color(0xFF6366F1),
       secondary: Color(0xFF22D3EE),
       type: _GuideArtworkType.qrStart,
+      highlights: [
+        'QR okut',
+        'Konum aç',
+        'Doğru kat',
+      ],
     ),
     _GuideSlideData(
-      eyebrow: 'ADIM 2',
-      title: 'Harita anında\nhazır olsun',
+      stepLabel: 'ADIM 2',
+      title: 'Harita anında hazır',
+      headline: 'Kat planını hemen görün.',
       description:
-          'Konumunuz açıldığında kat planı, yönlendirme noktaları ve ilgili bina bilgileri doğrudan ekranda görünür.',
+          'Konum açıldığında kat planı, yönlendirme noktaları ve ilgili bina bilgileri doğrudan ekranda görünür.',
       cta: 'Devam et',
       accent: Color(0xFF4F46E5),
       secondary: Color(0xFF93C5FD),
       type: _GuideArtworkType.mapOpen,
+      highlights: [
+        'Kat planı',
+        'Konum noktası',
+        'Hazır bilgiler',
+      ],
     ),
     _GuideSlideData(
-      eyebrow: 'ADIM 3',
-      title: 'Hedef seçin,\nyola çıkın',
+      stepLabel: 'ADIM 3',
+      title: 'Hedef seçip yola çıkın',
+      headline: 'Rota anında çizilsin.',
       description:
-          'Otopark, hastane girişi veya içeride gitmek istediğiniz hedefi seçin. Rota size anında çizilsin.',
+          'Otopark, hastane girişi veya içeride gitmek istediğiniz hedefi seçin. Yönlendirme size anında hazırlansın.',
       cta: 'Başla',
       accent: Color(0xFF6366F1),
       secondary: Color(0xFF22C55E),
       type: _GuideArtworkType.routeGo,
+      highlights: [
+        'Hedef seç',
+        'Rota oluştur',
+        'Takip et',
+      ],
     ),
   ];
 
   @override
   void dispose() {
     _pageController.dispose();
+    _ambientController.dispose();
     super.dispose();
   }
 
@@ -69,7 +96,7 @@ class _HomeGuideScreenState extends State<HomeGuideScreen> {
     }
 
     await _pageController.nextPage(
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 360),
       curve: Curves.easeOutCubic,
     );
   }
@@ -78,92 +105,93 @@ class _HomeGuideScreenState extends State<HomeGuideScreen> {
     if (_finishing) {
       return;
     }
+
     setState(() => _finishing = true);
     await widget.onComplete();
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentSlide = _slides[_currentIndex];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FD),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 8, 22, 22),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _finishing ? null : _handleSkip,
-                    child: const Text(
-                      'Geç',
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _slides.length,
-                  onPageChanged: (value) =>
-                      setState(() => _currentIndex = value),
-                  itemBuilder: (context, index) {
-                    final slide = _slides[index];
-                    return _GuideSlide(
-                      data: slide,
-                      currentIndex: _currentIndex,
-                      slideCount: _slides.length,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _slides.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentIndex == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentIndex == index
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFFD7DEEB),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _finishing ? null : _handleNext,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                  ),
-                  child: Text(
-                    _finishing ? 'Hazırlanıyor...' : _slides[_currentIndex].cta,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
+      backgroundColor: const Color(0xFFF4F7FC),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF8FAFF),
+              Color(0xFFF2F6FC),
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 22),
+            child: Column(
+              children: [
+                _GuideHeader(
+                  currentIndex: _currentIndex,
+                  slideCount: _slides.length,
+                  onSkip: _finishing ? null : _handleSkip,
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _ambientController,
+                    builder: (context, _) => Stack(
+                      children: [
+                        Positioned(
+                          top: 36,
+                          left: -18,
+                          child: _AmbientGlow(
+                            size: 180,
+                            color: currentSlide.accent.withValues(alpha: 0.10),
+                            dx: -12,
+                            dy: 18 * _ambientController.value,
+                          ),
+                        ),
+                        Positioned(
+                          top: 210,
+                          right: -26,
+                          child: _AmbientGlow(
+                            size: 170,
+                            color:
+                                currentSlide.secondary.withValues(alpha: 0.12),
+                            dx: 10,
+                            dy: -14 * _ambientController.value,
+                          ),
+                        ),
+                        PageView.builder(
+                          controller: _pageController,
+                          itemCount: _slides.length,
+                          onPageChanged: (value) =>
+                              setState(() => _currentIndex = value),
+                          itemBuilder: (context, index) {
+                            final slide = _slides[index];
+                            return _GuideSlide(
+                              key: ValueKey(slide.title),
+                              data: slide,
+                              isActive: index == _currentIndex,
+                              ambientValue: _ambientController.value,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _GuideFooter(
+                  currentIndex: _currentIndex,
+                  slideCount: _slides.length,
+                  cta: _finishing ? 'Hazırlanıyor...' : currentSlide.cta,
+                  onNext: _finishing ? null : _handleNext,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -171,146 +199,55 @@ class _HomeGuideScreenState extends State<HomeGuideScreen> {
   }
 }
 
-class _GuideSlide extends StatelessWidget {
-  const _GuideSlide({
-    required this.data,
+class _GuideHeader extends StatelessWidget {
+  const _GuideHeader({
     required this.currentIndex,
     required this.slideCount,
-  });
-
-  final _GuideSlideData data;
-  final int currentIndex;
-  final int slideCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(36),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x140F172A),
-                  blurRadius: 36,
-                  offset: Offset(0, 18),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -28,
-                  right: -12,
-                  child: _SoftGlow(
-                    size: 170,
-                    color: data.accent.withValues(alpha: 0.10),
-                  ),
-                ),
-                Positioned(
-                  bottom: 82,
-                  left: -18,
-                  child: _SoftGlow(
-                    size: 130,
-                    color: data.secondary.withValues(alpha: 0.14),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 26, 24, 26),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _GuideTopBar(
-                          currentIndex: currentIndex, slideCount: slideCount),
-                      const SizedBox(height: 28),
-                      Expanded(
-                        child: Center(
-                          child: _GuideArtwork(data: data),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        data.eyebrow,
-                        style: TextStyle(
-                          color: data.accent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.8,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        data.title,
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 34,
-                          height: 0.98,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -1.3,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        data.description,
-                        style: const TextStyle(
-                          color: Color(0xFF475569),
-                          fontSize: 15,
-                          height: 1.65,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GuideTopBar extends StatelessWidget {
-  const _GuideTopBar({
-    required this.currentIndex,
-    required this.slideCount,
+    required this.onSkip,
   });
 
   final int currentIndex;
   final int slideCount;
+  final VoidCallback? onSkip;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
-          width: 42,
-          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFFEEF2FF),
-            borderRadius: BorderRadius.circular(14),
+            color: Colors.white.withValues(alpha: 0.78),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0x14FFFFFF)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x100F172A),
+                blurRadius: 16,
+                offset: Offset(0, 10),
+              ),
+            ],
           ),
-          child: const Icon(
-            Icons.place_rounded,
-            color: Color(0xFF6366F1),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.place_rounded,
+                color: Color(0xFF6366F1),
+                size: 18,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Bulocation',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Text(
-            'Bulocation',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
+        const Spacer(),
         Text(
           '${currentIndex + 1}/$slideCount',
           style: const TextStyle(
@@ -319,56 +256,299 @@ class _GuideTopBar extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
+        const SizedBox(width: 8),
+        TextButton(
+          onPressed: onSkip,
+          child: const Text(
+            'Geç',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GuideSlide extends StatelessWidget {
+  const _GuideSlide({
+    super.key,
+    required this.data,
+    required this.isActive,
+    required this.ambientValue,
+  });
+
+  final _GuideSlideData data;
+  final bool isActive;
+  final double ambientValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final artworkOffset =
+        isActive ? (math.sin(ambientValue * math.pi) * 8) : 0.0;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 260),
+      opacity: isActive ? 1 : 0.78,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8, bottom: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(36),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x120F172A),
+                blurRadius: 32,
+                offset: Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.stepLabel,
+                  style: TextStyle(
+                    color: data.accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.8,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  data.title,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.0,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  data.headline,
+                  style: TextStyle(
+                    color: data.accent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  data.description,
+                  style: const TextStyle(
+                    color: Color(0xFF475569),
+                    fontSize: 14.5,
+                    height: 1.65,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: data.highlights
+                      .map(
+                        (item) => _GuidePill(
+                          label: item,
+                          accent: data.accent,
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: Center(
+                    child: Transform.translate(
+                      offset: Offset(0, artworkOffset),
+                      child: _GuideArtwork(
+                        data: data,
+                        ambientValue: ambientValue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GuidePill extends StatelessWidget {
+  const _GuidePill({
+    required this.label,
+    required this.accent,
+  });
+
+  final String label;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: accent,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _GuideFooter extends StatelessWidget {
+  const _GuideFooter({
+    required this.currentIndex,
+    required this.slideCount,
+    required this.cta,
+    required this.onNext,
+  });
+
+  final int currentIndex;
+  final int slideCount;
+  final String cta;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: List.generate(
+              slideCount,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 240),
+                margin: const EdgeInsets.only(right: 7),
+                width: currentIndex == index ? 28 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: currentIndex == index
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFFD9E1EE),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          flex: 2,
+          child: FilledButton(
+            onPressed: onNext,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              cta,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 }
 
 class _GuideArtwork extends StatelessWidget {
-  const _GuideArtwork({required this.data});
+  const _GuideArtwork({
+    required this.data,
+    required this.ambientValue,
+  });
 
   final _GuideSlideData data;
+  final double ambientValue;
 
   @override
   Widget build(BuildContext context) {
     switch (data.type) {
       case _GuideArtworkType.qrStart:
-        return _QrStartArtwork(data: data);
+        return _QrStartArtwork(
+          data: data,
+          ambientValue: ambientValue,
+        );
       case _GuideArtworkType.mapOpen:
-        return _MapOpenArtwork(data: data);
+        return _MapOpenArtwork(
+          data: data,
+          ambientValue: ambientValue,
+        );
       case _GuideArtworkType.routeGo:
-        return _RouteGoArtwork(data: data);
+        return _RouteGoArtwork(
+          data: data,
+          ambientValue: ambientValue,
+        );
     }
   }
 }
 
 class _QrStartArtwork extends StatelessWidget {
-  const _QrStartArtwork({required this.data});
+  const _QrStartArtwork({
+    required this.data,
+    required this.ambientValue,
+  });
 
   final _GuideSlideData data;
+  final double ambientValue;
 
   @override
   Widget build(BuildContext context) {
+    final floatingShift = math.sin(ambientValue * math.pi) * 10;
+
     return SizedBox(
       height: 290,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Transform.rotate(
-            angle: -0.14,
+            angle: -0.16,
             child: _TiltedCard(
-              width: 178,
-              height: 226,
+              width: 182,
+              height: 230,
               color: const Color(0xFFF6F8FF),
-              borderColor: data.accent.withValues(alpha: 0.20),
+              borderColor: data.accent.withValues(alpha: 0.16),
             ),
           ),
           Positioned(
-            right: 34,
-            top: 18,
+            right: 28,
+            top: 18 + floatingShift,
             child: Transform.rotate(
               angle: 0.08,
               child: _QrMiniCard(data: data),
+            ),
+          ),
+          Positioned(
+            left: 14,
+            top: 34 - (floatingShift * 0.5),
+            child: _GuideChip(
+              icon: Icons.qr_code_rounded,
+              label: 'QR hazır',
+              color: data.accent,
             ),
           ),
           _PhoneFrame(
@@ -380,10 +560,12 @@ class _QrStartArtwork extends StatelessWidget {
                 _QrCodeBox(accent: data.accent),
                 const Spacer(),
                 Container(
-                  width: 108,
+                  width: 112,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: data.accent,
+                    gradient: LinearGradient(
+                      colors: [data.accent, data.secondary],
+                    ),
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
@@ -398,19 +580,25 @@ class _QrStartArtwork extends StatelessWidget {
 }
 
 class _MapOpenArtwork extends StatelessWidget {
-  const _MapOpenArtwork({required this.data});
+  const _MapOpenArtwork({
+    required this.data,
+    required this.ambientValue,
+  });
 
   final _GuideSlideData data;
+  final double ambientValue;
 
   @override
   Widget build(BuildContext context) {
+    final chipShift = math.cos(ambientValue * math.pi) * 9;
+
     return SizedBox(
       height: 290,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 260,
+            width: 258,
             height: 220,
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFF),
@@ -419,8 +607,8 @@ class _MapOpenArtwork extends StatelessWidget {
             ),
             child: CustomPaint(
               painter: _MapPatternPainter(
-                accent: data.accent.withValues(alpha: 0.7),
-                secondary: data.secondary.withValues(alpha: 0.42),
+                accent: data.accent.withValues(alpha: 0.78),
+                secondary: data.secondary.withValues(alpha: 0.46),
               ),
             ),
           ),
@@ -450,12 +638,21 @@ class _MapOpenArtwork extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 24,
-            top: 46,
+            left: 22,
+            top: 44 + chipShift,
             child: _GuideChip(
               icon: Icons.layers_outlined,
               label: 'Doğru kat',
               color: data.accent,
+            ),
+          ),
+          Positioned(
+            right: 18,
+            bottom: 34 - (chipShift * 0.6),
+            child: _GuideChip(
+              icon: Icons.info_outline_rounded,
+              label: 'Bina bilgisi',
+              color: data.secondary,
             ),
           ),
         ],
@@ -465,12 +662,18 @@ class _MapOpenArtwork extends StatelessWidget {
 }
 
 class _RouteGoArtwork extends StatelessWidget {
-  const _RouteGoArtwork({required this.data});
+  const _RouteGoArtwork({
+    required this.data,
+    required this.ambientValue,
+  });
 
   final _GuideSlideData data;
+  final double ambientValue;
 
   @override
   Widget build(BuildContext context) {
+    final chipShift = math.sin(ambientValue * math.pi) * 10;
+
     return SizedBox(
       height: 290,
       child: Stack(
@@ -479,8 +682,8 @@ class _RouteGoArtwork extends StatelessWidget {
           Transform.rotate(
             angle: 0.04,
             child: Container(
-              width: 240,
-              height: 210,
+              width: 242,
+              height: 212,
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFF),
                 borderRadius: BorderRadius.circular(34),
@@ -496,7 +699,7 @@ class _RouteGoArtwork extends StatelessWidget {
           ),
           Positioned(
             left: 28,
-            top: 38,
+            top: 40 - chipShift,
             child: _GuideChip(
               icon: Icons.local_parking_rounded,
               label: 'Otopark',
@@ -504,8 +707,8 @@ class _RouteGoArtwork extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: 28,
-            bottom: 42,
+            right: 24,
+            bottom: 40 + chipShift,
             child: _GuideChip(
               icon: Icons.route_rounded,
               label: 'Rota hazır',
@@ -553,8 +756,8 @@ class _QrMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 94,
-      height: 112,
+      width: 96,
+      height: 116,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -572,7 +775,7 @@ class _QrMiniCard extends StatelessWidget {
           Expanded(child: _QrCodeBox(accent: data.accent)),
           const SizedBox(height: 10),
           Container(
-            width: 36,
+            width: 38,
             height: 4,
             decoration: BoxDecoration(
               color: const Color(0xFFCBD5E1),
@@ -593,8 +796,8 @@ class _PhoneFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 176,
-      height: 274,
+      width: 178,
+      height: 276,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -748,27 +951,34 @@ class _GuideChip extends StatelessWidget {
   }
 }
 
-class _SoftGlow extends StatelessWidget {
-  const _SoftGlow({
+class _AmbientGlow extends StatelessWidget {
+  const _AmbientGlow({
     required this.size,
     required this.color,
+    required this.dx,
+    required this.dy,
   });
 
   final double size;
   final Color color;
+  final double dx;
+  final double dy;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withValues(alpha: 0),
-          ],
+    return Transform.translate(
+      offset: Offset(dx, dy),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              color,
+              color.withValues(alpha: 0),
+            ],
+          ),
         ),
       ),
     );
@@ -873,10 +1083,7 @@ class _RoutePainter extends CustomPainter {
     final nodePaint = Paint()..color = success;
     canvas.drawCircle(Offset(54, size.height - 46), 7, nodePaint);
     canvas.drawCircle(
-      Offset(size.width - 54, size.height * 0.46),
-      7,
-      nodePaint,
-    );
+        Offset(size.width - 54, size.height * 0.46), 7, nodePaint);
 
     final selectedPaint = Paint()
       ..color = accent
@@ -911,20 +1118,24 @@ enum _GuideArtworkType {
 
 class _GuideSlideData {
   const _GuideSlideData({
-    required this.eyebrow,
+    required this.stepLabel,
     required this.title,
+    required this.headline,
     required this.description,
     required this.cta,
     required this.accent,
     required this.secondary,
     required this.type,
+    required this.highlights,
   });
 
-  final String eyebrow;
+  final String stepLabel;
   final String title;
+  final String headline;
   final String description;
   final String cta;
   final Color accent;
   final Color secondary;
   final _GuideArtworkType type;
+  final List<String> highlights;
 }
