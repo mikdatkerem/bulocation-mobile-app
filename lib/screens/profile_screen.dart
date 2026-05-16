@@ -21,7 +21,7 @@ class ProfileScreen extends StatelessWidget {
         : const <String>['Kullanıcı'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF6F8FD),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
@@ -30,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
               'Profil',
               style: TextStyle(
                 fontFamily: 'Manrope',
-                fontSize: 28,
+                fontSize: 30,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF0F172A),
               ),
@@ -41,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
               style: TextStyle(
                 color: Color(0xFF64748B),
                 fontSize: 14,
-                height: 1.5,
+                height: 1.55,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -69,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
             ],
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
             const _SectionLabel('Hesap bilgileri'),
             const SizedBox(height: 10),
             _ProfileMenuTile(
@@ -90,9 +90,10 @@ class ProfileScreen extends StatelessWidget {
             _ProfileMenuTile(
               icon: Icons.verified_user_outlined,
               title: 'Hesap durumu',
-              subtitle: profile?.isActive == false ? 'Pasif hesap' : 'Aktif hesap',
+              subtitle:
+                  profile?.isActive == false ? 'Pasif hesap' : 'Aktif hesap',
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             const _SectionLabel('İşlemler'),
             const SizedBox(height: 10),
             if (profile != null && !profile.emailVerified)
@@ -164,8 +165,8 @@ class _ProfileHeroCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(26),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: const [
           BoxShadow(
@@ -181,11 +182,18 @@ class _ProfileHeroCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 76,
-                height: 76,
+                width: 78,
+                height: 78,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
-                  color: const Color(0xFFEEF2FF),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFEEF2FF),
+                      Color(0xFFDBE4FF),
+                    ],
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -247,10 +255,12 @@ class _ProfileHeroCard extends StatelessWidget {
               ),
               _InfoChip(
                 label: isActive ? 'Aktif hesap' : 'Pasif hesap',
-                background:
-                    isActive ? const Color(0xFFE0F2FE) : const Color(0xFFF8FAFC),
-                foreground:
-                    isActive ? const Color(0xFF0369A1) : const Color(0xFF64748B),
+                background: isActive
+                    ? const Color(0xFFE0F2FE)
+                    : const Color(0xFFF8FAFC),
+                foreground: isActive
+                    ? const Color(0xFF0369A1)
+                    : const Color(0xFF64748B),
               ),
             ],
           ),
@@ -271,7 +281,7 @@ class _VerificationCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFFDE68A)),
       ),
       child: Row(
@@ -327,7 +337,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      label,
+      label.toUpperCase(),
       style: const TextStyle(
         color: Color(0xFF64748B),
         fontSize: 12,
