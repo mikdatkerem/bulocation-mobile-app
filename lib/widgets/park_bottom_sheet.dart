@@ -220,7 +220,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                           )
                         else
                           _TargetGrid(
-                            isParking: _isParking,
+                            mode: widget.mode,
                             targets: targets,
                             targetPark: widget.targetPark,
                             occupancyMap: widget.occupancyMap,
