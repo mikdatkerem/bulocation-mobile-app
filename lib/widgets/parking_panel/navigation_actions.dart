@@ -28,7 +28,7 @@ class _ModeSwitcher extends StatelessWidget {
           Expanded(
             child: _ModeButton(
               active: !showDestinations,
-              label: 'Navigasyon',
+              label: 'Aksiyonlar',
               onTap: onNavigationTap,
             ),
           ),
@@ -73,50 +73,86 @@ class _NavigationActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.52,
+    final actions = _isParking ? _parkingActions : _facilityActions;
+
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      children: [
-        if (_isParking)
-          _ActionCard(
-            icon: Icons.near_me_rounded,
-            title: 'Bana En\nYakın',
-            enabled: true,
-            onTap: onNearestToUser,
-          ),
-        if (_isParking)
-          _ActionCard(
-            icon: Icons.local_hospital_outlined,
-            title: 'Hastane\nGirişi',
-            enabled: true,
-            onTap: onNearestToHospital,
-          ),
-        if (_isParking)
-          _ActionCard(
-            icon: Icons.directions_car_outlined,
-            title: 'Aracıma\nGit',
-            enabled: hasParkedCar,
-            onTap: onNavigateToCar,
-          ),
-        if (!_isParking)
-          _ActionCard(
-            icon: _iconForMode(mode),
-            title: destinationTitle,
-            enabled: hasDestinations,
-            onTap: hasDestinations ? onShowDestinations : null,
-          ),
-        _ActionCard(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.25,
+      ),
+      itemCount: actions.length,
+      itemBuilder: (context, index) {
+        final action = actions[index];
+        return _ActionCard(
+          icon: action.icon,
+          title: action.title,
+          subtitle: action.subtitle,
+          enabled: action.enabled,
+          onTap: action.onTap,
+        );
+      },
+    );
+  }
+
+  List<_ActionData> get _parkingActions => [
+        _ActionData(
+          icon: Icons.near_me_rounded,
+          title: 'Bana en yakın',
+          subtitle: 'Bulunduğunuz konuma en yakın boş alanı bulur.',
+          enabled: true,
+          onTap: onNearestToUser,
+        ),
+        _ActionData(
+          icon: Icons.local_hospital_outlined,
+          title: 'Hastane girişi',
+          subtitle: 'Girişe en yakın uygun park alanını önerir.',
+          enabled: true,
+          onTap: onNearestToHospital,
+        ),
+        _ActionData(
+          icon: Icons.directions_car_outlined,
+          title: 'Aracıma git',
+          subtitle: 'Kaydettiğiniz park konumuna yönlendirir.',
+          enabled: hasParkedCar,
+          onTap: onNavigateToCar,
+        ),
+        _ActionData(
           icon: Icons.logout_rounded,
-          title: 'Çıkışa Git',
+          title: 'Çıkışa git',
+          subtitle: 'Size en uygun çıkış rotasını hazırlar.',
           enabled: true,
           onTap: onNavigateToExit,
         ),
-      ],
-    );
+      ];
+
+  List<_ActionData> get _facilityActions => [
+        _ActionData(
+          icon: _iconForMode(mode),
+          title: destinationTitle,
+          subtitle: _destinationSubtitle(mode),
+          enabled: hasDestinations,
+          onTap: hasDestinations ? onShowDestinations : null,
+        ),
+        _ActionData(
+          icon: Icons.logout_rounded,
+          title: 'Çıkışa git',
+          subtitle: 'Bulunduğunuz konumdan en uygun çıkış yolunu açar.',
+          enabled: true,
+          onTap: onNavigateToExit,
+        ),
+      ];
+
+  String _destinationSubtitle(MapPanelMode mode) {
+    return switch (mode) {
+      MapPanelMode.parking => 'Uygun park alanlarını listeleyin.',
+      MapPanelMode.hospital => 'Bölüm ve giriş noktalarını görüntüleyin.',
+      MapPanelMode.mall => 'Mağaza ve hedef noktaları açın.',
+      MapPanelMode.other => 'Haritadaki erişilebilir noktaları açın.',
+    };
   }
 
   IconData _iconForMode(MapPanelMode mode) {
@@ -168,12 +204,14 @@ class _ActionCard extends StatelessWidget {
   const _ActionCard({
     required this.icon,
     required this.title,
+    required this.subtitle,
     required this.enabled,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
+  final String subtitle;
   final bool enabled;
   final VoidCallback? onTap;
 
@@ -181,21 +219,25 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: enabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          color: enabled ? const Color(0xFFF8FAFC) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: enabled ? const Color(0xFFE2E8F0) : const Color(0xFFE8EDF5),
+          ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFFFF),
+                color:
+                    enabled ? const Color(0xFFFFFFFF) : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -204,19 +246,30 @@ class _ActionCard extends StatelessWidget {
                     enabled ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: enabled
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFF94A3B8),
-                  fontWeight: FontWeight.w700,
-                  height: 1.2,
-                ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color:
+                    enabled ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color:
+                    enabled ? const Color(0xFF64748B) : const Color(0xFFB8C2D1),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
               ),
             ),
           ],
@@ -257,4 +310,20 @@ class _GhostAction extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ActionData {
+  const _ActionData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool enabled;
+  final VoidCallback? onTap;
 }

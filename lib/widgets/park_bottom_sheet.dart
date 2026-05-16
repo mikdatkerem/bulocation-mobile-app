@@ -74,7 +74,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
 
   String get _panelTitle {
     return switch (widget.mode) {
-      MapPanelMode.parking => 'Rota ve park alanlari',
+      MapPanelMode.parking => 'Rota ve park alanları',
       MapPanelMode.hospital => 'Hastane hedefleri',
       MapPanelMode.mall => 'AVM hedefleri',
       MapPanelMode.other => 'Navigasyon hedefleri',
@@ -97,7 +97,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
     }
 
     final active = widget.activeReference ?? 'QR bekleniyor';
-    return '${widget.destinations.length} HEDEF - $active';
+    return '${widget.destinations.length} hedef · başlangıç $active';
   }
 
   IconData get _modeIcon {
@@ -264,7 +264,8 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
     }
 
     final nodes = nodesByKey.values.toList()
-      ..sort((left, right) => left.label.compareTo(right.label));
+      ..sort(
+          (left, right) => compareNodeLabelsNatural(left.label, right.label));
     return nodes;
   }
 }
