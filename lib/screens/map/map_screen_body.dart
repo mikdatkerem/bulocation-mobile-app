@@ -16,6 +16,8 @@ class MapScreenBody extends StatelessWidget {
     required this.activityTitle,
     required this.activityMessage,
     required this.buildingTitle,
+    required this.routeStatusTitle,
+    required this.routeStatusMessage,
     required this.mapBottomInset,
     required this.activeNodeId,
     required this.displayNodes,
@@ -50,6 +52,8 @@ class MapScreenBody extends StatelessWidget {
   final String? activityTitle;
   final String? activityMessage;
   final String buildingTitle;
+  final String? routeStatusTitle;
+  final String? routeStatusMessage;
   final double mapBottomInset;
   final String? activeNodeId;
   final List<MapNode> displayNodes;
@@ -101,6 +105,77 @@ class MapScreenBody extends StatelessWidget {
                     isLoading: isBusy,
                   ),
                 ),
+                if (hasMap && routeStatusTitle != null && !showActivityOverlay)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      child: Container(
+                        key: ValueKey(
+                          '${routeStatusTitle ?? ''}|${routeStatusMessage ?? ''}',
+                        ),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0F0F172A),
+                              blurRadius: 22,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.route_rounded,
+                                color: Color(0xFF4F46E5),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    routeStatusTitle!,
+                                    style: const TextStyle(
+                                      color: Color(0xFF0F172A),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  if (routeStatusMessage != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      routeStatusMessage!,
+                                      style: const TextStyle(
+                                        color: Color(0xFF64748B),
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 MapScreenContentCard(
                   hasMap: hasMap,
                   mapBottomInset: mapBottomInset,

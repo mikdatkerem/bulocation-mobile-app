@@ -162,6 +162,8 @@ class MapsScreenState extends MapsScreenStateBase
             .where((node) => node.externalReferenceId == _lastScan)
             .firstOrNull
             ?.id;
+    final routeStatusTitle = _routeStatusTitle(panelMode);
+    final routeStatusMessage = _routeStatusMessage(panelMode);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -176,6 +178,8 @@ class MapsScreenState extends MapsScreenStateBase
                   activityTitle: _activityTitle,
                   activityMessage: _activityMessage,
                   buildingTitle: _building?.name ?? 'Bina seçin',
+                  routeStatusTitle: routeStatusTitle,
+                  routeStatusMessage: routeStatusMessage,
                   mapBottomInset: mapBottomInset,
                   activeNodeId: activeNodeId,
                   displayNodes: _displayNodes,
@@ -247,5 +251,68 @@ class MapsScreenState extends MapsScreenStateBase
   void _clearActivity() {
     _activityTitle = null;
     _activityMessage = null;
+  }
+
+  String? _routeStatusTitle(MapPanelMode panelMode) {
+    if (_busy || _loading) {
+      return null;
+    }
+
+    if (_targetPark != null &&
+        (_route?.isNotEmpty == true || _multiRoute != null)) {
+      return panelMode == MapPanelMode.parking
+          ? '${_targetPark!.label} için rota hazır'
+          : 'Seçili hedef için rota hazır';
+    }
+
+    if (_targetPark != null) {
+      return panelMode == MapPanelMode.parking
+          ? '${_targetPark!.label} hedef olarak seçildi'
+          : 'Hedef seçildi';
+    }
+
+    if (_lastScan != null) {
+      return 'Konum doğrulandı';
+    }
+
+    if (_map != null) {
+      return 'Harita hazır';
+    }
+
+    return null;
+  }
+
+  String? _routeStatusMessage(MapPanelMode panelMode) {
+    if (_busy || _loading) {
+      return null;
+    }
+
+    if (_targetPark != null && _multiRoute != null) {
+      final segmentCount = _multiRoute!.segments.length;
+      final segmentLabel =
+          segmentCount > 1 ? '$segmentCount kat adımı' : 'tek kat yönlendirme';
+      final distanceLabel = _multiRoute!.distanceLabel;
+      return '$segmentLabel · $distanceLabel';
+    }
+
+    if (_targetPark != null && _route?.isNotEmpty == true) {
+      return panelMode == MapPanelMode.parking
+          ? 'Park alanına yönlendirme aktif.'
+          : 'Seçili hedefe yönlendirme aktif.';
+    }
+
+    if (_targetPark != null) {
+      return 'Rota birkaç saniye içinde hazır olur.';
+    }
+
+    if (_lastScan != null) {
+      return 'Şimdi hedef seçebilir veya önerilen aksiyonlardan devam edebilirsiniz.';
+    }
+
+    if (_map != null) {
+      return 'Başlamak için QR okutun veya alttaki aksiyonları kullanın.';
+    }
+
+    return null;
   }
 }

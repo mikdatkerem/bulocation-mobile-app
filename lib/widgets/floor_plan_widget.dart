@@ -60,6 +60,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   Size? _viewportSize;
   double _fitScale = 1;
   bool _centeringScheduled = false;
+  TapDownDetails? _lastDoubleTapDownDetails;
 
   @override
   void initState() {
@@ -76,13 +77,15 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       vsync: this,
       duration: const Duration(milliseconds: 180),
     );
-    _transformationController = TransformationController();
+    _transformationController = TransformationController()
+      ..addListener(_handleTransformChanged);
   }
 
   @override
   void dispose() {
     _glowController.dispose();
     _viewportAnimationController.dispose();
+    _transformationController.removeListener(_handleTransformChanged);
     _transformationController.dispose();
     super.dispose();
   }
@@ -118,6 +121,14 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
 
   double get _mapWidth => (widget.mapWidth ?? 1920).toDouble();
   double get _mapHeight => (widget.mapHeight ?? 1080).toDouble();
+  int get _zoomPercentage => ((_currentScale / _fitScale) * 100).round();
+
+  void _handleTransformChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
 
   void _scheduleCenterOnActiveNode({bool force = false}) {
     if (_centeringScheduled) {
@@ -180,6 +191,48 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
         translateY: nextTranslateY,
       ),
     ));
+  }
+
+  void _recenter() {
+    final viewportSize = _viewportSize;
+    if (viewportSize == null) {
+      return;
+    }
+
+    _hasUserMovedViewport = false;
+    _animateToMatrix(_centerMatrixForActiveNode(viewportSize));
+  }
+
+  void _handleDoubleTap() {
+    final details = _lastDoubleTapDownDetails;
+    final viewportSize = _viewportSize;
+    if (details == null || viewportSize == null) {
+      return;
+    }
+
+    final currentScale = _currentScale;
+    final maxScale = _fitScale * _maxZoomMultiplier;
+    final nextScale = currentScale < (_fitScale * 1.6)
+        ? (currentScale * 1.8).clamp(_fitScale, maxScale)
+        : _fitScale;
+    final focalPoint = details.localPosition;
+    final sceneX = (focalPoint.dx - _currentTranslateX) / currentScale;
+    final sceneY = (focalPoint.dy - _currentTranslateY) / currentScale;
+    final nextTranslateX = focalPoint.dx - (sceneX * nextScale);
+    final nextTranslateY = focalPoint.dy - (sceneY * nextScale);
+
+    _hasUserMovedViewport = nextScale > _fitScale;
+    _animateToMatrix(
+      nextScale == _fitScale
+          ? _centerMatrixForActiveNode(viewportSize)
+          : _clampMatrix(
+              _buildMatrix(
+                scale: nextScale,
+                translateX: nextTranslateX,
+                translateY: nextTranslateY,
+              ),
+            ),
+    );
   }
 
   void _settleViewport() {
@@ -334,13 +387,43 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       child: Column(
         children: [
           _ZoomButton(
+            icon: Icons.my_location_rounded,
+            onTap: _recenter,
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: 48,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.96),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x140F172A),
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Text(
+              '${_zoomPercentage.clamp(100, (_maxZoomMultiplier * 100).round())}%',
+              style: const TextStyle(
+                color: Color(0xFF182033),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ZoomButton(
             icon: Icons.add_rounded,
-            onTap: () => _zoom(1.2),
+            onTap: () => _zoom(1.16),
           ),
           const SizedBox(height: 10),
           _ZoomButton(
             icon: Icons.remove_rounded,
-            onTap: () => _zoom(0.84),
+            onTap: () => _zoom(0.86),
           ),
         ],
       ),
@@ -365,7 +448,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
               contentType: widget.mapAssetContentType,
             ),
           ),
-          if (widget.navigationRoute != null && widget.navigationRoute!.length >= 2)
+          if (widget.navigationRoute != null &&
+              widget.navigationRoute!.length >= 2)
             Positioned.fill(
               child: CustomPaint(
                 painter: NavigationRoutePainter(
@@ -431,23 +515,28 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
 
         return Stack(
           children: [
-            InteractiveViewer(
-              transformationController: _transformationController,
-              constrained: false,
-              clipBehavior: Clip.hardEdge,
-              scaleEnabled: true,
-              panEnabled: true,
-              minScale: _fitScale,
-              maxScale: _fitScale * _maxZoomMultiplier,
-              boundaryMargin: const EdgeInsets.all(_panBoundaryMargin),
-              onInteractionStart: (_) {
-                _viewportAnimationController.stop();
-                _hasUserMovedViewport = true;
-              },
-              onInteractionEnd: (_) => _settleViewport(),
-              child: _buildMapLayerStack(
-                sourceNodes: sourceNodes,
-                activeNode: activeNode,
+            GestureDetector(
+              onDoubleTapDown: (details) => _lastDoubleTapDownDetails = details,
+              onDoubleTap: _handleDoubleTap,
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                constrained: false,
+                clipBehavior: Clip.hardEdge,
+                scaleEnabled: true,
+                panEnabled: true,
+                minScale: _fitScale,
+                maxScale: _fitScale * _maxZoomMultiplier,
+                boundaryMargin: const EdgeInsets.all(_panBoundaryMargin),
+                onInteractionStart: (_) {
+                  _viewportAnimationController.stop();
+                  _hasUserMovedViewport = true;
+                },
+                onInteractionUpdate: (_) => setState(() {}),
+                onInteractionEnd: (_) => _settleViewport(),
+                child: _buildMapLayerStack(
+                  sourceNodes: sourceNodes,
+                  activeNode: activeNode,
+                ),
               ),
             ),
             _buildViewportControls(),
