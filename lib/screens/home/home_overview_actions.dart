@@ -41,149 +41,136 @@ class _HeroScene extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: pulse,
-      builder: (context, _) => SizedBox(
-        height: 560,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: 10,
-              left: -12,
-              child: _GlowOrb(
-                size: 156,
-                color: const Color(0x146366F1),
-                offset: Offset(-14, 10 * pulse.value),
+      builder: (context, _) {
+        return SizedBox(
+          height: 500,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Positioned(
+                top: 12,
+                left: -24,
+                child: _AmbientGlow(
+                  size: 160,
+                  color: Color(0x126366F1),
+                ),
               ),
-            ),
-            Positioned(
-              top: 174,
-              right: -10,
-              child: _GlowOrb(
-                size: 182,
-                color: const Color(0x1022D3EE),
-                offset: Offset(12, -9 * pulse.value),
+              const Positioned(
+                top: 210,
+                right: -20,
+                child: _AmbientGlow(
+                  size: 180,
+                  color: Color(0x1022D3EE),
+                ),
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: _line),
-                  ),
-                  child: Text(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                     greeting,
                     style: const TextStyle(
                       color: _soft,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Harita\nkapıda başlasın.',
-                  style: TextStyle(
-                    color: _ink,
-                    fontSize: 48,
-                    height: 0.94,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -2.2,
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Harita\nkapıda başlasın.',
+                    style: TextStyle(
+                      color: _ink,
+                      fontSize: 48,
+                      height: 0.94,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -2.2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'QR tabanlı başlangıç',
-                  style: TextStyle(
-                    color: _accent,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.6,
+                  const SizedBox(height: 12),
+                  const Text(
+                    'QR TABANLI BAŞLANGIÇ',
+                    style: TextStyle(
+                      color: _accent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.8,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 330),
-                  child: Text(
-                    description,
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 330),
+                    child: Text(
+                      description,
+                      style: const TextStyle(
+                        color: _soft,
+                        fontSize: 15,
+                        height: 1.7,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    '$readyFloorCount hazır kat · $siteCount yerleşke',
                     style: const TextStyle(
-                      color: _soft,
-                      fontSize: 15,
-                      height: 1.7,
-                      fontWeight: FontWeight.w500,
+                      color: _muted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                const SizedBox(height: 22),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _MetricPill(label: '$readyFloorCount hazır kat'),
-                    _MetricPill(label: '$siteCount yerleşke'),
-                    const _MetricPill(label: 'QR ile anında açılış'),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: _QrStage(pulse: pulse),
+                  const SizedBox(height: 26),
+                  Expanded(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: _QrStage(pulse: pulse),
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 54,
-                        child: _PrimaryAction(
-                          title: 'QR ile başla',
-                          subtitle:
-                              'Bulunduğunuz noktadaki QR kodunu okutun, doğru harita anında açılsın.',
-                          icon: Icons.qr_code_scanner_rounded,
-                          onTap: onPrimaryTap,
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 48,
+                          child: _PrimaryAction(
+                            title: 'QR ile başla',
+                            subtitle:
+                                'Bulunduğunuz noktadaki QR kodunu okutun, harita anında açılsın.',
+                            icon: Icons.qr_code_scanner_rounded,
+                            onTap: onPrimaryTap,
+                          ),
                         ),
-                      ),
-                      const Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 8,
-                        child: _HeroScrollHint(),
-                      ),
-                    ],
+                        const Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 6,
+                          child: _HeroScrollHint(),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({
+class _AmbientGlow extends StatelessWidget {
+  const _AmbientGlow({
     required this.size,
     required this.color,
-    required this.offset,
   });
 
   final double size;
   final Color color;
-  final Offset offset;
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: offset,
+    return IgnorePointer(
       child: Container(
         width: size,
         height: size,
@@ -208,108 +195,72 @@ class _QrStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final haloScale = 0.96 + (pulse.value * 0.08);
-    final ringOpacity = 0.26 + (pulse.value * 0.18);
+    final scanOffset = 22 + (pulse.value * 72);
 
     return SizedBox(
-      height: 248,
+      height: 224,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Transform.scale(
-            scale: haloScale,
-            child: Container(
-              width: 264,
-              height: 264,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    _accent.withValues(alpha: ringOpacity),
-                    _accent.withValues(alpha: 0.02),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
           Container(
-            width: 302,
-            height: 210,
+            width: 308,
+            height: 212,
             decoration: BoxDecoration(
-              color: const Color(0xFFF6F8FF),
-              borderRadius: BorderRadius.circular(42),
-              border: Border.all(color: const Color(0x306366F1)),
+              color: const Color(0xFFF8FAFF),
+              borderRadius: BorderRadius.circular(40),
+              border: Border.all(color: const Color(0x226366F1)),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x140F172A),
+                  color: Color(0x120F172A),
                   blurRadius: 28,
                   offset: Offset(0, 18),
                 ),
               ],
             ),
           ),
-          Transform.rotate(
-            angle: -0.1,
-            child: Container(
-              width: 156,
-              height: 156,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(36),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFEEF2FF),
-                    Color(0xFFDDE5FF),
-                  ],
-                ),
-                border: Border.all(color: const Color(0x336366F1)),
-              ),
-            ),
-          ),
           Container(
-            width: 176,
-            height: 176,
+            width: 196,
+            height: 196,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: const Color(0x3B6366F1), width: 1.4),
+              color: Colors.white.withValues(alpha: 0.98),
+              borderRadius: BorderRadius.circular(34),
+              border: Border.all(color: const Color(0x336366F1), width: 1.4),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x140F172A),
-                  blurRadius: 28,
-                  offset: Offset(0, 20),
+                  blurRadius: 24,
+                  offset: Offset(0, 18),
                 ),
               ],
             ),
-            child: const Padding(
-              padding: EdgeInsets.all(22),
-              child: _QrGlyph(),
-            ),
-          ),
-          const Positioned(
-            top: 16,
-            left: 18,
-            child: _FloatingTag(
-              icon: Icons.local_hospital_outlined,
-              label: 'Hastane',
-            ),
-          ),
-          const Positioned(
-            top: 34,
-            right: 14,
-            child: _FloatingTag(
-              icon: Icons.apartment_rounded,
-              label: 'Kampüs',
-            ),
-          ),
-          const Positioned(
-            bottom: 12,
-            left: 34,
-            child: _FloatingTag(
-              icon: Icons.storefront_outlined,
-              label: 'AVM',
+            child: Stack(
+              children: [
+                const Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(22),
+                    child: _QrFrame(),
+                  ),
+                ),
+                Positioned(
+                  left: 26,
+                  right: 26,
+                  top: scanOffset,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0x0022D3EE),
+                          Color(0xAA22D3EE),
+                          Color(0xAA6366F1),
+                          Color(0x0022D3EE),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -318,147 +269,111 @@ class _QrStage extends StatelessWidget {
   }
 }
 
-class _QrGlyph extends StatelessWidget {
-  const _QrGlyph();
+class _QrFrame extends StatelessWidget {
+  const _QrFrame();
 
   @override
   Widget build(BuildContext context) {
-    Widget cell(Color color, {double radius = 10}) {
-      return Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-      );
-    }
-
-    return Stack(
+    return const Stack(
       children: [
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26),
-              gradient: const LinearGradient(
+              borderRadius: BorderRadius.all(Radius.circular(22)),
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFF7F8FF),
-                  Color(0xFFF0F4FF),
+                  Color(0xFFF8FAFF),
+                  Color(0xFFF2F5FF),
                 ],
               ),
             ),
           ),
         ),
-        Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(flex: 3, child: cell(_accent)),
-                  const Spacer(),
-                  Expanded(flex: 2, child: cell(const Color(0xFFC7D2FE))),
-                ],
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _QrCornerPainter(),
+          ),
+        ),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.qr_code_2_rounded,
+                size: 62,
+                color: Color(0xFF4F46E5),
               ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(flex: 2, child: cell(const Color(0xFFC7D2FE))),
-                  const SizedBox(width: 10),
-                  Expanded(flex: 3, child: cell(_accent)),
-                  const SizedBox(width: 10),
-                  Expanded(child: cell(const Color(0xFF22D3EE))),
-                ],
+              SizedBox(height: 10),
+              Text(
+                'QR okut',
+                style: TextStyle(
+                  color: _ink,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(child: cell(const Color(0xFF22D3EE))),
-                  const SizedBox(width: 10),
-                  Expanded(flex: 2, child: cell(const Color(0xFFC7D2FE))),
-                  const SizedBox(width: 10),
-                  Expanded(flex: 2, child: cell(_accent)),
-                ],
+              SizedBox(height: 4),
+              Text(
+                'Harita anında açılsın',
+                style: TextStyle(
+                  color: _soft,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class _FloatingTag extends StatelessWidget {
-  const _FloatingTag({
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
+class _QrCornerPainter extends CustomPainter {
+  const _QrCornerPainter();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0x18FFFFFF)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x120F172A),
-            blurRadius: 18,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: _accent),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: _ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
+  void paint(Canvas canvas, Size size) {
+    const color = Color(0xFF6366F1);
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    const corner = 18.0;
+    const inset = 12.0;
+
+    void drawCorner(Offset start, Offset horizontalEnd, Offset verticalEnd) {
+      canvas.drawLine(start, horizontalEnd, paint);
+      canvas.drawLine(start, verticalEnd, paint);
+    }
+
+    drawCorner(
+      const Offset(inset, inset),
+      const Offset(inset + corner, inset),
+      const Offset(inset, inset + corner),
+    );
+    drawCorner(
+      Offset(size.width - inset, inset),
+      Offset(size.width - inset - corner, inset),
+      Offset(size.width - inset, inset + corner),
+    );
+    drawCorner(
+      Offset(inset, size.height - inset),
+      Offset(inset + corner, size.height - inset),
+      Offset(inset, size.height - inset - corner),
+    );
+    drawCorner(
+      Offset(size.width - inset, size.height - inset),
+      Offset(size.width - inset - corner, size.height - inset),
+      Offset(size.width - inset, size.height - inset - corner),
     );
   }
-}
-
-class _MetricPill extends StatelessWidget {
-  const _MetricPill({required this.label});
-
-  final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.84),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _line),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: _ink,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _PrimaryAction extends StatelessWidget {
@@ -606,7 +521,7 @@ class _ManualSelectionPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Önce kurum seçin. Ardından yerleşke, bina ve kat adımlarıyla doğru haritayı açın.',
+            'Önce kurum seçin. Ardından yerleşke, bina ve kat adımlarıyla ilgili haritayı açın.',
             style: TextStyle(
               color: _soft,
               fontSize: 14,

@@ -112,7 +112,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
       return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında yayınlanan katlar burada görünecek.';
     }
 
-    return 'Binanın girişindeki veya bulunduğunuz kattaki QR kodunu okutun. Doğru harita anında açılsın.';
+    return 'Binanın girişindeki veya bulunduğunuz kattaki QR kodunu okutun. Harita anında açılsın.';
   }
 
   List<_QuickLocationData> get _quickLocations => [
