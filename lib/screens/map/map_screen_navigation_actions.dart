@@ -32,7 +32,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
     await HapticFeedback.mediumImpact();
     if (mounted) {
-      setState(() => _busy = true);
+      setState(() {
+        _busy = true;
+        _setActivity(
+          title: 'QR doğrulanıyor',
+          message: 'Konumunuz bulunuyor ve doğru harita hazırlanıyor.',
+        );
+      });
     }
 
     try {
@@ -43,18 +49,39 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
         return;
       }
 
-      setState(() => _busy = false);
+      setState(() {
+        _busy = false;
+        if (_map != null) {
+          _setActivity(
+            title: 'Harita hazır',
+            message:
+                'Şimdi hedef seçebilir veya yönlendirmeyi başlatabilirsiniz.',
+          );
+        } else {
+          _clearActivity();
+        }
+      });
+
       if (_targetPark != null) {
         await _updateRoute(normalizedReferenceId);
       } else if (_mapPanelMode == MapPanelMode.parking) {
         _showSuggestionDialog();
+      } else if (mounted) {
+        await Future<void>.delayed(const Duration(milliseconds: 850));
+        if (!mounted) {
+          return;
+        }
+        setState(_clearActivity);
       }
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      setState(() => _busy = false);
+      setState(() {
+        _busy = false;
+        _clearActivity();
+      });
       _showError(error);
     }
   }
@@ -65,7 +92,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     if (mounted) {
-      setState(() => _loading = true);
+      setState(() {
+        _loading = true;
+        _setActivity(
+          title: 'Seçim hazırlanıyor',
+          message: 'Kurum ve bina bilgileri getiriliyor.',
+        );
+      });
     }
 
     try {
@@ -122,13 +155,17 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
         _displayMapHeight = null;
         _occupancy = {};
         _loading = false;
+        _clearActivity();
       });
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _clearActivity();
+      });
       _showError(error);
     }
   }
@@ -177,10 +214,22 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
   Future<void> _updateRoute(String fromReferenceId) async {
     if (_targetPark == null || _floor == null) {
+      if (mounted) {
+        setState(_clearActivity);
+      }
       return;
     }
 
     try {
+      if (mounted) {
+        setState(() {
+          _setActivity(
+            title: 'Rota hazırlanıyor',
+            message: 'Seçtiğiniz hedef için en uygun yol hesaplanıyor.',
+          );
+        });
+      }
+
       final result = await _pathfinder.findFacilityRoute(
         floorId: _floor!.id,
         fromReferenceId: fromReferenceId,
@@ -206,6 +255,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       if (multiRoute == null || multiRoute.segments.isEmpty) {
+        setState(_clearActivity);
         _showError('Bu konumdan hedefe rota bulunamadı.');
         return;
       }
@@ -217,6 +267,9 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
+      if (mounted) {
+        setState(_clearActivity);
+      }
       _showError('Rota hesaplanamadı: $error');
     }
   }
@@ -231,6 +284,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       _displayMapAssetContentType = _map?.assetContentType;
       _displayMapWidth = _map?.width;
       _displayMapHeight = _map?.height;
+      _clearActivity();
     });
   }
 
@@ -259,6 +313,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       _displayMapAssetContentType = segmentMap.assetContentType;
       _displayMapWidth = segmentMap.width;
       _displayMapHeight = segmentMap.height;
+      _clearActivity();
     });
   }
 
@@ -296,9 +351,21 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     try {
+      if (mounted) {
+        setState(() {
+          _setActivity(
+            title: 'Çıkış rotası hazırlanıyor',
+            message: 'En uygun çıkış yönlendirmesi hesaplanıyor.',
+          );
+        });
+      }
+
       final result =
           await _pathfinder.findBestExitRoute(fromReferenceId: _lastScan!);
       if (result == null || result.segments.isEmpty) {
+        if (mounted) {
+          setState(_clearActivity);
+        }
         _showError('Çıkış rotası bulunamadı.');
         return;
       }
@@ -311,6 +378,9 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
+      if (mounted) {
+        setState(_clearActivity);
+      }
       _showError('Çıkış rotası hesaplanamadı: $error');
     }
   }
@@ -322,11 +392,23 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     try {
+      if (mounted) {
+        setState(() {
+          _setActivity(
+            title: 'Park önerisi hazırlanıyor',
+            message: 'Girişe en yakın uygun alan aranıyor.',
+          );
+        });
+      }
+
       final result = await _pathfinder.findRecommendedParkingNearEntrance(
         fromReferenceId: _lastScan!,
       );
 
       if (result == null || result.segments.isEmpty) {
+        if (mounted) {
+          setState(_clearActivity);
+        }
         _showError('Girişe yakın uygun park alanı bulunamadı.');
         return;
       }
@@ -353,6 +435,9 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       await _showRouteSegment(0);
     } catch (error) {
+      if (mounted) {
+        setState(_clearActivity);
+      }
       _showError('Girişe yakın park önerisi alınamadı: $error');
     }
   }
@@ -380,6 +465,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
             _route = null;
             _multiRoute = null;
             _displayNodes = _mapNodes;
+            _clearActivity();
           });
         },
         onDeny: () => Navigator.pop(context),
@@ -445,6 +531,10 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       _targetPark = park;
       _route = null;
       _multiRoute = null;
+      _setActivity(
+        title: 'Hedef seçildi',
+        message: '${park.label} için rota hazırlanıyor.',
+      );
     });
     if (_lastScan != null) {
       unawaited(_updateRoute(_lastScan!));
@@ -456,7 +546,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       return;
     }
 
-    setState(() => _targetPark = _parkedAt);
+    setState(() {
+      _targetPark = _parkedAt;
+      _setActivity(
+        title: 'Aracınıza gidiliyor',
+        message: '${_parkedAt!.label} için rota hazırlanıyor.',
+      );
+    });
     unawaited(_updateRoute(_lastScan!));
   }
 
@@ -466,6 +562,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       _route = null;
       _multiRoute = null;
       _displayNodes = _mapNodes;
+      _clearActivity();
     });
   }
 
@@ -486,6 +583,10 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     setState(() {
       _targetPark = park;
       _multiRoute = null;
+      _setActivity(
+        title: 'En yakın park seçildi',
+        message: '${park.label} için rota hazırlanıyor.',
+      );
     });
     unawaited(_updateRoute(_lastScan!));
   }

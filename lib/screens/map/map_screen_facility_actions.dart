@@ -47,6 +47,10 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     setState(() {
       _loading = true;
+      _setActivity(
+        title: 'Kurum hazırlanıyor',
+        message: 'Yerleşke ve bina yapısı yükleniyor.',
+      );
       _resetMapViewState(
         clearHierarchy: true,
         clearSite: true,
@@ -66,13 +70,17 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       setState(() {
         _hierarchy = hierarchy;
         _loading = false;
+        _clearActivity();
       });
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _clearActivity();
+      });
       _showError(error);
     }
   }
@@ -133,6 +141,15 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     try {
+      if (mounted) {
+        setState(() {
+          _loading = true;
+          _setActivity(
+            title: 'Kat hazırlanıyor',
+            message: 'Seçtiğiniz harita ve hedefler yükleniyor.',
+          );
+        });
+      }
       await _applySelection(
         hierarchy: _hierarchy!,
         site: _site!,
@@ -144,7 +161,10 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
         return;
       }
 
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _clearActivity();
+      });
       _showError(error);
     }
   }
@@ -223,7 +243,13 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     List<OrganizationSummary>? organizations,
   }) async {
     if (mounted) {
-      setState(() => _loading = true);
+      setState(() {
+        _loading = true;
+        _setActivity(
+          title: 'Harita hazırlanıyor',
+          message: '${building.name} · ${floor.name} açılıyor.',
+        );
+      });
     }
 
     final publishedMap = await _getPublishedMap(floor.id);
@@ -248,6 +274,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _displayMapWidth = publishedMap.width;
       _displayMapHeight = publishedMap.height;
       _loading = false;
+      _clearActivity();
       _targetPark = null;
       _parkedAt = null;
       _route = null;

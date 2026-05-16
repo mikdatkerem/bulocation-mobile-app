@@ -53,6 +53,8 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
 
   bool _busy = false;
   bool _loading = true;
+  String? _activityTitle;
+  String? _activityMessage;
   MapNode? _targetPark;
   MapNode? _parkedAt;
   List<MapNode>? _route;
@@ -106,6 +108,11 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
   void _showParkConfirmDialog(String spotId);
   Map<String, bool> _normalizeOccupancy(Map<String, bool> occupancy);
   Future<PublishedMapData> _getPublishedMap(String floorId);
+  void _setActivity({
+    required String title,
+    required String message,
+  });
+  void _clearActivity();
   Future<void> _applySelection({
     required OrganizationHierarchy hierarchy,
     required SiteHierarchy site,
@@ -137,6 +144,13 @@ class MapsScreenState extends MapsScreenStateBase
         _occupancy.values.where((value) => value == false).length;
     final fullCount = _occupancy.values.where((value) => value == true).length;
     final hasMap = _map != null;
+    final showInlineOverlay = _busy ||
+        (_loading &&
+            (_hierarchy != null ||
+                _site != null ||
+                _building != null ||
+                _floor != null ||
+                hasMap));
     final panelMode = _mapPanelMode;
     final destinationNodes = _destinationNodes;
     final mapBottomInset = hasMap
@@ -151,13 +165,16 @@ class MapsScreenState extends MapsScreenStateBase
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: _loading
+      body: _loading && !showInlineOverlay
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
                 MapScreenBody(
                   hasMap: hasMap,
                   isBusy: _busy,
+                  showActivityOverlay: showInlineOverlay,
+                  activityTitle: _activityTitle,
+                  activityMessage: _activityMessage,
                   buildingTitle: _building?.name ?? 'Bina seçin',
                   mapBottomInset: mapBottomInset,
                   activeNodeId: activeNodeId,
@@ -215,5 +232,20 @@ class MapsScreenState extends MapsScreenStateBase
               ],
             ),
     );
+  }
+
+  @override
+  void _setActivity({
+    required String title,
+    required String message,
+  }) {
+    _activityTitle = title;
+    _activityMessage = message;
+  }
+
+  @override
+  void _clearActivity() {
+    _activityTitle = null;
+    _activityMessage = null;
   }
 }
