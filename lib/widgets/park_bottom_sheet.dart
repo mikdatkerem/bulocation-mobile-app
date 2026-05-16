@@ -84,7 +84,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
   String get _destinationTitle {
     return switch (widget.mode) {
       MapPanelMode.parking =>
-        widget.destinations.isNotEmpty ? 'Hedefler' : 'Park Alanları',
+        widget.destinations.isNotEmpty ? 'Hedefler' : 'Park alanları',
       MapPanelMode.hospital => 'Bölümler',
       MapPanelMode.mall => 'Mağazalar',
       MapPanelMode.other => 'Noktalar',
@@ -93,11 +93,24 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
 
   String get _summaryText {
     if (_isParking) {
-      return '${widget.emptyCount} BOS - ${widget.fullCount} DOLU - ${widget.totalCount} TOPLAM';
+      return '${widget.emptyCount} boş · ${widget.fullCount} dolu · ${widget.totalCount} toplam';
     }
 
     final active = widget.activeReference ?? 'QR bekleniyor';
     return '${widget.destinations.length} hedef · başlangıç $active';
+  }
+
+  String get _headerHelperText {
+    return switch (widget.mode) {
+      MapPanelMode.parking =>
+        'Canlı doluluk takibi ile uygun alan ve çıkış yönlendirmesi',
+      MapPanelMode.hospital =>
+        'Bölümler, giriş bağlantıları ve kat geçişleri burada listelenir',
+      MapPanelMode.mall =>
+        'Mağaza, servis noktası ve çıkış hedefleri buradan açılır',
+      MapPanelMode.other =>
+        'Haritadaki hedefler ve bağlantı noktaları buradan yönetilir',
+    };
   }
 
   IconData get _modeIcon {
@@ -179,6 +192,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                           mapName: widget.mapName,
                           summary: _summaryText,
                           title: _panelTitle,
+                          helperText: _headerHelperText,
                           trailingIcon: _showDestinations
                               ? Icons.grid_view_rounded
                               : _modeIcon,
@@ -229,7 +243,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                         if (widget.targetPark != null) ...[
                           const SizedBox(height: 12),
                           _GhostAction(
-                            label: 'Rotayı Temizle',
+                            label: 'Rotayı temizle',
                             onTap: widget.onClearNav,
                           ),
                         ],

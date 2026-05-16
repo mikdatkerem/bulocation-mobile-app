@@ -78,11 +78,11 @@ class _NavigationActions extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.25,
+        childAspectRatio: _isParking ? 1.25 : 1.12,
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) {
@@ -93,6 +93,7 @@ class _NavigationActions extends StatelessWidget {
           subtitle: action.subtitle,
           enabled: action.enabled,
           onTap: action.onTap,
+          highlight: action.highlight,
         );
       },
     );
@@ -105,6 +106,7 @@ class _NavigationActions extends StatelessWidget {
           subtitle: 'Bulunduğunuz konuma en yakın boş alanı bulur.',
           enabled: true,
           onTap: onNearestToUser,
+          highlight: true,
         ),
         _ActionData(
           icon: Icons.local_hospital_outlined,
@@ -129,38 +131,81 @@ class _NavigationActions extends StatelessWidget {
         ),
       ];
 
-  List<_ActionData> get _facilityActions => [
-        _ActionData(
-          icon: _iconForMode(mode),
-          title: destinationTitle,
-          subtitle: _destinationSubtitle(mode),
-          enabled: hasDestinations,
-          onTap: hasDestinations ? onShowDestinations : null,
-        ),
-        _ActionData(
-          icon: Icons.logout_rounded,
-          title: 'Çıkışa git',
-          subtitle: 'Bulunduğunuz konumdan en uygun çıkış yolunu açar.',
-          enabled: true,
-          onTap: onNavigateToExit,
-        ),
-      ];
-
-  String _destinationSubtitle(MapPanelMode mode) {
+  List<_ActionData> get _facilityActions {
     return switch (mode) {
-      MapPanelMode.parking => 'Uygun park alanlarını listeleyin.',
-      MapPanelMode.hospital => 'Bölüm ve giriş noktalarını görüntüleyin.',
-      MapPanelMode.mall => 'Mağaza ve hedef noktaları açın.',
-      MapPanelMode.other => 'Haritadaki erişilebilir noktaları açın.',
-    };
-  }
-
-  IconData _iconForMode(MapPanelMode mode) {
-    return switch (mode) {
-      MapPanelMode.parking => Icons.local_parking_rounded,
-      MapPanelMode.hospital => Icons.local_hospital_rounded,
-      MapPanelMode.mall => Icons.store_mall_directory_rounded,
-      MapPanelMode.other => Icons.place_rounded,
+      MapPanelMode.hospital => [
+          _ActionData(
+            icon: Icons.local_hospital_rounded,
+            title: 'Bölümleri aç',
+            subtitle: 'Klinik, giriş ve bağlantı hedeflerini listeleyin.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+            highlight: true,
+          ),
+          _ActionData(
+            icon: Icons.alt_route_rounded,
+            title: 'Kat geçişlerini gör',
+            subtitle: 'Asansör, merdiven ve bağlantı noktalarını açın.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+          ),
+          _ActionData(
+            icon: Icons.logout_rounded,
+            title: 'Çıkışa git',
+            subtitle: 'Bulunduğunuz konumdan en uygun çıkış yolunu açar.',
+            enabled: true,
+            onTap: onNavigateToExit,
+          ),
+        ],
+      MapPanelMode.mall => [
+          _ActionData(
+            icon: Icons.storefront_rounded,
+            title: destinationTitle,
+            subtitle: 'Mağaza ve ana hedef noktalarını listeleyin.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+            highlight: true,
+          ),
+          _ActionData(
+            icon: Icons.miscellaneous_services_rounded,
+            title: 'Servis noktaları',
+            subtitle: 'Asansör, giriş ve ortak alan noktalarını açın.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+          ),
+          _ActionData(
+            icon: Icons.logout_rounded,
+            title: 'Çıkışa git',
+            subtitle: 'Bulunduğunuz konumdan en uygun çıkış yolunu açar.',
+            enabled: true,
+            onTap: onNavigateToExit,
+          ),
+        ],
+      MapPanelMode.other => [
+          _ActionData(
+            icon: Icons.place_rounded,
+            title: destinationTitle,
+            subtitle: 'Harita üzerindeki hedef ve odak noktalarını açın.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+            highlight: true,
+          ),
+          _ActionData(
+            icon: Icons.hub_rounded,
+            title: 'Bağlantı noktaları',
+            subtitle: 'Geçiş, giriş ve çıkış bağlantılarını görüntüleyin.',
+            enabled: hasDestinations,
+            onTap: hasDestinations ? onShowDestinations : null,
+          ),
+          _ActionData(
+            icon: Icons.logout_rounded,
+            title: 'Çıkışa git',
+            subtitle: 'Bulunduğunuz konumdan en uygun çıkış yolunu açar.',
+            enabled: true,
+            onTap: onNavigateToExit,
+          ),
+        ],
+      MapPanelMode.parking => const [],
     };
   }
 }
@@ -207,6 +252,7 @@ class _ActionCard extends StatelessWidget {
     required this.subtitle,
     required this.enabled,
     required this.onTap,
+    this.highlight = false,
   });
 
   final IconData icon;
@@ -214,20 +260,28 @@ class _ActionCard extends StatelessWidget {
   final String subtitle;
   final bool enabled;
   final VoidCallback? onTap;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = highlight && enabled
+        ? const Color(0xFFEEF2FF)
+        : const Color(0xFFF8FAFC);
+    final borderColor = highlight && enabled
+        ? const Color(0xFFCBD5FF)
+        : enabled
+            ? const Color(0xFFE2E8F0)
+            : const Color(0xFFE8EDF5);
+
     return InkWell(
       onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: enabled ? const Color(0xFFF8FAFC) : const Color(0xFFF8FAFC),
+          color: bgColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: enabled ? const Color(0xFFE2E8F0) : const Color(0xFFE8EDF5),
-          ),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,6 +373,7 @@ class _ActionData {
     required this.subtitle,
     required this.enabled,
     required this.onTap,
+    this.highlight = false,
   });
 
   final IconData icon;
@@ -326,4 +381,5 @@ class _ActionData {
   final String subtitle;
   final bool enabled;
   final VoidCallback? onTap;
+  final bool highlight;
 }
