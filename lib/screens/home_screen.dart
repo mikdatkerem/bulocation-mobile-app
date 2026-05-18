@@ -15,6 +15,7 @@ import '../widgets/park_suggestion_dialog.dart';
 import 'map/map_bottom_panel.dart';
 import 'map/map_panel_resolver.dart';
 import 'map/map_screen_body.dart';
+import 'map/map_screen_state_controller.dart';
 
 part 'map/map_screen_facility_actions.dart';
 part 'map/map_screen_navigation_actions.dart';
@@ -34,35 +35,8 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
   final _scannerController =
       MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
   final _sheetController = DraggableScrollableController();
+  final _mapState = MapScreenStateController();
   late final ParkingService _parkingService;
-
-  List<OrganizationSummary> _organizations = [];
-  OrganizationHierarchy? _hierarchy;
-  SiteHierarchy? _site;
-  BuildingHierarchy? _building;
-  FloorHierarchy? _floor;
-  PublishedMapData? _map;
-  List<MapNode> _displayNodes = const [];
-  List<MapNode> _mapNodes = const [];
-  List<MapNode> _buildingDestinations = const [];
-  String? _displayMapAssetPath;
-  String? _displayMapAssetContentType;
-  int? _displayMapWidth;
-  int? _displayMapHeight;
-  final Map<String, PublishedMapData> _publishedMapCache = {};
-
-  bool _busy = false;
-  bool _loading = true;
-  String? _activityTitle;
-  String? _activityMessage;
-  MapNode? _targetPark;
-  MapNode? _parkedAt;
-  List<MapNode>? _route;
-  MultiRouteResult? _multiRoute;
-  int _activeRouteSegmentIndex = 0;
-  String? _lastScan;
-  DateTime? _lastScanTime;
-  Map<String, bool> _occupancy = {};
 
   void _resetMapViewState({
     bool clearHierarchy = false,
@@ -70,39 +44,13 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
     bool clearBuilding = false,
     bool clearFloor = false,
     bool clearLastScan = false,
-  }) {
-    if (clearHierarchy) {
-      _hierarchy = null;
-    }
-    if (clearSite) {
-      _site = null;
-    }
-    if (clearBuilding) {
-      _building = null;
-    }
-    if (clearFloor) {
-      _floor = null;
-    }
-    if (clearLastScan) {
-      _lastScan = null;
-      _lastScanTime = null;
-    }
-
-    _map = null;
-    _targetPark = null;
-    _parkedAt = null;
-    _route = null;
-    _multiRoute = null;
-    _activeRouteSegmentIndex = 0;
-    _displayNodes = const [];
-    _mapNodes = const [];
-    _buildingDestinations = const [];
-    _displayMapAssetPath = null;
-    _displayMapAssetContentType = null;
-    _displayMapWidth = null;
-    _displayMapHeight = null;
-    _occupancy = {};
-  }
+  }) => _mapState.resetMapViewState(
+    clearHierarchy: clearHierarchy,
+    clearSite: clearSite,
+    clearBuilding: clearBuilding,
+    clearFloor: clearFloor,
+    clearLastScan: clearLastScan,
+  );
 
   void _showError(Object error);
   void _showParkConfirmDialog(String spotId);
@@ -140,26 +88,28 @@ class MapsScreenState extends MapsScreenStateBase
 
   @override
   Widget build(BuildContext context) {
+    final state = _mapState;
     final emptyCount =
-        _occupancy.values.where((value) => value == false).length;
-    final fullCount = _occupancy.values.where((value) => value == true).length;
-    final hasMap = _map != null;
-    final showInlineOverlay = _busy ||
-        (_loading &&
-            (_hierarchy != null ||
-                _site != null ||
-                _building != null ||
-                _floor != null ||
+        state.occupancy.values.where((value) => value == false).length;
+    final fullCount =
+        state.occupancy.values.where((value) => value == true).length;
+    final hasMap = state.map != null;
+    final showInlineOverlay = state.busy ||
+        (state.loading &&
+            (state.hierarchy != null ||
+                state.site != null ||
+                state.building != null ||
+                state.floor != null ||
                 hasMap));
     final panelMode = _mapPanelMode;
     final destinationNodes = _destinationNodes;
     final mapBottomInset = hasMap
         ? MediaQuery.of(context).size.height * ParkBottomSheet.peekSize + 12
         : 0.0;
-    final activeNodeId = _lastScan == null
+    final activeNodeId = state.lastScan == null
         ? null
-        : _displayNodes
-            .where((node) => node.externalReferenceId == _lastScan)
+        : state.displayNodes
+            .where((node) => node.externalReferenceId == state.lastScan)
             .firstOrNull
             ?.id;
     final routeStatusTitle = _routeStatusTitle(panelMode);
@@ -167,37 +117,37 @@ class MapsScreenState extends MapsScreenStateBase
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: _loading && !showInlineOverlay
+      body: state.loading && !showInlineOverlay
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
                 MapScreenBody(
                   hasMap: hasMap,
-                  isBusy: _busy,
+                  isBusy: state.busy,
                   showActivityOverlay: showInlineOverlay,
-                  activityTitle: _activityTitle,
-                  activityMessage: _activityMessage,
-                  buildingTitle: _building?.name ?? 'Bina seçin',
+                  activityTitle: state.activityTitle,
+                  activityMessage: state.activityMessage,
+                  buildingTitle: state.building?.name ?? 'Bina seçin',
                   routeStatusTitle: routeStatusTitle,
                   routeStatusMessage: routeStatusMessage,
                   mapBottomInset: mapBottomInset,
                   activeNodeId: activeNodeId,
-                  displayNodes: _displayNodes,
-                  navigationRoute: _route,
-                  occupancy: _occupancy,
-                  mapAssetPath: _displayMapAssetPath,
-                  mapAssetContentType: _displayMapAssetContentType,
-                  mapWidth: _displayMapWidth,
-                  mapHeight: _displayMapHeight,
+                  displayNodes: state.displayNodes,
+                  navigationRoute: state.route,
+                  occupancy: state.occupancy,
+                  mapAssetPath: state.displayMapAssetPath,
+                  mapAssetContentType: state.displayMapAssetContentType,
+                  mapWidth: state.displayMapWidth,
+                  mapHeight: state.displayMapHeight,
                   scannerController: _scannerController,
-                  organizations: _organizations,
-                  selectedOrganizationId: _hierarchy?.id,
+                  organizations: state.organizations,
+                  selectedOrganizationId: state.hierarchy?.id,
                   sites: _availableSites,
-                  selectedSiteId: _site?.id,
+                  selectedSiteId: state.site?.id,
                   buildings: _availableBuildings,
-                  selectedBuildingId: _building?.id,
+                  selectedBuildingId: state.building?.id,
                   floors: _availableFloors,
-                  selectedFloorId: _floor?.id,
+                  selectedFloorId: state.floor?.id,
                   onBack: widget.onBack,
                   onClearSelectedMap: _clearSelectedMap,
                   onCollapseSheet: _collapseSheet,
@@ -211,17 +161,17 @@ class MapsScreenState extends MapsScreenStateBase
                   MapBottomPanel(
                     controller: _sheetController,
                     mode: panelMode,
-                    occupancyMap: _occupancy,
-                    targetPark: _targetPark,
-                    parkedAt: _parkedAt,
-                    mapName: _map?.name ?? 'Harita',
-                    activeReference: _lastScan,
+                    occupancyMap: state.occupancy,
+                    targetPark: state.targetPark,
+                    parkedAt: state.parkedAt,
+                    mapName: state.map?.name ?? 'Harita',
+                    activeReference: state.lastScan,
                     emptyCount: emptyCount,
                     fullCount: fullCount,
-                    totalCount: _occupancy.length,
-                    multiRoute: _multiRoute,
-                    activeSegmentIndex: _activeRouteSegmentIndex,
-                    parks: _mapNodes.where((node) => node.isPark).toList(),
+                    totalCount: state.occupancy.length,
+                    multiRoute: state.multiRoute,
+                    activeSegmentIndex: state.activeRouteSegmentIndex,
+                    parks: state.mapNodes.where((node) => node.isPark).toList(),
                     destinations: destinationNodes,
                     onSegmentTap: (index) =>
                         unawaited(_showRouteSegment(index)),
@@ -242,40 +192,35 @@ class MapsScreenState extends MapsScreenStateBase
   void _setActivity({
     required String title,
     required String message,
-  }) {
-    _activityTitle = title;
-    _activityMessage = message;
-  }
+  }) => _mapState.setActivity(title: title, message: message);
 
   @override
-  void _clearActivity() {
-    _activityTitle = null;
-    _activityMessage = null;
-  }
+  void _clearActivity() => _mapState.clearActivity();
 
   String? _routeStatusTitle(MapPanelMode panelMode) {
-    if (_busy || _loading) {
+    final state = _mapState;
+    if (state.busy || state.loading) {
       return null;
     }
 
-    if (_targetPark != null &&
-        (_route?.isNotEmpty == true || _multiRoute != null)) {
+    if (state.targetPark != null &&
+        (state.route?.isNotEmpty == true || state.multiRoute != null)) {
       return panelMode == MapPanelMode.parking
-          ? '${_targetPark!.label} için rota hazır'
+          ? '${state.targetPark!.label} için rota hazır'
           : 'Seçili hedef için rota hazır';
     }
 
-    if (_targetPark != null) {
+    if (state.targetPark != null) {
       return panelMode == MapPanelMode.parking
-          ? '${_targetPark!.label} hedef olarak seçildi'
+          ? '${state.targetPark!.label} hedef olarak seçildi'
           : 'Hedef seçildi';
     }
 
-    if (_lastScan != null) {
+    if (state.lastScan != null) {
       return 'Konum doğrulandı';
     }
 
-    if (_map != null) {
+    if (state.map != null) {
       return 'Harita hazır';
     }
 
@@ -283,33 +228,34 @@ class MapsScreenState extends MapsScreenStateBase
   }
 
   String? _routeStatusMessage(MapPanelMode panelMode) {
-    if (_busy || _loading) {
+    final state = _mapState;
+    if (state.busy || state.loading) {
       return null;
     }
 
-    if (_targetPark != null && _multiRoute != null) {
-      final segmentCount = _multiRoute!.segments.length;
+    if (state.targetPark != null && state.multiRoute != null) {
+      final segmentCount = state.multiRoute!.segments.length;
       final segmentLabel =
           segmentCount > 1 ? '$segmentCount kat adımı' : 'tek kat yönlendirme';
-      final distanceLabel = _multiRoute!.distanceLabel;
+      final distanceLabel = state.multiRoute!.distanceLabel;
       return '$segmentLabel · $distanceLabel';
     }
 
-    if (_targetPark != null && _route?.isNotEmpty == true) {
+    if (state.targetPark != null && state.route?.isNotEmpty == true) {
       return panelMode == MapPanelMode.parking
           ? 'Park alanına yönlendirme aktif.'
           : 'Seçili hedefe yönlendirme aktif.';
     }
 
-    if (_targetPark != null) {
+    if (state.targetPark != null) {
       return 'Rota birkaç saniye içinde hazır olur.';
     }
 
-    if (_lastScan != null) {
+    if (state.lastScan != null) {
       return 'Şimdi hedef seçebilir veya önerilen aksiyonlardan devam edebilirsiniz.';
     }
 
-    if (_map != null) {
+    if (state.map != null) {
       return 'Başlamak için QR okutun veya alttaki aksiyonları kullanın.';
     }
 

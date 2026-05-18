@@ -13,30 +13,30 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     final now = DateTime.now();
-    if (_lastScan == referenceId &&
-        _lastScanTime != null &&
-        now.difference(_lastScanTime!) < const Duration(seconds: 3)) {
+    if (_mapState.lastScan == referenceId &&
+        _mapState.lastScanTime != null &&
+        now.difference(_mapState.lastScanTime!) < const Duration(seconds: 3)) {
       return;
     }
 
-    _lastScan = referenceId;
-    _lastScanTime = now;
+    _mapState.lastScan = referenceId;
+    _mapState.lastScanTime = now;
     await openByQrReference(referenceId);
   }
 
   Future<void> openByQrReference(String referenceId) async {
     final normalizedReferenceId = _normalizeQrReference(referenceId);
-    if (normalizedReferenceId.isEmpty || _busy) {
+    if (normalizedReferenceId.isEmpty || _mapState.busy) {
       return;
     }
 
     await HapticFeedback.mediumImpact();
     if (mounted) {
       setState(() {
-        _busy = true;
+        _mapState.busy = true;
         _setActivity(
           title: 'QR doğrulanıyor',
-          message: 'Konumunuz bulunuyor ve doğru harita hazırlanıyor.',
+          message: 'Konumunuz bulunuyor ve harita hazırlanıyor.',
         );
       });
     }
@@ -50,19 +50,18 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _busy = false;
-        if (_map != null) {
+        _mapState.busy = false;
+        if (_mapState.map != null) {
           _setActivity(
             title: 'Harita hazır',
-            message:
-                'Şimdi hedef seçebilir veya yönlendirmeyi başlatabilirsiniz.',
+            message: 'Şimdi hedef seçebilir veya yönlendirmeyi başlatabilirsiniz.',
           );
         } else {
           _clearActivity();
         }
       });
 
-      if (_targetPark != null) {
+      if (_mapState.targetPark != null) {
         await _updateRoute(normalizedReferenceId);
       } else if (_mapPanelMode == MapPanelMode.parking) {
         _showSuggestionDialog();
@@ -79,7 +78,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _busy = false;
+        _mapState.busy = false;
         _clearActivity();
       });
       _showError(error);
@@ -87,13 +86,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
   }
 
   Future<void> openSelection(MapOpenRequest request) async {
-    if (_busy) {
+    if (_mapState.busy) {
       return;
     }
 
     if (mounted) {
       setState(() {
-        _loading = true;
+        _mapState.loading = true;
         _setActivity(
           title: 'Seçim hazırlanıyor',
           message: 'Kurum ve bina bilgileri getiriliyor.',
@@ -102,8 +101,8 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     try {
-      final hierarchy = _hierarchy?.id == request.organizationId
-          ? _hierarchy!
+      final hierarchy = _mapState.hierarchy?.id == request.organizationId
+          ? _mapState.hierarchy!
           : await _facilityService
               .getOrganizationHierarchy(request.organizationId);
 
@@ -138,23 +137,23 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _hierarchy = hierarchy;
-        _site = site;
-        _building = building;
-        _floor = null;
-        _map = null;
-        _route = null;
-        _multiRoute = null;
-        _targetPark = null;
-        _displayNodes = const [];
-        _mapNodes = const [];
-        _buildingDestinations = const [];
-        _displayMapAssetPath = null;
-        _displayMapAssetContentType = null;
-        _displayMapWidth = null;
-        _displayMapHeight = null;
-        _occupancy = {};
-        _loading = false;
+        _mapState.hierarchy = hierarchy;
+        _mapState.site = site;
+        _mapState.building = building;
+        _mapState.floor = null;
+        _mapState.map = null;
+        _mapState.route = null;
+        _mapState.multiRoute = null;
+        _mapState.targetPark = null;
+        _mapState.displayNodes = const [];
+        _mapState.mapNodes = const [];
+        _mapState.buildingDestinations = const [];
+        _mapState.displayMapAssetPath = null;
+        _mapState.displayMapAssetContentType = null;
+        _mapState.displayMapWidth = null;
+        _mapState.displayMapHeight = null;
+        _mapState.occupancy = {};
+        _mapState.loading = false;
         _clearActivity();
       });
     } catch (error) {
@@ -163,7 +162,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _loading = false;
+        _mapState.loading = false;
         _clearActivity();
       });
       _showError(error);
@@ -183,8 +182,8 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
   }
 
   Future<void> _applyScanContext(QrScanContext context) async {
-    final hierarchy = _hierarchy?.id == context.organizationId
-        ? _hierarchy!
+    final hierarchy = _mapState.hierarchy?.id == context.organizationId
+        ? _mapState.hierarchy!
         : await _facilityService
             .getOrganizationHierarchy(context.organizationId);
     final site =
@@ -200,7 +199,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       throw Exception('QR bağlamı için kat bulunamadı.');
     }
 
-    if (_floor?.id != floor.id || _hierarchy?.id != hierarchy.id) {
+    if (_mapState.floor?.id != floor.id || _mapState.hierarchy?.id != hierarchy.id) {
       await _applySelection(
         hierarchy: hierarchy,
         site: site,
@@ -209,11 +208,11 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       );
     }
 
-    _lastScan = context.referenceId;
+    _mapState.lastScan = context.referenceId;
   }
 
   Future<void> _updateRoute(String fromReferenceId) async {
-    if (_targetPark == null || _floor == null) {
+    if (_mapState.targetPark == null || _mapState.floor == null) {
       if (mounted) {
         setState(_clearActivity);
       }
@@ -231,9 +230,10 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       final result = await _pathfinder.findFacilityRoute(
-        floorId: _floor!.id,
+        floorId: _mapState.floor!.id,
         fromReferenceId: fromReferenceId,
-        toReferenceId: _targetPark!.externalReferenceId ?? _targetPark!.id,
+        toReferenceId: _mapState.targetPark!.externalReferenceId ??
+            _mapState.targetPark!.id,
       );
 
       if (!mounted) {
@@ -247,7 +247,8 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
       final multiRoute = await _pathfinder.findFacilityMultiRoute(
         fromReferenceId: fromReferenceId,
-        toReferenceId: _targetPark!.externalReferenceId ?? _targetPark!.id,
+        toReferenceId: _mapState.targetPark!.externalReferenceId ??
+            _mapState.targetPark!.id,
       );
 
       if (!mounted) {
@@ -261,8 +262,8 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _multiRoute = multiRoute;
-        _activeRouteSegmentIndex = 0;
+        _mapState.multiRoute = multiRoute;
+        _mapState.activeRouteSegmentIndex = 0;
       });
 
       await _showRouteSegment(0);
@@ -276,20 +277,20 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
   void _applySingleFloorRoute(RouteResult result) {
     setState(() {
-      _multiRoute = null;
-      _activeRouteSegmentIndex = 0;
-      _route = result.nodes;
-      _displayNodes = _mapNodes;
-      _displayMapAssetPath = _map?.assetPath;
-      _displayMapAssetContentType = _map?.assetContentType;
-      _displayMapWidth = _map?.width;
-      _displayMapHeight = _map?.height;
+      _mapState.multiRoute = null;
+      _mapState.activeRouteSegmentIndex = 0;
+      _mapState.route = result.nodes;
+      _mapState.displayNodes = _mapState.mapNodes;
+      _mapState.displayMapAssetPath = _mapState.map?.assetPath;
+      _mapState.displayMapAssetContentType = _mapState.map?.assetContentType;
+      _mapState.displayMapWidth = _mapState.map?.width;
+      _mapState.displayMapHeight = _mapState.map?.height;
       _clearActivity();
     });
   }
 
   Future<void> _showRouteSegment(int index) async {
-    final multiRoute = _multiRoute;
+    final multiRoute = _mapState.multiRoute;
     if (multiRoute == null ||
         index < 0 ||
         index >= multiRoute.segments.length) {
@@ -304,21 +305,22 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     }
 
     setState(() {
-      _activeRouteSegmentIndex = index;
-      _route = segment.nodes;
-      _displayNodes = segmentMap.nodes;
-      _mapNodes = segmentMap.nodes;
-      _occupancy = _normalizeOccupancy(occupancy);
-      _displayMapAssetPath = segmentMap.assetPath;
-      _displayMapAssetContentType = segmentMap.assetContentType;
-      _displayMapWidth = segmentMap.width;
-      _displayMapHeight = segmentMap.height;
+      _mapState.activeRouteSegmentIndex = index;
+      _mapState.route = segment.nodes;
+      _mapState.displayNodes = segmentMap.nodes;
+      _mapState.mapNodes = segmentMap.nodes;
+      _mapState.occupancy = _normalizeOccupancy(occupancy);
+      _mapState.displayMapAssetPath = segmentMap.assetPath;
+      _mapState.displayMapAssetContentType = segmentMap.assetContentType;
+      _mapState.displayMapWidth = segmentMap.width;
+      _mapState.displayMapHeight = segmentMap.height;
       _clearActivity();
     });
   }
 
   void _showSuggestionDialog() {
-    if (_lastScan == null) {
+    final lastScan = _mapState.lastScan;
+    if (lastScan == null) {
       return;
     }
 
@@ -327,25 +329,26 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       barrierColor: Colors.black26,
       builder: (_) => ParkSuggestionDialog(
         nearestToUser: _pathfinder.nearestEmptyParkToUser(
-          _lastScan!,
-          _occupancy,
-          _mapNodes,
+          lastScan,
+          _mapState.occupancy,
+          _mapState.mapNodes,
         ),
         nearestToHospital: null,
         onSelected: (park) {
           setState(() {
-            _targetPark = park;
-            _route = null;
-            _multiRoute = null;
+            _mapState.targetPark = park;
+            _mapState.route = null;
+            _mapState.multiRoute = null;
           });
-          unawaited(_updateRoute(_lastScan!));
+          unawaited(_updateRoute(lastScan));
         },
       ),
     );
   }
 
   Future<void> _navigateToBestExit() async {
-    if (_lastScan == null) {
+    final lastScan = _mapState.lastScan;
+    if (lastScan == null) {
       _showError('Önce bir QR kodu okutun.');
       return;
     }
@@ -361,7 +364,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       final result =
-          await _pathfinder.findBestExitRoute(fromReferenceId: _lastScan!);
+          await _pathfinder.findBestExitRoute(fromReferenceId: lastScan);
       if (result == null || result.segments.isEmpty) {
         if (mounted) {
           setState(_clearActivity);
@@ -371,9 +374,9 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _targetPark = null;
-        _multiRoute = result;
-        _activeRouteSegmentIndex = 0;
+        _mapState.targetPark = null;
+        _mapState.multiRoute = result;
+        _mapState.activeRouteSegmentIndex = 0;
       });
 
       await _showRouteSegment(0);
@@ -386,7 +389,8 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
   }
 
   Future<void> _selectParkingNearEntrance() async {
-    if (_lastScan == null) {
+    final lastScan = _mapState.lastScan;
+    if (lastScan == null) {
       _showError('Önce bir QR kodu okutun.');
       return;
     }
@@ -402,7 +406,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       }
 
       final result = await _pathfinder.findRecommendedParkingNearEntrance(
-        fromReferenceId: _lastScan!,
+        fromReferenceId: lastScan,
       );
 
       if (result == null || result.segments.isEmpty) {
@@ -424,13 +428,13 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       );
 
       setState(() {
-        _targetPark = target;
-        _multiRoute = MultiRouteResult(
+        _mapState.targetPark = target;
+        _mapState.multiRoute = MultiRouteResult(
           segments: result.segments,
           distanceMeters: result.distanceMeters,
           distanceLabel: result.distanceLabel,
         );
-        _activeRouteSegmentIndex = 0;
+        _mapState.activeRouteSegmentIndex = 0;
       });
 
       await _showRouteSegment(0);
@@ -444,7 +448,7 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
 
   @override
   void _showParkConfirmDialog(String spotId) {
-    final park = _mapNodes
+    final park = _mapState.mapNodes
         .where((node) =>
             (node.externalReferenceId ?? node.id).toUpperCase() == spotId)
         .firstOrNull;
@@ -460,11 +464,11 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
         onConfirm: () {
           Navigator.pop(context);
           setState(() {
-            _parkedAt = park;
-            _targetPark = null;
-            _route = null;
-            _multiRoute = null;
-            _displayNodes = _mapNodes;
+            _mapState.parkedAt = park;
+            _mapState.targetPark = null;
+            _mapState.route = null;
+            _mapState.multiRoute = null;
+            _mapState.displayNodes = _mapState.mapNodes;
             _clearActivity();
           });
         },
@@ -501,14 +505,20 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
     );
   }
 
-  MapPanelMode get _mapPanelMode =>
-      resolveMapPanelMode(site: _site, building: _building, floor: _floor);
+  MapPanelMode get _mapPanelMode => resolveMapPanelMode(
+    site: _mapState.site,
+    building: _mapState.building,
+    floor: _mapState.floor,
+  );
 
   List<MapNode> get _destinationNodes {
-    final nodes = _buildingDestinations.isNotEmpty
-        ? _buildingDestinations
-        : resolveDestinationNodes(mapNodes: _mapNodes, mode: _mapPanelMode);
-    final activeReference = _lastScan?.toUpperCase();
+    final nodes = _mapState.buildingDestinations.isNotEmpty
+        ? _mapState.buildingDestinations
+        : resolveDestinationNodes(
+            mapNodes: _mapState.mapNodes,
+            mode: _mapPanelMode,
+          );
+    final activeReference = _mapState.lastScan?.toUpperCase();
 
     if (activeReference == null) {
       return nodes;
@@ -528,66 +538,67 @@ mixin _MapScreenNavigationActions on MapsScreenStateBase {
       curve: Curves.easeOutCubic,
     );
     setState(() {
-      _targetPark = park;
-      _route = null;
-      _multiRoute = null;
+      _mapState.targetPark = park;
+      _mapState.route = null;
+      _mapState.multiRoute = null;
       _setActivity(
         title: 'Hedef seçildi',
         message: '${park.label} için rota hazırlanıyor.',
       );
     });
-    if (_lastScan != null) {
-      unawaited(_updateRoute(_lastScan!));
+    if (_mapState.lastScan != null) {
+      unawaited(_updateRoute(_mapState.lastScan!));
     }
   }
 
   void _navigateToCar() {
-    if (_parkedAt == null || _lastScan == null) {
+    if (_mapState.parkedAt == null || _mapState.lastScan == null) {
       return;
     }
 
     setState(() {
-      _targetPark = _parkedAt;
+      _mapState.targetPark = _mapState.parkedAt;
       _setActivity(
         title: 'Aracınıza gidiliyor',
-        message: '${_parkedAt!.label} için rota hazırlanıyor.',
+        message: '${_mapState.parkedAt!.label} için rota hazırlanıyor.',
       );
     });
-    unawaited(_updateRoute(_lastScan!));
+    unawaited(_updateRoute(_mapState.lastScan!));
   }
 
   void _clearNavigation() {
     setState(() {
-      _targetPark = null;
-      _route = null;
-      _multiRoute = null;
-      _displayNodes = _mapNodes;
+      _mapState.targetPark = null;
+      _mapState.route = null;
+      _mapState.multiRoute = null;
+      _mapState.displayNodes = _mapState.mapNodes;
       _clearActivity();
     });
   }
 
   void _navigateToNearestToUser() {
-    if (_lastScan == null) {
+    final lastScan = _mapState.lastScan;
+    if (lastScan == null) {
       return;
     }
 
     final park = _pathfinder.nearestEmptyParkToUser(
-      _lastScan!,
-      _occupancy,
-      _mapNodes,
+      lastScan,
+      _mapState.occupancy,
+      _mapState.mapNodes,
     );
     if (park == null) {
       return;
     }
 
     setState(() {
-      _targetPark = park;
-      _multiRoute = null;
+      _mapState.targetPark = park;
+      _mapState.multiRoute = null;
       _setActivity(
         title: 'En yakın park seçildi',
         message: '${park.label} için rota hazırlanıyor.',
       );
     });
-    unawaited(_updateRoute(_lastScan!));
+    unawaited(_updateRoute(lastScan));
   }
 }

@@ -6,7 +6,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     try {
       await _parkingService.startListening();
     } catch (_) {
-      // Canli doluluk akisi gec baglansa bile temel ekran kullanilabilsin.
+      // Canlı doluluk akışı geç bağlansa bile temel ekran kullanılabilsin.
     }
   }
 
@@ -18,26 +18,27 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _organizations = organizations;
-        _loading = false;
+        _mapState.organizations = organizations;
+        _mapState.loading = false;
       });
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      setState(() => _loading = false);
+      setState(() => _mapState.loading = false);
       _showError(error);
     }
   }
 
-  List<SiteHierarchy> get _availableSites => _hierarchy?.sites ?? const [];
+  List<SiteHierarchy> get _availableSites =>
+      _mapState.hierarchy?.sites ?? const [];
 
   List<BuildingHierarchy> get _availableBuildings =>
-      _site?.buildings ?? const [];
+      _mapState.site?.buildings ?? const [];
 
   List<FloorHierarchy> get _availableFloors =>
-      _building?.floors.where((item) => item.hasPublishedMap).toList() ??
+      _mapState.building?.floors.where((item) => item.hasPublishedMap).toList() ??
       const [];
 
   Future<void> _onOrganizationChanged(String? organizationId) async {
@@ -46,7 +47,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     setState(() {
-      _loading = true;
+      _mapState.loading = true;
       _setActivity(
         title: 'Kurum hazırlanıyor',
         message: 'Yerleşke ve bina yapısı yükleniyor.',
@@ -68,8 +69,8 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _hierarchy = hierarchy;
-        _loading = false;
+        _mapState.hierarchy = hierarchy;
+        _mapState.loading = false;
         _clearActivity();
       });
     } catch (error) {
@@ -78,7 +79,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _loading = false;
+        _mapState.loading = false;
         _clearActivity();
       });
       _showError(error);
@@ -86,18 +87,18 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
   }
 
   void _onSiteChanged(String? siteId) {
-    if (siteId == null || _hierarchy == null) {
+    final hierarchy = _mapState.hierarchy;
+    if (siteId == null || hierarchy == null) {
       return;
     }
 
-    final site =
-        _hierarchy!.sites.where((item) => item.id == siteId).firstOrNull;
+    final site = hierarchy.sites.where((item) => item.id == siteId).firstOrNull;
     if (site == null) {
       return;
     }
 
     setState(() {
-      _site = site;
+      _mapState.site = site;
       _resetMapViewState(
         clearBuilding: true,
         clearFloor: true,
@@ -107,18 +108,19 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
   }
 
   void _onBuildingChanged(String? buildingId) {
-    if (buildingId == null || _site == null) {
+    final site = _mapState.site;
+    if (buildingId == null || site == null) {
       return;
     }
 
     final building =
-        _site!.buildings.where((item) => item.id == buildingId).firstOrNull;
+        site.buildings.where((item) => item.id == buildingId).firstOrNull;
     if (building == null) {
       return;
     }
 
     setState(() {
-      _building = building;
+      _mapState.building = building;
       _resetMapViewState(
         clearFloor: true,
         clearLastScan: true,
@@ -127,15 +129,14 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
   }
 
   Future<void> _onFloorChanged(String? floorId) async {
-    if (floorId == null ||
-        _hierarchy == null ||
-        _site == null ||
-        _building == null) {
+    final hierarchy = _mapState.hierarchy;
+    final site = _mapState.site;
+    final building = _mapState.building;
+    if (floorId == null || hierarchy == null || site == null || building == null) {
       return;
     }
 
-    final floor =
-        _building!.floors.where((item) => item.id == floorId).firstOrNull;
+    final floor = building.floors.where((item) => item.id == floorId).firstOrNull;
     if (floor == null) {
       return;
     }
@@ -143,7 +144,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     try {
       if (mounted) {
         setState(() {
-          _loading = true;
+          _mapState.loading = true;
           _setActivity(
             title: 'Kat hazırlanıyor',
             message: 'Seçtiğiniz harita ve hedefler yükleniyor.',
@@ -151,9 +152,9 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
         });
       }
       await _applySelection(
-        hierarchy: _hierarchy!,
-        site: _site!,
-        building: _building!,
+        hierarchy: hierarchy,
+        site: site,
+        building: building,
         floor: floor,
       );
     } catch (error) {
@@ -162,7 +163,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       }
 
       setState(() {
-        _loading = false;
+        _mapState.loading = false;
         _clearActivity();
       });
       _showError(error);
@@ -181,7 +182,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
   }
 
   Future<void> _loadOccupancy() async {
-    final floor = _floor;
+    final floor = _mapState.floor;
     if (floor == null) {
       return;
     }
@@ -189,7 +190,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     try {
       final occupancy = await _parkingService.getOccupancyMap(floor.id);
       if (mounted) {
-        setState(() => _occupancy = _normalizeOccupancy(occupancy));
+        setState(() => _mapState.occupancy = _normalizeOccupancy(occupancy));
       }
     } catch (error) {
       if (mounted) {
@@ -204,13 +205,13 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
   @override
   Future<PublishedMapData> _getPublishedMap(String floorId) async {
-    final cached = _publishedMapCache[floorId];
+    final cached = _mapState.publishedMapCache[floorId];
     if (cached != null) {
       return cached;
     }
 
     final publishedMap = await _facilityService.getPublishedMap(floorId);
-    _publishedMapCache[floorId] = publishedMap;
+    _mapState.publishedMapCache[floorId] = publishedMap;
     return publishedMap;
   }
 
@@ -244,7 +245,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
   }) async {
     if (mounted) {
       setState(() {
-        _loading = true;
+        _mapState.loading = true;
         _setActivity(
           title: 'Harita hazırlanıyor',
           message: '${building.name} · ${floor.name} açılıyor.',
@@ -260,28 +261,28 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     setState(() {
-      _organizations = organizations ?? _organizations;
-      _hierarchy = hierarchy;
-      _site = site;
-      _building = building;
-      _floor = floor;
-      _map = publishedMap;
-      _displayNodes = publishedMap.nodes;
-      _mapNodes = publishedMap.nodes;
-      _buildingDestinations = buildingDestinations;
-      _displayMapAssetPath = publishedMap.assetPath;
-      _displayMapAssetContentType = publishedMap.assetContentType;
-      _displayMapWidth = publishedMap.width;
-      _displayMapHeight = publishedMap.height;
-      _loading = false;
+      _mapState.organizations = organizations ?? _mapState.organizations;
+      _mapState.hierarchy = hierarchy;
+      _mapState.site = site;
+      _mapState.building = building;
+      _mapState.floor = floor;
+      _mapState.map = publishedMap;
+      _mapState.displayNodes = publishedMap.nodes;
+      _mapState.mapNodes = publishedMap.nodes;
+      _mapState.buildingDestinations = buildingDestinations;
+      _mapState.displayMapAssetPath = publishedMap.assetPath;
+      _mapState.displayMapAssetContentType = publishedMap.assetContentType;
+      _mapState.displayMapWidth = publishedMap.width;
+      _mapState.displayMapHeight = publishedMap.height;
+      _mapState.loading = false;
       _clearActivity();
-      _targetPark = null;
-      _parkedAt = null;
-      _route = null;
-      _multiRoute = null;
-      _activeRouteSegmentIndex = 0;
-      _lastScan = null;
-      _lastScanTime = null;
+      _mapState.targetPark = null;
+      _mapState.parkedAt = null;
+      _mapState.route = null;
+      _mapState.multiRoute = null;
+      _mapState.activeRouteSegmentIndex = 0;
+      _mapState.lastScan = null;
+      _mapState.lastScanTime = null;
     });
 
     await _loadOccupancy();
@@ -293,14 +294,15 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     final key = spotId.toUpperCase();
-    if (!_occupancy.containsKey(key)) {
+    if (!_mapState.occupancy.containsKey(key)) {
       return;
     }
 
-    final wasEmpty = _occupancy[key] == false;
-    setState(() => _occupancy[key] = isOccupied);
-    final targetRef =
-        (_targetPark?.externalReferenceId ?? _targetPark?.id)?.toUpperCase();
+    final wasEmpty = _mapState.occupancy[key] == false;
+    setState(() => _mapState.occupancy[key] = isOccupied);
+    final targetRef = (_mapState.targetPark?.externalReferenceId ??
+            _mapState.targetPark?.id)
+        ?.toUpperCase();
     if (isOccupied && wasEmpty && targetRef == key) {
       _showParkConfirmDialog(key);
     }
