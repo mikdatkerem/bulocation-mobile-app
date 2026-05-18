@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../core/api_client.dart';
 import '../main.dart';
 import '../models/graph_data.dart';
+import 'floor_plan/map_viewport_controller.dart';
 import 'navigation_route_painter.dart';
 import 'pulse_marker.dart';
 
@@ -49,19 +50,9 @@ class FloorPlanWidget extends StatefulWidget {
 
 class _FloorPlanWidgetState extends State<FloorPlanWidget>
     with TickerProviderStateMixin {
-  static const double _maxZoomMultiplier = 5.0;
-  static const double _panBoundaryMargin = 120.0;
-
   late final AnimationController _glowController;
-  late final AnimationController _viewportAnimationController;
   late final Animation<double> _glowAnimation;
-  late final TransformationController _transformationController;
-  bool _hasUserMovedViewport = false;
-  bool _followActiveNode = true;
-  Size? _viewportSize;
-  double _fitScale = 1;
-  bool _centeringScheduled = false;
-  TapDownDetails? _lastDoubleTapDownDetails;
+  late final MapViewportController _viewportController;
 
   @override
   void initState() {
@@ -74,20 +65,20 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       parent: _glowController,
       curve: Curves.easeInOut,
     );
-    _viewportAnimationController = AnimationController(
+    _viewportController = MapViewportController(
       vsync: this,
-      duration: const Duration(milliseconds: 180),
+      onChanged: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
     );
-    _transformationController = TransformationController()
-      ..addListener(_handleTransformChanged);
   }
 
   @override
   void dispose() {
     _glowController.dispose();
-    _viewportAnimationController.dispose();
-    _transformationController.removeListener(_handleTransformChanged);
-    _transformationController.dispose();
+    _viewportController.dispose();
     super.dispose();
   }
 
@@ -100,15 +91,20 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
         oldWidget.mapHeight != widget.mapHeight;
 
     if (mapChanged) {
-      _hasUserMovedViewport = false;
-      _followActiveNode = true;
-      _scheduleCenterOnActiveNode(force: true);
+      _viewportController.handleMapChanged(
+        mapWidth: _mapWidth,
+        mapHeight: _mapHeight,
+        activeNode: _activeNode,
+      );
       return;
     }
 
-    if ((_followActiveNode || !_hasUserMovedViewport) &&
-        oldWidget.activeZoneId != widget.activeZoneId) {
-      _scheduleCenterOnActiveNode(force: true);
+    if (oldWidget.activeZoneId != widget.activeZoneId) {
+      _viewportController.handleActiveNodeChanged(
+        mapWidth: _mapWidth,
+        mapHeight: _mapHeight,
+        activeNode: _activeNode,
+      );
     }
   }
 
@@ -123,278 +119,31 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
 
   double get _mapWidth => (widget.mapWidth ?? 1920).toDouble();
   double get _mapHeight => (widget.mapHeight ?? 1080).toDouble();
-  int get _zoomPercentage => ((_currentScale / _fitScale) * 100).round();
-
-  void _handleTransformChanged() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
-  }
-
-  void _scheduleCenterOnActiveNode({bool force = false}) {
-    if (_centeringScheduled) {
-      return;
-    }
-
-    _centeringScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _centeringScheduled = false;
-      if (!mounted) {
-        return;
-      }
-      _centerOnActiveNode(force: force);
-    });
-  }
-
-  void _centerOnActiveNode({bool force = false}) {
-    final viewportSize = _viewportSize;
-    if (viewportSize == null) {
-      return;
-    }
-
-    if (!_followActiveNode && !force) {
-      return;
-    }
-
-    final target = _centerMatrixForActiveNode(viewportSize);
-    if (_matrixEquals(_transformationController.value, target)) {
-      return;
-    }
-    _animateToMatrix(target);
-  }
+  int get _zoomPercentage => _viewportController.zoomPercentage;
 
   void _zoom(double factor) {
-    final viewportSize = _viewportSize;
-    if (viewportSize == null) {
-      return;
-    }
-
-    final currentScale = _currentScale;
-    final minScale = _fitScale;
-    final maxScale = _fitScale * _maxZoomMultiplier;
-    final nextScale = (currentScale * factor).clamp(minScale, maxScale);
-    if ((nextScale - currentScale).abs() < 0.0001) {
-      return;
-    }
-
-    final wasFollowing = _followActiveNode;
-    _hasUserMovedViewport = true;
-    _followActiveNode = false;
-    final activeNode = _activeNode;
-    final focalPoint = wasFollowing && activeNode != null
-        ? Offset(
-            (activeNode.resolveX(_mapWidth) * currentScale) +
-                _currentTranslateX,
-            (activeNode.resolveY(_mapHeight) * currentScale) +
-                _currentTranslateY,
-          )
-        : Offset(viewportSize.width / 2, viewportSize.height / 2);
-    final currentTranslateX = _currentTranslateX;
-    final currentTranslateY = _currentTranslateY;
-
-    final sceneX = (focalPoint.dx - currentTranslateX) / currentScale;
-    final sceneY = (focalPoint.dy - currentTranslateY) / currentScale;
-
-    final nextTranslateX = focalPoint.dx - (sceneX * nextScale);
-    final nextTranslateY = focalPoint.dy - (sceneY * nextScale);
-
-    _animateToMatrix(_clampMatrix(
-      _buildMatrix(
-        scale: nextScale,
-        translateX: nextTranslateX,
-        translateY: nextTranslateY,
-      ),
-    ));
+    _viewportController.zoom(
+      factor: factor,
+      mapWidth: _mapWidth,
+      mapHeight: _mapHeight,
+      activeNode: _activeNode,
+    );
   }
 
   void _recenter() {
-    final viewportSize = _viewportSize;
-    if (viewportSize == null) {
-      return;
-    }
-
-    _followActiveNode = true;
-    _hasUserMovedViewport = false;
-    _animateToMatrix(_centerMatrixForActiveNode(viewportSize));
+    _viewportController.recenter(
+      mapWidth: _mapWidth,
+      mapHeight: _mapHeight,
+      activeNode: _activeNode,
+    );
   }
 
   void _handleDoubleTap() {
-    final details = _lastDoubleTapDownDetails;
-    final viewportSize = _viewportSize;
-    if (details == null || viewportSize == null) {
-      return;
-    }
-
-    final currentScale = _currentScale;
-    final maxScale = _fitScale * _maxZoomMultiplier;
-    final nextScale = currentScale < (_fitScale * 1.6)
-        ? (currentScale * 1.8).clamp(_fitScale, maxScale)
-        : _fitScale;
-    final focalPoint = details.localPosition;
-    final sceneX = (focalPoint.dx - _currentTranslateX) / currentScale;
-    final sceneY = (focalPoint.dy - _currentTranslateY) / currentScale;
-    final nextTranslateX = focalPoint.dx - (sceneX * nextScale);
-    final nextTranslateY = focalPoint.dy - (sceneY * nextScale);
-
-    _hasUserMovedViewport = nextScale > _fitScale;
-    _followActiveNode = nextScale == _fitScale;
-    _animateToMatrix(
-      nextScale == _fitScale
-          ? _centerMatrixForActiveNode(viewportSize)
-          : _clampMatrix(
-              _buildMatrix(
-                scale: nextScale,
-                translateX: nextTranslateX,
-                translateY: nextTranslateY,
-              ),
-            ),
+    _viewportController.handleDoubleTap(
+      mapWidth: _mapWidth,
+      mapHeight: _mapHeight,
+      activeNode: _activeNode,
     );
-  }
-
-  void _settleViewport() {
-    final viewportSize = _viewportSize;
-    if (viewportSize == null) {
-      return;
-    }
-
-    final currentScale = _currentScale;
-    if (currentScale < _fitScale) {
-      _hasUserMovedViewport = false;
-      _animateToMatrix(_centerMatrixForActiveNode(viewportSize));
-      return;
-    }
-
-    final clamped = _clampMatrix(_transformationController.value.clone());
-    if (_matrixEquals(_transformationController.value, clamped)) {
-      return;
-    }
-
-    _animateToMatrix(clamped);
-  }
-
-  Matrix4 _centerMatrixForActiveNode(Size viewportSize) {
-    final scale = _fitScale;
-    final scaledWidth = _mapWidth * scale;
-    final scaledHeight = _mapHeight * scale;
-    final activeNode = _activeNode;
-
-    double translateX = (viewportSize.width - scaledWidth) / 2;
-    double translateY = (viewportSize.height - scaledHeight) / 2;
-
-    if (activeNode != null) {
-      final desiredX =
-          viewportSize.width / 2 - (activeNode.resolveX(_mapWidth) * scale);
-      final desiredY =
-          viewportSize.height / 2 - (activeNode.resolveY(_mapHeight) * scale);
-      final minTranslateX = viewportSize.width - scaledWidth;
-      final minTranslateY = viewportSize.height - scaledHeight;
-
-      translateX = scaledWidth <= viewportSize.width
-          ? translateX
-          : desiredX.clamp(minTranslateX, 0.0);
-      translateY = scaledHeight <= viewportSize.height
-          ? translateY
-          : desiredY.clamp(minTranslateY, 0.0);
-    }
-
-    return _buildMatrix(
-      scale: scale,
-      translateX: translateX,
-      translateY: translateY,
-    );
-  }
-
-  void _animateToMatrix(Matrix4 target) {
-    _viewportAnimationController.stop();
-    final tween = Matrix4Tween(
-      begin: _transformationController.value.clone(),
-      end: target,
-    );
-    final animation = CurvedAnimation(
-      parent: _viewportAnimationController,
-      curve: Curves.easeOutCubic,
-    );
-
-    void listener() {
-      _transformationController.value = tween.evaluate(animation);
-    }
-
-    void statusListener(AnimationStatus status) {
-      if (status == AnimationStatus.completed ||
-          status == AnimationStatus.dismissed) {
-        animation.removeListener(listener);
-        animation.removeStatusListener(statusListener);
-        animation.dispose();
-      }
-    }
-
-    animation
-      ..addListener(listener)
-      ..addStatusListener(statusListener);
-    _viewportAnimationController
-      ..value = 0
-      ..forward();
-  }
-
-  Matrix4 _clampMatrix(Matrix4 matrix) {
-    final viewportSize = _viewportSize;
-    if (viewportSize == null) {
-      return matrix;
-    }
-
-    final currentScale = matrix.storage[0];
-    final clampedScale =
-        currentScale.clamp(_fitScale, _fitScale * _maxZoomMultiplier);
-    final scaledWidth = _mapWidth * clampedScale;
-    final scaledHeight = _mapHeight * clampedScale;
-
-    final currentTranslateX = matrix.storage[12];
-    final currentTranslateY = matrix.storage[13];
-
-    final minTranslateX = viewportSize.width - scaledWidth;
-    final minTranslateY = viewportSize.height - scaledHeight;
-
-    final translateX = scaledWidth <= viewportSize.width
-        ? (viewportSize.width - scaledWidth) / 2
-        : currentTranslateX.clamp(minTranslateX, 0.0);
-    final translateY = scaledHeight <= viewportSize.height
-        ? (viewportSize.height - scaledHeight) / 2
-        : currentTranslateY.clamp(minTranslateY, 0.0);
-
-    return _buildMatrix(
-      scale: clampedScale,
-      translateX: translateX,
-      translateY: translateY,
-    );
-  }
-
-  Matrix4 _buildMatrix({
-    required double scale,
-    required double translateX,
-    required double translateY,
-  }) {
-    final matrix = Matrix4.identity();
-    matrix.storage[0] = scale;
-    matrix.storage[5] = scale;
-    matrix.storage[10] = 1;
-    matrix.storage[15] = 1;
-    matrix.storage[12] = translateX;
-    matrix.storage[13] = translateY;
-    return matrix;
-  }
-
-  double get _currentScale => _transformationController.value.storage[0];
-  double get _currentTranslateX => _transformationController.value.storage[12];
-  double get _currentTranslateY => _transformationController.value.storage[13];
-
-  bool _matrixEquals(Matrix4 a, Matrix4 b) {
-    for (var i = 0; i < 16; i++) {
-      if ((a.storage[i] - b.storage[i]).abs() > 0.0001) {
-        return false;
-      }
-    }
-    return true;
   }
 
   Widget _buildViewportControls() {
@@ -406,7 +155,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
           _ZoomButton(
             icon: Icons.my_location_rounded,
             onTap: _recenter,
-            active: _followActiveNode,
+            active: _viewportController.followActiveNode,
           ),
           const SizedBox(height: 10),
           Container(
@@ -425,7 +174,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
               ],
             ),
             child: Text(
-              '${_zoomPercentage.clamp(100, (_maxZoomMultiplier * 100).round())}%',
+              '${_zoomPercentage.clamp(100, (_viewportController.maxZoomMultiplier * 100).round())}%',
               style: const TextStyle(
                 color: Color(0xFF182033),
                 fontSize: 12,
@@ -521,37 +270,40 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
           constraints.maxWidth / _mapWidth,
           constraints.maxHeight / _mapHeight,
         ].reduce((value, element) => value < element ? value : element);
-        final viewportChanged = _viewportSize != nextViewportSize;
-        final fitScaleChanged = _fitScale != nextFitScale;
-        _viewportSize = nextViewportSize;
-        _fitScale = nextFitScale;
-        if ((viewportChanged || fitScaleChanged) && !_hasUserMovedViewport) {
-          _scheduleCenterOnActiveNode();
-        }
         final activeNode = _activeNode;
         final sourceNodes = widget.nodes ?? const <MapNode>[];
+        _viewportController.updateLayout(
+          nextViewportSize: nextViewportSize,
+          nextFitScale: nextFitScale,
+          mapWidth: _mapWidth,
+          mapHeight: _mapHeight,
+          activeNode: activeNode,
+        );
 
         return Stack(
           children: [
             GestureDetector(
-              onDoubleTapDown: (details) => _lastDoubleTapDownDetails = details,
+              onDoubleTapDown: (details) =>
+                  _viewportController.lastDoubleTapDownDetails = details,
               onDoubleTap: _handleDoubleTap,
               child: InteractiveViewer(
-                transformationController: _transformationController,
+                transformationController:
+                    _viewportController.transformationController,
                 constrained: false,
                 clipBehavior: Clip.hardEdge,
                 scaleEnabled: true,
                 panEnabled: true,
-                minScale: _fitScale,
-                maxScale: _fitScale * _maxZoomMultiplier,
-                boundaryMargin: const EdgeInsets.all(_panBoundaryMargin),
-                onInteractionStart: (_) {
-                  _viewportAnimationController.stop();
-                  _hasUserMovedViewport = true;
-                  _followActiveNode = false;
-                },
-                onInteractionUpdate: (_) => setState(() {}),
-                onInteractionEnd: (_) => _settleViewport(),
+                minScale: _viewportController.fitScale,
+                maxScale: _viewportController.fitScale *
+                    _viewportController.maxZoomMultiplier,
+                boundaryMargin:
+                    EdgeInsets.all(_viewportController.panBoundaryMargin),
+                onInteractionStart: (_) => _viewportController.onInteractionStart(),
+                onInteractionEnd: (_) => _viewportController.settleViewport(
+                  mapWidth: _mapWidth,
+                  mapHeight: _mapHeight,
+                  activeNode: activeNode,
+                ),
                 child: _buildMapLayerStack(
                   sourceNodes: sourceNodes,
                   activeNode: activeNode,
