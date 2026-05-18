@@ -18,7 +18,9 @@ import 'map/map_screen_body.dart';
 import 'map/map_screen_state_controller.dart';
 
 part 'map/map_screen_facility_actions.dart';
-part 'map/map_screen_navigation_actions.dart';
+part 'map/map_screen_panel_actions.dart';
+part 'map/map_screen_qr_actions.dart';
+part 'map/map_screen_route_actions.dart';
 
 class MapsScreen extends StatefulWidget {
   const MapsScreen({super.key, required this.onBack});
@@ -67,10 +69,19 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
     required BuildingHierarchy building,
     required FloorHierarchy floor,
   });
+  Future<void> _updateRoute(String fromReferenceId);
+  // ignore: unused_element
+  Future<void> _showRouteSegment(int index);
+  void _showSuggestionDialog();
+  MapPanelMode get _mapPanelMode;
 }
 
 class MapsScreenState extends MapsScreenStateBase
-    with _MapScreenFacilityActions, _MapScreenNavigationActions {
+    with
+        _MapScreenFacilityActions,
+        _MapScreenPanelActions,
+        _MapScreenRouteActions,
+        _MapScreenQrActions {
   @override
   void initState() {
     super.initState();
