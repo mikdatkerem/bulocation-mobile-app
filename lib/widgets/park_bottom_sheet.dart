@@ -7,6 +7,7 @@ import '../services/pathfinding_service.dart';
 
 part 'parking_panel/navigation_actions.dart';
 part 'parking_panel/panel_header_route.dart';
+part 'parking_panel/panel_presenter.dart';
 part 'parking_panel/target_grid.dart';
 
 enum MapPanelMode { parking, hospital, mall, other }
@@ -70,64 +71,22 @@ class ParkBottomSheet extends StatefulWidget {
 class _ParkBottomSheetState extends State<ParkBottomSheet> {
   bool _showDestinations = false;
 
-  bool get _isParking => widget.mode == MapPanelMode.parking;
-
-  String get _panelTitle {
-    return switch (widget.mode) {
-      MapPanelMode.parking => 'Rota ve park alanları',
-      MapPanelMode.hospital => 'Hastane hedefleri',
-      MapPanelMode.mall => 'AVM hedefleri',
-      MapPanelMode.other => 'Navigasyon hedefleri',
-    };
-  }
-
-  String get _destinationTitle {
-    return switch (widget.mode) {
-      MapPanelMode.parking =>
-        widget.destinations.isNotEmpty ? 'Hedefler' : 'Park alanları',
-      MapPanelMode.hospital => 'Bölümler',
-      MapPanelMode.mall => 'Mağazalar',
-      MapPanelMode.other => 'Noktalar',
-    };
-  }
-
-  String get _summaryText {
-    if (_isParking) {
-      return '${widget.emptyCount} boş · ${widget.fullCount} dolu · ${widget.totalCount} toplam';
-    }
-
-    final active = widget.activeReference ?? 'QR bekleniyor';
-    return '${widget.destinations.length} hedef · başlangıç $active';
-  }
-
-  String get _headerHelperText {
-    return switch (widget.mode) {
-      MapPanelMode.parking =>
-        'Canlı doluluk takibi ile uygun alan ve çıkış yönlendirmesi',
-      MapPanelMode.hospital =>
-        'Bölümler, giriş bağlantıları ve kat geçişleri burada listelenir',
-      MapPanelMode.mall =>
-        'Mağaza, servis noktası ve çıkış hedefleri buradan açılır',
-      MapPanelMode.other =>
-        'Haritadaki hedefler ve bağlantı noktaları buradan yönetilir',
-    };
-  }
-
-  IconData get _modeIcon {
-    return switch (widget.mode) {
-      MapPanelMode.parking => Icons.local_parking_rounded,
-      MapPanelMode.hospital => Icons.local_hospital_rounded,
-      MapPanelMode.mall => Icons.store_mall_directory_rounded,
-      MapPanelMode.other => Icons.navigation_rounded,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
-    final targets = _targetsForPanel();
+    final presenter = _ParkBottomSheetPresenter(
+      mode: widget.mode,
+      mapName: widget.mapName,
+      activeReference: widget.activeReference,
+      emptyCount: widget.emptyCount,
+      fullCount: widget.fullCount,
+      totalCount: widget.totalCount,
+      parks: widget.parks,
+      destinations: widget.destinations,
+    );
+    final targets = presenter.targetsForPanel();
 
-    if (!_isParking && _showDestinations && targets.isEmpty) {
+    if (!presenter.isParking && _showDestinations && targets.isEmpty) {
       _showDestinations = false;
     }
 
@@ -188,14 +147,14 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                       padding: EdgeInsets.fromLTRB(18, 18, 18, bottom + 18),
                       children: [
                         _PanelHeader(
-                          icon: _modeIcon,
+                          icon: presenter.modeIcon,
                           mapName: widget.mapName,
-                          summary: _summaryText,
-                          title: _panelTitle,
-                          helperText: _headerHelperText,
+                          summary: presenter.summaryText,
+                          title: presenter.panelTitle,
+                          helperText: presenter.headerHelperText,
                           trailingIcon: _showDestinations
                               ? Icons.grid_view_rounded
-                              : _modeIcon,
+                              : presenter.modeIcon,
                         ),
                         if (widget.multiRoute != null &&
                             widget.multiRoute!.segments.length > 1) ...[
@@ -209,7 +168,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                         const SizedBox(height: 16),
                         _ModeSwitcher(
                           showDestinations: _showDestinations,
-                          destinationLabel: _destinationTitle,
+                          destinationLabel: presenter.destinationTitle,
                           hasDestinations: targets.isNotEmpty,
                           onNavigationTap: () =>
                               setState(() => _showDestinations = false),
@@ -222,7 +181,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                             mode: widget.mode,
                             hasParkedCar: widget.parkedAt != null,
                             hasDestinations: targets.isNotEmpty,
-                            destinationTitle: _destinationTitle,
+                            destinationTitle: presenter.destinationTitle,
                             onShowDestinations: () =>
                                 setState(() => _showDestinations = true),
                             onNearestToUser: widget.onNearestToUser,
@@ -257,29 +216,5 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
         );
       },
     );
-  }
-
-  List<MapNode> _targetsForPanel() {
-    if (!_isParking) {
-      return widget.destinations;
-    }
-
-    if (widget.destinations.isEmpty) {
-      return widget.parks;
-    }
-
-    final nodesByKey = <String, MapNode>{};
-    for (final park in widget.parks) {
-      nodesByKey[(park.externalReferenceId ?? park.id).toUpperCase()] = park;
-    }
-    for (final destination in widget.destinations) {
-      nodesByKey[(destination.externalReferenceId ?? destination.id)
-          .toUpperCase()] = destination;
-    }
-
-    final nodes = nodesByKey.values.toList()
-      ..sort(
-          (left, right) => compareNodeLabelsNatural(left.label, right.label));
-    return nodes;
   }
 }
