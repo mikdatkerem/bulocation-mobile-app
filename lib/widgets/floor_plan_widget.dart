@@ -57,6 +57,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   late final Animation<double> _glowAnimation;
   late final TransformationController _transformationController;
   bool _hasUserMovedViewport = false;
+  bool _followActiveNode = true;
   Size? _viewportSize;
   double _fitScale = 1;
   bool _centeringScheduled = false;
@@ -100,11 +101,12 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
 
     if (mapChanged) {
       _hasUserMovedViewport = false;
+      _followActiveNode = true;
       _scheduleCenterOnActiveNode(force: true);
       return;
     }
 
-    if (!_hasUserMovedViewport &&
+    if ((_followActiveNode || !_hasUserMovedViewport) &&
         oldWidget.activeZoneId != widget.activeZoneId) {
       _scheduleCenterOnActiveNode(force: true);
     }
@@ -151,12 +153,15 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       return;
     }
 
-    if (_hasUserMovedViewport && !force) {
+    if (!_followActiveNode && !force) {
       return;
     }
 
-    _viewportAnimationController.stop();
-    _transformationController.value = _centerMatrixForActiveNode(viewportSize);
+    final target = _centerMatrixForActiveNode(viewportSize);
+    if (_matrixEquals(_transformationController.value, target)) {
+      return;
+    }
+    _animateToMatrix(target);
   }
 
   void _zoom(double factor) {
@@ -173,8 +178,18 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       return;
     }
 
+    final wasFollowing = _followActiveNode;
     _hasUserMovedViewport = true;
-    final focalPoint = Offset(viewportSize.width / 2, viewportSize.height / 2);
+    _followActiveNode = false;
+    final activeNode = _activeNode;
+    final focalPoint = wasFollowing && activeNode != null
+        ? Offset(
+            (activeNode.resolveX(_mapWidth) * currentScale) +
+                _currentTranslateX,
+            (activeNode.resolveY(_mapHeight) * currentScale) +
+                _currentTranslateY,
+          )
+        : Offset(viewportSize.width / 2, viewportSize.height / 2);
     final currentTranslateX = _currentTranslateX;
     final currentTranslateY = _currentTranslateY;
 
@@ -199,6 +214,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       return;
     }
 
+    _followActiveNode = true;
     _hasUserMovedViewport = false;
     _animateToMatrix(_centerMatrixForActiveNode(viewportSize));
   }
@@ -222,6 +238,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     final nextTranslateY = focalPoint.dy - (sceneY * nextScale);
 
     _hasUserMovedViewport = nextScale > _fitScale;
+    _followActiveNode = nextScale == _fitScale;
     _animateToMatrix(
       nextScale == _fitScale
           ? _centerMatrixForActiveNode(viewportSize)
@@ -389,6 +406,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
           _ZoomButton(
             icon: Icons.my_location_rounded,
             onTap: _recenter,
+            active: _followActiveNode,
           ),
           const SizedBox(height: 10),
           Container(
@@ -530,6 +548,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
                 onInteractionStart: (_) {
                   _viewportAnimationController.stop();
                   _hasUserMovedViewport = true;
+                  _followActiveNode = false;
                 },
                 onInteractionUpdate: (_) => setState(() {}),
                 onInteractionEnd: (_) => _settleViewport(),

@@ -47,7 +47,6 @@ class EmbeddedScanner extends StatelessWidget {
                   controller: controller,
                   onDetect: onDetect,
                 ),
-
                 if (isLoading)
                   Container(
                     color: Colors.black45,
@@ -62,13 +61,9 @@ class EmbeddedScanner extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                // Köşe çerçevesi
                 const CustomPaint(
                   painter: _CornerFrame(color: Colors.white70),
                 ),
-
-                // Alt yazı — kamera içinde
                 Positioned(
                   bottom: 6,
                   left: 0,
@@ -108,34 +103,34 @@ class _CornerFrame extends CustomPainter {
     const len = 16.0;
     const pad = 10.0;
 
-    // Sol üst
     canvas.drawPath(
-        Path()
-          ..moveTo(pad, pad + len)
-          ..lineTo(pad, pad)
-          ..lineTo(pad + len, pad),
-        paint);
-    // Sağ üst
+      Path()
+        ..moveTo(pad, pad + len)
+        ..lineTo(pad, pad)
+        ..lineTo(pad + len, pad),
+      paint,
+    );
     canvas.drawPath(
-        Path()
-          ..moveTo(size.width - pad - len, pad)
-          ..lineTo(size.width - pad, pad)
-          ..lineTo(size.width - pad, pad + len),
-        paint);
-    // Sol alt
+      Path()
+        ..moveTo(size.width - pad - len, pad)
+        ..lineTo(size.width - pad, pad)
+        ..lineTo(size.width - pad, pad + len),
+      paint,
+    );
     canvas.drawPath(
-        Path()
-          ..moveTo(pad, size.height - pad - len)
-          ..lineTo(pad, size.height - pad)
-          ..lineTo(pad + len, size.height - pad),
-        paint);
-    // Sağ alt
+      Path()
+        ..moveTo(pad, size.height - pad - len)
+        ..lineTo(pad, size.height - pad)
+        ..lineTo(pad + len, size.height - pad),
+      paint,
+    );
     canvas.drawPath(
-        Path()
-          ..moveTo(size.width - pad - len, size.height - pad)
-          ..lineTo(size.width - pad, size.height - pad)
-          ..lineTo(size.width - pad, size.height - pad - len),
-        paint);
+      Path()
+        ..moveTo(size.width - pad - len, size.height - pad)
+        ..lineTo(size.width - pad, size.height - pad)
+        ..lineTo(size.width - pad, size.height - pad - len),
+      paint,
+    );
   }
 
   @override
