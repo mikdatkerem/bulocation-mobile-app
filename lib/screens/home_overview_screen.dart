@@ -6,7 +6,10 @@ import '../models/facility_models.dart';
 import '../services/facility_service.dart';
 
 part 'home/home_overview_actions.dart';
+part 'home/home_overview_manual_selection.dart';
 part 'home/home_overview_models.dart';
+part 'home/home_overview_qr_scene.dart';
+part 'home/home_overview_sections.dart';
 part 'home/home_overview_theme.dart';
 part 'home/home_overview_tiles.dart';
 part 'home/quick_scanner_sheet.dart';
