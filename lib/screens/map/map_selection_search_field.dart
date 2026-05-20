@@ -39,7 +39,7 @@ class MapSelectionSearchField<T> extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          helper,
+          isDisabled ? 'Bu adım için kayıt bulunamadı.' : helper,
           style: const TextStyle(
             color: Color(0xFF94A3B8),
             fontSize: 12,
@@ -53,7 +53,8 @@ class MapSelectionSearchField<T> extends StatelessWidget {
               : () async {
                   final selected = await Navigator.of(context).push<T>(
                     PageRouteBuilder<T>(
-                      pageBuilder: (_, __, ___) => MapSelectionSearchPickerPage<T>(
+                      pageBuilder: (_, __, ___) =>
+                          MapSelectionSearchPickerPage<T>(
                         label: label,
                         items: items,
                         value: value,

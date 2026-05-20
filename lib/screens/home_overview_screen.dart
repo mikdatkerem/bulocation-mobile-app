@@ -7,9 +7,7 @@ import '../services/facility_service.dart';
 
 part 'home/home_overview_actions.dart';
 part 'home/home_overview_manual_selection.dart';
-part 'home/home_overview_models.dart';
 part 'home/home_overview_qr_scene.dart';
-part 'home/home_overview_sections.dart';
 part 'home/home_overview_theme.dart';
 part 'home/home_overview_tiles.dart';
 part 'home/quick_scanner_sheet.dart';
@@ -106,51 +104,22 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
     return 'Merhaba';
   }
 
-  int get _publishedFloorCount => _quickLocations.length;
+  int get _publishedFloorCount => _hierarchies
+      .expand((hierarchy) => hierarchy.sites)
+      .expand((site) => site.buildings)
+      .expand((building) => building.floors)
+      .where((floor) => floor.hasPublishedMap)
+      .length;
 
-  int get _siteCount => _siteItems.length;
+  int get _siteCount => _hierarchies.expand((item) => item.sites).length;
 
   String get _introDescription {
     if (_organizations.isEmpty) {
-      return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında yayınlanan katlar burada görünecek.';
+      return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında harita seçimi burada açılacak.';
     }
 
-    return 'Binanın girişindeki veya bulunduğunuz kattaki QR kodunu okutun. Harita anında açılsın.';
+    return 'Girişteki veya bulunduğunuz kattaki QR kodunu okutun. Harita anında açılsın.';
   }
-
-  List<_QuickLocationData> get _quickLocations => [
-        for (final hierarchy in _hierarchies)
-          for (final site in hierarchy.sites)
-            for (final building in site.buildings)
-              for (final floor in building.floors)
-                if (floor.hasPublishedMap)
-                  _QuickLocationData(
-                    organizationId: hierarchy.id,
-                    organizationName: hierarchy.name,
-                    siteId: site.id,
-                    siteName: site.name,
-                    buildingId: building.id,
-                    buildingName: building.name,
-                    floorId: floor.id,
-                    floorName: floor.name,
-                  ),
-      ];
-
-  List<_SiteListItemData> get _siteItems => [
-        for (final hierarchy in _hierarchies)
-          for (final site in hierarchy.sites)
-            _SiteListItemData(
-              organizationId: hierarchy.id,
-              organizationName: hierarchy.name,
-              siteId: site.id,
-              siteName: site.name,
-              buildingCount: site.buildings.length,
-              readyFloorCount: site.buildings
-                  .expand((building) => building.floors)
-                  .where((floor) => floor.hasPublishedMap)
-                  .length,
-            ),
-      ];
 
   @override
   Widget build(BuildContext context) {
@@ -183,69 +152,10 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
                         ),
                         const SizedBox(height: 24),
                         _ManualSelectionPanel(
+                          availableFloorCount: _publishedFloorCount,
+                          organizationCount: _organizations.length,
                           onTap: () => widget.onOpenMaps(null),
                         ),
-                        const SizedBox(height: 28),
-                        _SectionHeader(
-                          title: 'Hazır başlangıçlar',
-                          actionLabel:
-                              _quickLocations.length > 3 ? 'Tümünü gör' : null,
-                          onAction: _quickLocations.length > 3
-                              ? () => widget.onOpenMaps(null)
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
-                        if (_quickLocations.isEmpty)
-                          const _EmptyBlock(
-                            title: 'Henüz yayınlanan kat yok',
-                            subtitle:
-                                'İlk yayınlanan katlar hazır olduğunda hızlı başlangıçlar burada görünecek.',
-                          )
-                        else
-                          ..._quickLocations.take(3).map(
-                                (item) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: _QuickLocationTile(
-                                    item: item,
-                                    onTap: () => widget.onOpenMaps(
-                                      MapOpenRequest(
-                                        organizationId: item.organizationId,
-                                        siteId: item.siteId,
-                                        buildingId: item.buildingId,
-                                        floorId: item.floorId,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        const SizedBox(height: 28),
-                        const _SectionHeader(
-                          title: 'Kurum ve yerleşkeler',
-                          actionLabel: null,
-                          onAction: null,
-                        ),
-                        const SizedBox(height: 12),
-                        if (_siteItems.isEmpty)
-                          const _EmptyBlock(
-                            title: 'Kurum bulunamadı',
-                            subtitle:
-                                'Yetkili olduğunuz kurum ve yerleşkeler burada listelenecek.',
-                          )
-                        else
-                          ..._siteItems.map(
-                            (item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _SiteListTile(
-                                item: item,
-                                onTap: () => widget.onOpenMaps(
-                                  MapOpenRequest(
-                                    organizationId: item.organizationId,
-                                    siteId: item.siteId,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ),

@@ -72,7 +72,7 @@ class MapSelectionPanel extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 430),
             padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.94),
+              color: Colors.white.withValues(alpha: 0.96),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: const [
@@ -87,54 +87,10 @@ class MapSelectionPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.map_rounded,
-                        color: Color(0xFF6366F1),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'MANUEL SEÇİM',
-                            style: TextStyle(
-                              color: Color(0xFF6366F1),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.8,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            completedSteps == 0
-                                ? 'Harita seçin'
-                                : '$completedSteps/4 adım tamamlandı',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                _SelectionHeader(completedSteps: completedSteps),
                 const SizedBox(height: 14),
                 const Text(
-                  'Önce kurum seçin. Sonrasında yerleşke, bina ve kat adımları sırasıyla açılır.',
+                  'Önce kurum seçin. Sonraki adımlar sadece önceki seçiminize göre açılır.',
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.55,
@@ -147,53 +103,217 @@ class MapSelectionPanel extends StatelessWidget {
                   currentStep: completedSteps,
                   labels: const ['Kurum', 'Yerleşke', 'Bina', 'Kat'],
                 ),
+                if (completedSteps > 0) ...[
+                  const SizedBox(height: 18),
+                  _SelectedPathSummary(
+                    organization: selectedOrganization?.name,
+                    site: selectedSite?.name,
+                    building: selectedBuilding?.name,
+                    floor: selectedFloor?.name,
+                  ),
+                ],
                 const SizedBox(height: 22),
-                MapSelectionSearchField<OrganizationSummary>(
-                  label: 'Kurum',
-                  helper: 'İlk adım. Arama ile kurum seçin.',
-                  value: selectedOrganization,
-                  items: organizations,
-                  title: (item) => item.name,
-                  onSelected: (item) => onOrganizationChanged(item.id),
+                _ActiveSelectionStep(
+                  selectedOrganization: selectedOrganization,
+                  selectedSite: selectedSite,
+                  selectedBuilding: selectedBuilding,
+                  selectedFloor: selectedFloor,
+                  organizations: organizations,
+                  sites: sites,
+                  buildings: buildings,
+                  floors: floors,
+                  onOrganizationChanged: onOrganizationChanged,
+                  onSiteChanged: onSiteChanged,
+                  onBuildingChanged: onBuildingChanged,
+                  onFloorChanged: onFloorChanged,
                 ),
-                if (selectedOrganization != null) ...[
-                  const SizedBox(height: 14),
-                  MapSelectionSearchField<SiteHierarchy>(
-                    label: 'Yerleşke',
-                    helper: 'Seçilen kuruma ait yerleşkeler',
-                    value: selectedSite,
-                    items: sites,
-                    title: (item) => item.name,
-                    onSelected: (item) => onSiteChanged(item.id),
-                  ),
-                ],
-                if (selectedSite != null) ...[
-                  const SizedBox(height: 14),
-                  MapSelectionSearchField<BuildingHierarchy>(
-                    label: 'Bina',
-                    helper: 'Seçilen yerleşkeye ait binalar',
-                    value: selectedBuilding,
-                    items: buildings,
-                    title: (item) => item.name,
-                    onSelected: (item) => onBuildingChanged(item.id),
-                  ),
-                ],
-                if (selectedBuilding != null) ...[
-                  const SizedBox(height: 14),
-                  MapSelectionSearchField<FloorHierarchy>(
-                    label: 'Kat',
-                    helper: 'Haritayı açmak için son adım',
-                    value: selectedFloor,
-                    items: floors,
-                    title: (item) => item.name,
-                    onSelected: (item) => onFloorChanged(item.id),
-                  ),
-                ],
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SelectionHeader extends StatelessWidget {
+  const _SelectionHeader({required this.completedSteps});
+
+  final int completedSteps;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEF2FF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(
+            Icons.map_rounded,
+            color: Color(0xFF6366F1),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'MANUEL SEÇİM',
+                style: TextStyle(
+                  color: Color(0xFF6366F1),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.8,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                completedSteps == 0
+                    ? 'Kurum seçin'
+                    : '$completedSteps/4 adım tamamlandı',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActiveSelectionStep extends StatelessWidget {
+  const _ActiveSelectionStep({
+    required this.selectedOrganization,
+    required this.selectedSite,
+    required this.selectedBuilding,
+    required this.selectedFloor,
+    required this.organizations,
+    required this.sites,
+    required this.buildings,
+    required this.floors,
+    required this.onOrganizationChanged,
+    required this.onSiteChanged,
+    required this.onBuildingChanged,
+    required this.onFloorChanged,
+  });
+
+  final OrganizationSummary? selectedOrganization;
+  final SiteHierarchy? selectedSite;
+  final BuildingHierarchy? selectedBuilding;
+  final FloorHierarchy? selectedFloor;
+  final List<OrganizationSummary> organizations;
+  final List<SiteHierarchy> sites;
+  final List<BuildingHierarchy> buildings;
+  final List<FloorHierarchy> floors;
+  final ValueChanged<String?> onOrganizationChanged;
+  final ValueChanged<String?> onSiteChanged;
+  final ValueChanged<String?> onBuildingChanged;
+  final ValueChanged<String?> onFloorChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selectedOrganization == null) {
+      return MapSelectionSearchField<OrganizationSummary>(
+        label: 'Kurum',
+        helper: 'Arama ile kurum seçin.',
+        value: selectedOrganization,
+        items: organizations,
+        title: (item) => item.name,
+        onSelected: (item) => onOrganizationChanged(item.id),
+      );
+    }
+
+    if (selectedSite == null) {
+      return MapSelectionSearchField<SiteHierarchy>(
+        label: 'Yerleşke',
+        helper: 'Seçilen kuruma ait yerleşkeler.',
+        value: selectedSite,
+        items: sites,
+        title: (item) => item.name,
+        onSelected: (item) => onSiteChanged(item.id),
+      );
+    }
+
+    if (selectedBuilding == null) {
+      return MapSelectionSearchField<BuildingHierarchy>(
+        label: 'Bina',
+        helper: 'Seçilen yerleşkeye ait binalar.',
+        value: selectedBuilding,
+        items: buildings,
+        title: (item) => item.name,
+        onSelected: (item) => onBuildingChanged(item.id),
+      );
+    }
+
+    return MapSelectionSearchField<FloorHierarchy>(
+      label: 'Kat',
+      helper: selectedFloor == null
+          ? 'Haritayı açmak için son adım.'
+          : 'Seçilen kat haritası açılıyor.',
+      value: selectedFloor,
+      items: floors,
+      title: (item) => item.name,
+      onSelected: (item) => onFloorChanged(item.id),
+    );
+  }
+}
+
+class _SelectedPathSummary extends StatelessWidget {
+  const _SelectedPathSummary({
+    required this.organization,
+    required this.site,
+    required this.building,
+    required this.floor,
+  });
+
+  final String? organization;
+  final String? site;
+  final String? building;
+  final String? floor;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      if (organization != null) ('Kurum', organization!),
+      if (site != null) ('Yerleşke', site!),
+      if (building != null) ('Bina', building!),
+      if (floor != null) ('Kat', floor!),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final item in items)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFF),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Text(
+              '${item.$1}: ${item.$2}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF475569),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

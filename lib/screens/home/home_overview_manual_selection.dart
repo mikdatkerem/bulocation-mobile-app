@@ -1,8 +1,14 @@
 part of '../home_overview_screen.dart';
 
 class _ManualSelectionPanel extends StatelessWidget {
-  const _ManualSelectionPanel({required this.onTap});
+  const _ManualSelectionPanel({
+    required this.availableFloorCount,
+    required this.organizationCount,
+    required this.onTap,
+  });
 
+  final int availableFloorCount;
+  final int organizationCount;
   final VoidCallback onTap;
 
   @override
@@ -44,14 +50,31 @@ class _ManualSelectionPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Önce kurum seçin. Ardından yerleşke, bina ve kat adımlarıyla ilgili haritayı açın.',
-            style: TextStyle(
+          Text(
+            organizationCount == 0
+                ? 'Kurum erişimi tanımlandığında yerleşke, bina ve kat seçimi buradan yapılacak.'
+                : 'Önce kurum seçin. Ardından yerleşke, bina ve kat adımlarıyla ilgili haritayı açın.',
+            style: const TextStyle(
               color: _soft,
               fontSize: 14,
               height: 1.6,
               fontWeight: FontWeight.w500,
             ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _ManualStatChip(
+                label: '$organizationCount kurum',
+                icon: Icons.business_rounded,
+              ),
+              _ManualStatChip(
+                label: '$availableFloorCount hazır kat',
+                icon: Icons.layers_rounded,
+              ),
+            ],
           ),
           const SizedBox(height: 18),
           InkWell(
@@ -70,7 +93,7 @@ class _ManualSelectionPanel extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Kurum, bina veya kat seç',
+                      'Kurum seçerek harita aç',
                       style: TextStyle(
                         color: _soft,
                         fontSize: 15,
@@ -81,6 +104,43 @@ class _ManualSelectionPanel extends StatelessWidget {
                   Icon(Icons.arrow_forward_rounded, color: _ink),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ManualStatChip extends StatelessWidget {
+  const _ManualStatChip({
+    required this.label,
+    required this.icon,
+  });
+
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFF),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _line),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: _accent),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _soft,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
