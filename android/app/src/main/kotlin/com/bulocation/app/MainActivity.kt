@@ -1,4 +1,4 @@
-package com.example.qr_claude
+package com.bulocation.app
 
 import io.flutter.embedding.android.FlutterActivity
 
