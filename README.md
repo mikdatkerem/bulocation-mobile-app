@@ -20,6 +20,7 @@ Uygulamanın ana amacı yalnızca otopark yönetimi değildir. Otopark, indoor n
 - Flutter 3.41 veya üzeri
 - Dart 3.11 veya üzeri
 - Android Studio / Xcode platform araçları
+- Windows Android build için `JAVA_HOME` değerinin Android Studio JBR/JDK konumuna ayarlanması. Örnek: `C:\Program Files\Android\Android Studio\jbr`
 - Çalışan Bulocation API
 
 ## Kurulum
@@ -115,13 +116,14 @@ Android:
 
 - `applicationId`: `com.bulocation.app`
 - Kamera ve internet izinleri tanımlıdır.
-- Release signing şu an tamamlanmış değildir; store build öncesi gerçek keystore yapılandırılmalıdır.
+- Release signing debug key kullanmaz. Store build öncesi `android/key.properties.example` dosyasını `android/key.properties` olarak kopyalayıp gerçek keystore değerleriyle doldurun.
 
 iOS:
 
 - Display name: `Bulocation`
+- Bundle identifier: `com.bulocation.app`
 - Kamera kullanım açıklaması tanımlıdır.
-- Bundle identifier ve signing Apple Developer hesabına göre ayrıca ayarlanmalıdır.
+- Signing ve Apple Developer Team ayarı Xcode üzerinden ayrıca yapılmalıdır.
 
 ## Kalite Kontrolleri
 
@@ -130,6 +132,13 @@ Her anlamlı değişiklikten sonra:
 ```bash
 flutter analyze
 flutter test
+```
+
+Windows ortamında Gradle doğrudan çalıştırılacaksa:
+
+```powershell
+$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
 ```
 
 Release öncesi ayrıca:
@@ -146,8 +155,8 @@ flutter build ios --release \
 
 ## Production Öncesi Kalanlar
 
-- Android release signing yapılandırması
-- iOS bundle id ve signing yapılandırması
+- Android release keystore değerlerinin güvenli CI/store ortamında tanımlanması
+- iOS signing yapılandırması
 - Google sign-in Android/iOS native konfigürasyonu
 - QR -> scan context -> published map -> route akışı için integration/widget testleri
 - SignalR için production token stratejisi

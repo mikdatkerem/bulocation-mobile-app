@@ -38,6 +38,9 @@ migrate_working_dir/
  
 # Secrets 
 .env
+/android/key.properties
+/android/app/*.jks
+/android/app/*.keystore
 
 # VS Code
 .vscode/settings.json
