@@ -1,102 +1,154 @@
-# QR Konum Uygulaması
+# Bulocation Mobile
 
-Flutter tabanlı QR okuyucu + SVG harita konum göstericisi.
+Bulocation mobil uygulaması; QR tabanlı başlangıç, indoor navigation, kurum/yerleşke/bina/kat seçimi, yayınlanmış harita görüntüleme, rota çizimi ve otopark doluluk takibi için geliştirilmiş Flutter istemcisidir.
 
----
+Uygulamanın ana amacı yalnızca otopark yönetimi değildir. Otopark, indoor navigation deneyiminin önemli modlarından biridir.
+
+## Temel Akışlar
+
+- Oturum açma, kayıt olma, Google ile giriş ve oturum yenileme
+- İlk açılış kullanım rehberi
+- Ana ekrandan hızlı QR okutma
+- QR referansı ile scan context çözme ve ilgili yayınlanmış kat haritasını açma
+- Manuel kurum, yerleşke, bina ve kat seçimi
+- Harita üzerinde pan, zoom, recenter, rota ve park alanı gösterimi
+- Facility-aware alt panel: otopark, hastane, AVM ve diğer bina modları
+- SignalR ile canlı park doluluk güncellemeleri
+
+## Gereksinimler
+
+- Flutter 3.41 veya üzeri
+- Dart 3.11 veya üzeri
+- Android Studio / Xcode platform araçları
+- Çalışan Bulocation API
 
 ## Kurulum
 
-### 1. Bağımlılıkları yükle
 ```bash
 flutter pub get
+flutter analyze
+flutter test
 ```
 
-### 2. SVG krokisini yerleştir
-`assets/kroki.svg` dosyanı projeye koy.  
-SVG'nin orijinal viewBox boyutları `FloorPlanWidget` içindeki sabitlerle eşleşmeli:
+## Çalıştırma
 
-```dart
-// lib/widgets/floor_plan_widget.dart
-static const double svgWidth = 800.0;   // SVG viewBox genişliği
-static const double svgHeight = 600.0;  // SVG viewBox yüksekliği
+Geliştirme ortamı için:
+
+```bash
+flutter run \
+  --dart-define=BASE_HOST=http://10.0.2.2:5011 \
+  --dart-define=APP_SECRET=local-dev-secret
 ```
 
-SVG'nin gerçek viewBox'una göre bu değerleri güncelle.
+Production veya staging için `BASE_HOST` mutlaka HTTPS olmalıdır:
 
-### 3. API URL'ini güncelle
-```dart
-// lib/services/location_service.dart
-static const String _baseUrl = 'https://api.site.com';
+```bash
+flutter run --release \
+  --dart-define=BASE_HOST=https://api.bulocation.com \
+  --dart-define=APP_SECRET=... \
+  --dart-define=GOOGLE_SERVER_CLIENT_ID=...
 ```
 
-### 4. Android kamera izni (AndroidManifest.xml)
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-```
+`APP_SECRET` mobil binary içine gömüldüğü için gerçek bir gizli anahtar gibi kabul edilmemelidir. API tarafında JWT, public endpoint sınırları, rate limit ve gerekirse kısa ömürlü QR/SignalR token modeliyle desteklenmelidir.
 
-### 5. iOS kamera izni (Info.plist)
-```xml
-<key>NSCameraUsageDescription</key>
-<string>QR kodu okumak için kamera gereklidir</string>
-```
+## Proje Yapısı
 
----
-
-## Klasör Yapısı
-
-```
+```txt
 lib/
-├── main.dart
-├── models/
-│   ├── location_model.dart       # API response modeli
-│   └── exceptions.dart           # Özel exception sınıfları
-├── services/
-│   └── location_service.dart     # HTTP API servisi
-├── screens/
-│   ├── home_screen.dart          # Ana ekran (harita + buton)
-│   └── qr_scanner_screen.dart    # QR kamera ekranı
-└── widgets/
-    ├── floor_plan_widget.dart    # SVG + marker overlay
-    ├── pulse_marker.dart         # Animasyonlu kırmızı marker
-    └── location_info_bar.dart    # Alt konum bilgi çubuğu
-assets/
-└── kroki.svg                     # Bina krokisi (senin dosyan)
+  app/
+    app_session_controller.dart
+  core/
+    api_client.dart
+  models/
+    auth_models.dart
+    exceptions.dart
+    facility_models.dart
+    graph_data.dart
+  screens/
+    app_shell.dart
+    home_overview_screen.dart
+    home_guide_screen.dart
+    home_screen.dart
+    login_screen.dart
+    register_screen.dart
+    profile_screen.dart
+    map/
+    home/
+    auth/
+    profile/
+  services/
+    auth_service.dart
+    facility_service.dart
+    parking_service.dart
+    pathfinding_service.dart
+    session_storage.dart
+  widgets/
+    floor_plan_widget.dart
+    embedded_scanner.dart
+    bottom_bar.dart
+    parking_panel/
+    floor_plan/
 ```
 
----
+Not: `home_screen.dart` şu an harita ekranını barındırır. İleride dosya adı `map_screen.dart` olarak düzeltilmelidir.
 
-## Koordinat Sistemi
+## API Konfigürasyonu
 
-Backend'den gelen `x`, `y` değerleri **SVG koordinat uzayında** olmalıdır.  
-`FloorPlanWidget`, bu koordinatları ekran boyutuna otomatik olarak ölçekler:
+`lib/main.dart` içindeki `AppConfig` şu dart define değerlerini kullanır:
 
+| Değer | Açıklama |
+| --- | --- |
+| `BASE_HOST` | API ve SignalR host adresi. Örnek: `https://api.bulocation.com` |
+| `APP_SECRET` | API gateway/app-secret header değeri. |
+| `GOOGLE_SERVER_CLIENT_ID` | Google sign-in backend doğrulaması için server client id. |
+
+Türetilen adresler:
+
+| Adres | Kullanım |
+| --- | --- |
+| `$BASE_HOST/api` | REST API |
+| `$BASE_HOST/hubs/parking` | SignalR parking occupancy hub |
+
+## Platform Notları
+
+Android:
+
+- `applicationId`: `com.bulocation.app`
+- Kamera ve internet izinleri tanımlıdır.
+- Release signing şu an tamamlanmış değildir; store build öncesi gerçek keystore yapılandırılmalıdır.
+
+iOS:
+
+- Display name: `Bulocation`
+- Kamera kullanım açıklaması tanımlıdır.
+- Bundle identifier ve signing Apple Developer hesabına göre ayrıca ayarlanmalıdır.
+
+## Kalite Kontrolleri
+
+Her anlamlı değişiklikten sonra:
+
+```bash
+flutter analyze
+flutter test
 ```
-ekran_x = svg_x * (ekran_genişliği / svgWidth)
-ekran_y = svg_y * (ekran_yüksekliği / svgHeight)
+
+Release öncesi ayrıca:
+
+```bash
+flutter build apk --release \
+  --dart-define=BASE_HOST=https://api.bulocation.com \
+  --dart-define=APP_SECRET=...
+
+flutter build ios --release \
+  --dart-define=BASE_HOST=https://api.bulocation.com \
+  --dart-define=APP_SECRET=...
 ```
 
----
+## Production Öncesi Kalanlar
 
-## API Kontratı
-
-```
-GET https://api.site.com/location/{locationId}
-
-Response 200:
-{
-  "id": "A12",
-  "name": "Sol Koridor",
-  "x": 120,
-  "y": 340
-}
-
-Response 404: → LocationNotFoundException gösterilir
-Response 5xx: → ApiException snackbar gösterilir
-```
-
----
-
-## Test (Geliştirme Ortamı)
-
-`HomeScreen` AppBar'ındaki `⋮` menüsünden test konum ID'leri seçilebilir.  
-Üretime geçmeden önce bu menüyü kaldır.
+- Android release signing yapılandırması
+- iOS bundle id ve signing yapılandırması
+- Google sign-in Android/iOS native konfigürasyonu
+- QR -> scan context -> published map -> route akışı için integration/widget testleri
+- SignalR için production token stratejisi
+- Büyük kurum listelerinde ana ekran veri yükleme stratejisinin optimize edilmesi
