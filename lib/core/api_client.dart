@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../main.dart';
@@ -33,6 +35,7 @@ class ApiClient {
   static Map<String, String> buildHeaders({
     bool includeJsonContentType = true,
     bool includeAuth = true,
+    bool includeAppSecret = false,
   }) {
     final headers = <String, String>{
       'Accept': 'application/json',
@@ -42,7 +45,7 @@ class ApiClient {
       headers['Content-Type'] = 'application/json';
     }
 
-    if (AppConfig.appSecret.isNotEmpty) {
+    if (includeAppSecret && AppConfig.appSecret.isNotEmpty) {
       headers['x-app-secret'] = AppConfig.appSecret;
     }
 
@@ -51,6 +54,15 @@ class ApiClient {
     }
 
     return headers;
+  }
+
+  static Future<String?> getRealtimeAccessToken() async {
+    final token = _accessToken;
+    if (token?.isNotEmpty == true && !_isJwtNearExpiry(token!)) {
+      return token;
+    }
+
+    return _refreshWithSingleFlight();
   }
 
   static Dio _createDio() {
@@ -70,8 +82,7 @@ class ApiClient {
         },
         onError: (error, handler) async {
           final request = error.requestOptions;
-          final shouldTryRefresh =
-              error.response?.statusCode == 401 &&
+          final shouldTryRefresh = error.response?.statusCode == 401 &&
               request.headers['Authorization'] != null &&
               request.extra['skipAuthRefresh'] != true &&
               request.extra['authRetry'] != true &&
@@ -136,6 +147,33 @@ class ApiClient {
       if (identical(_refreshFuture, future)) {
         _refreshFuture = null;
       }
+    }
+  }
+
+  static bool _isJwtNearExpiry(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      return false;
+    }
+
+    try {
+      final payload =
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      final exp = data['exp'];
+      if (exp is! num) {
+        return false;
+      }
+
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+        exp.toInt() * 1000,
+        isUtc: true,
+      );
+      return expiresAt
+          .subtract(const Duration(minutes: 1))
+          .isBefore(DateTime.now().toUtc());
+    } catch (_) {
+      return false;
     }
   }
 }

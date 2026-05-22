@@ -21,7 +21,8 @@ class ParkingService {
   HubConnection? _hubConnection;
 
   Future<Map<String, bool>> getOccupancyMap(String floorId) async {
-    final uri = Uri.parse('$_baseUrl/client/facilities/floors/$floorId/occupancy');
+    final uri =
+        Uri.parse('$_baseUrl/client/facilities/floors/$floorId/occupancy');
     final response = await _client
         .get(
           uri,
@@ -58,15 +59,16 @@ class ParkingService {
     developer.log('SignalR baglaniyor: $_hubUrl', name: 'ParkingService');
 
     final messageHeaders = MessageHeaders();
-    final baseHeaders =
-        ApiClient.buildHeaders(includeJsonContentType: false, includeAuth: false);
+    final baseHeaders = ApiClient.buildHeaders(
+        includeJsonContentType: false, includeAuth: false);
     for (final entry in baseHeaders.entries) {
       messageHeaders.setHeaderValue(entry.key, entry.value);
     }
 
     final connectionOptions = HttpConnectionOptions(
       headers: messageHeaders,
-      accessTokenFactory: () async => ApiClient.accessToken ?? '',
+      accessTokenFactory: () async =>
+          await ApiClient.getRealtimeAccessToken() ?? '',
     );
 
     _hubConnection = HubConnectionBuilder()
