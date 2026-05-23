@@ -35,7 +35,7 @@ class ApiClient {
   static Map<String, String> buildHeaders({
     bool includeJsonContentType = true,
     bool includeAuth = true,
-    bool includeAppSecret = false,
+    bool includeAppSecret = true,
   }) {
     final headers = <String, String>{
       'Accept': 'application/json',

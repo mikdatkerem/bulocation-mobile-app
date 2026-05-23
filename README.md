@@ -45,10 +45,11 @@ Production veya staging için `BASE_HOST` mutlaka HTTPS olmalıdır:
 ```bash
 flutter run --release \
   --dart-define=BASE_HOST=https://api.bulocation.com \
+  --dart-define=APP_SECRET=... \
   --dart-define=GOOGLE_SERVER_CLIENT_ID=...
 ```
 
-Mobil istemci için ana güvenlik katmanı JWT access token ve refresh token akışıdır. `APP_SECRET` mobil binary içine gömüldüğü için gerçek bir gizli anahtar gibi kabul edilmemelidir; yalnızca legacy/internal endpoint geçişleri için opsiyonel tutulur.
+Mobil istemci için ana güvenlik katmanı JWT access token ve refresh token akışıdır. Cloudflare/API geçişinde `APP_SECRET` tanımlıysa REST ve SignalR isteklerine `x-app-secret` olarak eklenir. `APP_SECRET` mobil binary içine gömüldüğü için tek başına gerçek bir gizli anahtar gibi kabul edilmemelidir.
 
 ## Proje Yapısı
 
@@ -98,7 +99,7 @@ Not: `home_screen.dart` şu an harita ekranını barındırır. İleride dosya a
 | Değer | Açıklama |
 | --- | --- |
 | `BASE_HOST` | API ve SignalR host adresi. Örnek: `https://api.bulocation.com` |
-| `APP_SECRET` | Opsiyonel legacy app-secret değeri. Mobil ana akışlarda varsayılan olarak gönderilmez. |
+| `APP_SECRET` | Cloudflare/API geçişi için `x-app-secret` başlığına eklenen değer. |
 | `GOOGLE_SERVER_CLIENT_ID` | Google sign-in backend doğrulaması için server client id. |
 
 Türetilen adresler:
