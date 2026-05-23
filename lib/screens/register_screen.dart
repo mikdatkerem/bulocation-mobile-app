@@ -34,16 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  double get _passwordStrength {
-    final text = _passwordController.text;
-    var score = 0;
-    if (text.length >= 8) score++;
-    if (RegExp(r'[A-Z]').hasMatch(text)) score++;
-    if (RegExp(r'[a-z]').hasMatch(text)) score++;
-    if (RegExp(r'[0-9]').hasMatch(text)) score++;
-    return (score / 4).clamp(0.12, 1);
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -229,10 +219,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.next,
-                            onChanged: (_) {
-                              widget.sessionController.clearErrorMessage();
-                              setState(() {});
-                            },
+                            onChanged: (_) =>
+                                widget.sessionController.clearErrorMessage(),
                             style: const TextStyle(
                               color: authText,
                               fontWeight: FontWeight.w700,
@@ -271,32 +259,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return null;
                             },
                           ),
-                        ),
-                        const SizedBox(height: 9),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(999),
-                                child: LinearProgressIndicator(
-                                  value: _passwordStrength,
-                                  minHeight: 3,
-                                  backgroundColor: authInputDark,
-                                  valueColor:
-                                      const AlwaysStoppedAnimation(authPrimary),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'ZAYIF',
-                              style: TextStyle(
-                                color: authMuted,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
                         ),
                         const SizedBox(height: 16),
                         AuthField(

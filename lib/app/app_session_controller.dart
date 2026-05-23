@@ -140,9 +140,10 @@ class AppSessionController extends ChangeNotifier {
       return true;
     } catch (error) {
       _busy = false;
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.',
+      );
       notifyListeners();
       return false;
     }
@@ -181,9 +182,10 @@ class AppSessionController extends ChangeNotifier {
       return true;
     } catch (error) {
       _busy = false;
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Google ile giriş sırasında bir hata oluştu.',
+      );
       notifyListeners();
       return false;
     }
@@ -219,9 +221,10 @@ class AppSessionController extends ChangeNotifier {
       return true;
     } catch (error) {
       _busy = false;
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Kayıt oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.',
+      );
       notifyListeners();
       return false;
     }
@@ -243,9 +246,10 @@ class AppSessionController extends ChangeNotifier {
     try {
       await _authService.forgotPassword(email);
     } catch (error) {
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Şifre sıfırlama talebi gönderilemedi.',
+      );
       rethrow;
     } finally {
       _busy = false;
@@ -264,9 +268,10 @@ class AppSessionController extends ChangeNotifier {
     try {
       await _authService.resetPassword(token: token, newPassword: newPassword);
     } catch (error) {
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Şifre güncellenemedi.',
+      );
       rethrow;
     } finally {
       _busy = false;
@@ -282,9 +287,10 @@ class AppSessionController extends ChangeNotifier {
     try {
       await _authService.resendEmailVerification(email);
     } catch (error) {
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'Doğrulama e-postası yeniden gönderilemedi.',
+      );
       rethrow;
     } finally {
       _busy = false;
@@ -314,9 +320,10 @@ class AppSessionController extends ChangeNotifier {
         await _sessionStorage.writeProfile(_profile!);
       }
     } catch (error) {
-      _errorMessage = error is ApiException
-          ? error.message
-          : error.toString().replaceFirst('Exception: ', '');
+      _errorMessage = _messageFromError(
+        error,
+        fallback: 'E-posta doğrulanamadı.',
+      );
       rethrow;
     } finally {
       _busy = false;
@@ -339,5 +346,13 @@ class AppSessionController extends ChangeNotifier {
     if (notify) {
       notifyListeners();
     }
+  }
+
+  String _messageFromError(Object error, {required String fallback}) {
+    if (error is ApiException) {
+      return error.message;
+    }
+
+    return fallback;
   }
 }

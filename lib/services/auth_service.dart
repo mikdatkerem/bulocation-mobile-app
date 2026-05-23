@@ -202,14 +202,11 @@ class AuthService {
         return _firstValidationMessage(error) ?? 'Form alanlarını kontrol edin.';
     }
 
-    final detail = _problemDetail(error);
-    return detail ?? error.message ?? 'Giriş sırasında bir hata oluştu.';
+    return _problemDetail(error) ?? 'Giriş sırasında bir hata oluştu.';
   }
 
   String _mapProfileMessage(DioException error) {
-    return _problemDetail(error) ??
-        error.message ??
-        'Kullanıcı profili yüklenemedi.';
+    return _problemDetail(error) ?? 'Kullanıcı profili yüklenemedi.';
   }
 
   String _mapRegisterMessage(DioException error) {
@@ -223,8 +220,7 @@ class AuthService {
     }
 
     return _problemDetail(error) ??
-        error.message ??
-        'Kayıt oluşturulurken bir hata oluştu.';
+        _statusMessage(error, 'Kayıt oluşturulurken bir hata oluştu.');
   }
 
   String _mapGoogleMessage(DioException error) {
@@ -237,7 +233,6 @@ class AuthService {
         return 'Hesabınız aktif değil. Yönetici ile iletişime geçin.';
       default:
         return _problemDetail(error) ??
-            error.message ??
             'Google ile giriş yapılırken bir hata oluştu.';
     }
   }
@@ -249,9 +244,7 @@ class AuthService {
       case 'auth.account_inactive':
         return 'Hesabınız aktif değil. Yönetici ile iletişime geçin.';
       default:
-        return _problemDetail(error) ??
-            error.message ??
-            'Oturum yenilenemedi.';
+        return _problemDetail(error) ?? 'Oturum yenilenemedi.';
     }
   }
 
@@ -261,7 +254,6 @@ class AuthService {
     }
 
     return _problemDetail(error) ??
-        error.message ??
         'Şifre sıfırlama talebi gönderilemedi.';
   }
 
@@ -272,9 +264,7 @@ class AuthService {
       case 'validation_failed':
         return _firstValidationMessage(error) ?? 'Yeni şifre alanlarını kontrol edin.';
       default:
-        return _problemDetail(error) ??
-            error.message ??
-            'Şifre güncellenemedi.';
+        return _problemDetail(error) ?? 'Şifre güncellenemedi.';
     }
   }
 
@@ -284,7 +274,6 @@ class AuthService {
     }
 
     return _problemDetail(error) ??
-        error.message ??
         'Doğrulama e-postası yeniden gönderilemedi.';
   }
 
@@ -295,9 +284,7 @@ class AuthService {
       case 'validation_failed':
         return _firstValidationMessage(error) ?? 'Doğrulama kodunu kontrol edin.';
       default:
-        return _problemDetail(error) ??
-            error.message ??
-            'E-posta doğrulanamadı.';
+        return _problemDetail(error) ?? 'E-posta doğrulanamadı.';
     }
   }
 
@@ -319,7 +306,29 @@ class AuthService {
       return null;
     }
 
-    return body['detail']?.toString() ?? body['title']?.toString();
+    final detail = body['detail']?.toString() ?? body['title']?.toString();
+    if (detail == null || _looksTechnical(detail)) {
+      return null;
+    }
+
+    return detail;
+  }
+
+  String _statusMessage(DioException error, String fallback) {
+    return switch (error.response?.statusCode) {
+      400 => 'Bilgileri kontrol edip tekrar deneyin.',
+      403 => 'Bu işlem için gerekli izin sağlanamadı.',
+      409 => 'Bu bilgilerle oluşturulmuş bir hesap zaten var.',
+      _ => fallback,
+    };
+  }
+
+  bool _looksTechnical(String message) {
+    final normalized = message.toLowerCase();
+    return normalized.contains('dioexception') ||
+        normalized.contains('requestoptions') ||
+        normalized.contains('validatestatus') ||
+        normalized.contains('stacktrace');
   }
 
   String? _problemCode(DioException error) {
@@ -356,12 +365,35 @@ class AuthService {
       return null;
     }
 
-    for (final messages in errors.values) {
+    for (final entry in errors.entries) {
+      final messages = entry.value;
       if (messages.isNotEmpty) {
-        return messages.first;
+        return _friendlyValidationMessage(entry.key, messages.first);
       }
     }
 
     return null;
+  }
+
+  String _friendlyValidationMessage(String field, String message) {
+    final normalizedField = field.toLowerCase();
+    final normalizedMessage = message.toLowerCase();
+
+    if (normalizedField.contains('password')) {
+      if (normalizedMessage.contains('empty')) {
+        return 'Şifre alanı boş bırakılamaz.';
+      }
+      return 'Şifreniz en az 8 karakter olmalı; büyük harf, küçük harf ve rakam içermeli.';
+    }
+
+    if (normalizedField.contains('email')) {
+      return 'Geçerli bir e-posta adresi girin.';
+    }
+
+    if (normalizedField.contains('username')) {
+      return 'Kullanıcı adını kontrol edin.';
+    }
+
+    return message;
   }
 }
