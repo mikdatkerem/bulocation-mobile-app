@@ -111,8 +111,6 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
       .where((floor) => floor.hasPublishedMap)
       .length;
 
-  int get _siteCount => _hierarchies.expand((item) => item.sites).length;
-
   String get _introDescription {
     if (_organizations.isEmpty) {
       return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında harita seçimi burada açılacak.';
@@ -145,12 +143,10 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
                         _HeroScene(
                           greeting: _displayName,
                           description: _introDescription,
-                          readyFloorCount: _publishedFloorCount,
-                          siteCount: _siteCount,
                           pulse: _pulseController,
                           onPrimaryTap: () => _showQuickScanner(context),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 36),
                         _ManualSelectionPanel(
                           availableFloorCount: _publishedFloorCount,
                           organizationCount: _organizations.length,

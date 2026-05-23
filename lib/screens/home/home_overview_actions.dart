@@ -6,10 +6,11 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 116,
+      height: 98,
       child: Center(
         child: SizedBox(
-          height: 108,
+          height: 148,
+          width: 188,
           child: Image.asset(
             'assets/logo_removed_bg.png',
             fit: BoxFit.contain,
@@ -24,16 +25,12 @@ class _HeroScene extends StatelessWidget {
   const _HeroScene({
     required this.greeting,
     required this.description,
-    required this.readyFloorCount,
-    required this.siteCount,
     required this.pulse,
     required this.onPrimaryTap,
   });
 
   final String greeting;
   final String description;
-  final int readyFloorCount;
-  final int siteCount;
   final Animation<double> pulse;
   final VoidCallback onPrimaryTap;
 
@@ -42,8 +39,11 @@ class _HeroScene extends StatelessWidget {
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, _) {
+        final screenHeight = MediaQuery.sizeOf(context).height;
+        final heroHeight = screenHeight < 760 ? 610.0 : 650.0;
+
         return SizedBox(
-          height: 500,
+          height: heroHeight,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -108,46 +108,20 @@ class _HeroScene extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Text(
-                    '$readyFloorCount hazır kat · $siteCount yerleşke',
-                    style: const TextStyle(
-                      color: _muted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
                   const SizedBox(height: 26),
-                  Expanded(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: _QrStage(pulse: pulse),
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 48,
-                          child: _PrimaryAction(
-                            title: 'QR ile başla',
-                            subtitle:
-                                'Bulunduğunuz noktadaki QR kodunu okutun, harita anında açılsın.',
-                            icon: Icons.qr_code_scanner_rounded,
-                            onTap: onPrimaryTap,
-                          ),
-                        ),
-                        const Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 6,
-                          child: _HeroScrollHint(),
-                        ),
-                      ],
-                    ),
+                  Center(child: _QrStage(pulse: pulse)),
+                  const SizedBox(height: 26),
+                  _PrimaryAction(
+                    title: 'QR ile başla',
+                    subtitle:
+                        'Bulunduğunuz noktadaki QR kodunu okutun, harita anında açılsın.',
+                    icon: Icons.qr_code_scanner_rounded,
+                    onTap: onPrimaryTap,
+                  ),
+                  const Spacer(),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: _HeroScrollHint(),
                   ),
                 ],
               ),
@@ -178,7 +152,7 @@ class _PrimaryAction extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(28),
       child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: _accent,
           borderRadius: BorderRadius.circular(28),
@@ -193,13 +167,13 @@ class _PrimaryAction extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 54,
-              height: 54,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, color: _text, size: 30),
+              child: Icon(icon, color: _text, size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -210,7 +184,7 @@ class _PrimaryAction extends StatelessWidget {
                     title,
                     style: const TextStyle(
                       color: _text,
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -219,7 +193,7 @@ class _PrimaryAction extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       color: _text.withValues(alpha: 0.78),
-                      fontSize: 13,
+                      fontSize: 12.5,
                       height: 1.45,
                       fontWeight: FontWeight.w600,
                     ),
