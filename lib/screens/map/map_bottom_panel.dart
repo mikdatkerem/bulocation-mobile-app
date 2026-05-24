@@ -54,33 +54,29 @@ class MapBottomPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * ParkBottomSheet.fullSize,
-        child: ParkBottomSheet(
-          controller: controller,
-          mode: mode,
-          occupancyMap: occupancyMap,
-          targetPark: targetPark,
-          parkedAt: parkedAt,
-          mapName: mapName,
-          activeReference: activeReference,
-          emptyCount: emptyCount,
-          fullCount: fullCount,
-          totalCount: totalCount,
-          multiRoute: multiRoute,
-          activeSegmentIndex: activeSegmentIndex,
-          onSegmentTap: onSegmentTap,
-          onParkSelected: onParkSelected,
-          onNavigateToExit: onNavigateToExit,
-          onNavigateToCar: onNavigateToCar,
-          onClearNav: onClearNav,
-          onNearestToUser: onNearestToUser,
-          onNearestToHospital: onNearestToHospital,
-          parks: parks,
-          destinations: destinations,
-        ),
+    return Positioned.fill(
+      child: ParkBottomSheet(
+        controller: controller,
+        mode: mode,
+        occupancyMap: occupancyMap,
+        targetPark: targetPark,
+        parkedAt: parkedAt,
+        mapName: mapName,
+        activeReference: activeReference,
+        emptyCount: emptyCount,
+        fullCount: fullCount,
+        totalCount: totalCount,
+        multiRoute: multiRoute,
+        activeSegmentIndex: activeSegmentIndex,
+        onSegmentTap: onSegmentTap,
+        onParkSelected: onParkSelected,
+        onNavigateToExit: onNavigateToExit,
+        onNavigateToCar: onNavigateToCar,
+        onClearNav: onClearNav,
+        onNearestToUser: onNearestToUser,
+        onNearestToHospital: onNearestToHospital,
+        parks: parks,
+        destinations: destinations,
       ),
     );
   }

@@ -4,15 +4,11 @@ class MapScreenHeader extends StatelessWidget {
   const MapScreenHeader({
     super.key,
     required this.title,
-    required this.hasMap,
     required this.onBack,
-    required this.onClearSelectedMap,
   });
 
   final String title;
-  final bool hasMap;
   final VoidCallback onBack;
-  final VoidCallback onClearSelectedMap;
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +37,6 @@ class MapScreenHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (hasMap)
-            IconButton(
-              onPressed: onClearSelectedMap,
-              icon: const Icon(Icons.layers_clear_rounded),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF182033),
-              ),
-            ),
         ],
       ),
     );

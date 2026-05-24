@@ -10,7 +10,6 @@ import 'pulse_marker.dart';
 
 part 'floor_plan/map_asset_surface.dart';
 part 'floor_plan/park_cell.dart';
-part 'floor_plan/zoom_button.dart';
 
 class FloorPlanWidget extends StatefulWidget {
   const FloorPlanWidget({
@@ -121,23 +120,6 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   double get _mapHeight => (widget.mapHeight ?? 1080).toDouble();
   int get _zoomPercentage => _viewportController.zoomPercentage;
 
-  void _zoom(double factor) {
-    _viewportController.zoom(
-      factor: factor,
-      mapWidth: _mapWidth,
-      mapHeight: _mapHeight,
-      activeNode: _activeNode,
-    );
-  }
-
-  void _recenter() {
-    _viewportController.recenter(
-      mapWidth: _mapWidth,
-      mapHeight: _mapHeight,
-      activeNode: _activeNode,
-    );
-  }
-
   void _handleDoubleTap() {
     _viewportController.handleDoubleTap(
       mapWidth: _mapWidth,
@@ -146,53 +128,34 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     );
   }
 
-  Widget _buildViewportControls() {
+  Widget _buildZoomBadge() {
     return Positioned(
-      right: 16,
-      bottom: 92,
-      child: Column(
-        children: [
-          _ZoomButton(
-            icon: Icons.my_location_rounded,
-            onTap: _recenter,
-            active: _viewportController.followActiveNode,
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: 48,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.96),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x140F172A),
-                  blurRadius: 14,
-                  offset: Offset(0, 6),
-                ),
-              ],
+      left: 12,
+      top: 12,
+      child: Container(
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.86),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x140F172A),
+              blurRadius: 14,
+              offset: Offset(0, 6),
             ),
-            child: Text(
-              '${_zoomPercentage.clamp(100, (_viewportController.maxZoomMultiplier * 100).round())}%',
-              style: const TextStyle(
-                color: Color(0xFF182033),
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+          ],
+        ),
+        child: Text(
+          '${_zoomPercentage.clamp(100, (_viewportController.maxZoomMultiplier * 100).round())}%',
+          style: const TextStyle(
+            color: Color(0xFF182033),
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
           ),
-          const SizedBox(height: 10),
-          _ZoomButton(
-            icon: Icons.add_rounded,
-            onTap: () => _zoom(1.16),
-          ),
-          const SizedBox(height: 10),
-          _ZoomButton(
-            icon: Icons.remove_rounded,
-            onTap: () => _zoom(0.86),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -298,7 +261,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
                     _viewportController.maxZoomMultiplier,
                 boundaryMargin:
                     EdgeInsets.all(_viewportController.panBoundaryMargin),
-                onInteractionStart: (_) => _viewportController.onInteractionStart(),
+                onInteractionStart: (_) =>
+                    _viewportController.onInteractionStart(),
                 onInteractionEnd: (_) => _viewportController.settleViewport(
                   mapWidth: _mapWidth,
                   mapHeight: _mapHeight,
@@ -310,7 +274,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
                 ),
               ),
             ),
-            _buildViewportControls(),
+            _buildZoomBadge(),
           ],
         );
       },

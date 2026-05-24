@@ -64,17 +64,51 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
   @override
   void _showError(Object error) {
     final message = error.toString().replaceFirst('Exception: ', '');
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+    _showNotice(
+      title: 'Uyarı',
+      message: message,
+      level: MapScreenNoticeLevel.warning,
+    );
+  }
+
+  void _showNotice({
+    required String title,
+    String? message,
+    MapScreenNoticeLevel level = MapScreenNoticeLevel.info,
+  }) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _notices
+        ..removeWhere(
+          (notice) =>
+              notice.title == title &&
+              notice.message == message &&
+              notice.level == level,
+        )
+        ..insert(
+          0,
+          MapScreenNotice(
+            id: _nextNoticeId++,
+            title: title,
+            message: message,
+            level: level,
+          ),
+        );
+      if (_notices.length > 3) {
+        _notices.removeRange(3, _notices.length);
+      }
+    });
+  }
+
+  void _dismissNotice(int id) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _notices.removeWhere((notice) => notice.id == id));
   }
 
   void _collapseSheet() {
@@ -91,10 +125,10 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
 
   @override
   MapPanelMode get _mapPanelMode => resolveMapPanelMode(
-    site: _mapState.site,
-    building: _mapState.building,
-    floor: _mapState.floor,
-  );
+        site: _mapState.site,
+        building: _mapState.building,
+        floor: _mapState.floor,
+      );
 
   List<MapNode> get _destinationNodes {
     final nodes = _mapState.buildingDestinations.isNotEmpty

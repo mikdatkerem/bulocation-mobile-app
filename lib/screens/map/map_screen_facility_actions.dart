@@ -176,17 +176,6 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
   }
 
-  void _clearSelectedMap() {
-    setState(() {
-      _resetMapViewState(
-        clearSite: true,
-        clearBuilding: true,
-        clearFloor: true,
-        clearLastScan: true,
-      );
-    });
-  }
-
   Future<void> _loadOccupancy() async {
     final floor = _mapState.floor;
     if (floor == null) {

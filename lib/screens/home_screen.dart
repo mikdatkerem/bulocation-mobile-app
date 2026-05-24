@@ -16,6 +16,7 @@ import '../widgets/park_confirm_dialog.dart';
 import '../widgets/park_suggestion_dialog.dart';
 import 'map/map_bottom_panel.dart';
 import 'map/map_panel_resolver.dart';
+import 'map/map_screen_notice.dart';
 import 'map/map_screen_body.dart';
 import 'map/map_screen_state_controller.dart';
 
@@ -36,11 +37,15 @@ class MapsScreen extends StatefulWidget {
 abstract class MapsScreenStateBase extends State<MapsScreen> {
   final _facilityService = FacilityService();
   final _pathfinder = PathfindingService();
-  final _scannerController =
-      MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
+  final _scannerController = MobileScannerController(
+    autoStart: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
   final _sheetController = DraggableScrollableController();
   final _mapState = MapScreenStateController();
+  final List<MapScreenNotice> _notices = [];
   late final ParkingService _parkingService;
+  int _nextNoticeId = 0;
 
   void _resetMapViewState({
     bool clearHierarchy = false,
@@ -81,23 +86,100 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
 
 class MapsScreenState extends MapsScreenStateBase
     with
+        WidgetsBindingObserver,
         _MapScreenFacilityActions,
         _MapScreenPanelActions,
         _MapScreenRouteActions,
         _MapScreenQrActions {
+  bool _scannerVisible = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _parkingService = ParkingService(onOccupancyChanged: _onOccupancyChanged);
     unawaited(_bootstrap());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scannerController.dispose();
     _sheetController.dispose();
     _parkingService.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _scannerVisible) {
+      unawaited(_startScanner());
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      unawaited(_stopScanner());
+    }
+  }
+
+  Future<void> activateScanner() async {
+    _scannerVisible = true;
+    await _startScanner();
+  }
+
+  Future<void> deactivateScanner() async {
+    _scannerVisible = false;
+    await _stopScanner();
+  }
+
+  Future<void> _startScanner() async {
+    if (_scannerController.value.isRunning) {
+      return;
+    }
+
+    try {
+      await _scannerController.start();
+    } on MobileScannerException catch (error) {
+      if (mounted) {
+        _showNotice(
+          title: 'Kamera açılamadı',
+          message: _scannerErrorMessage(error),
+          level: MapScreenNoticeLevel.warning,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        _showNotice(
+          title: 'Kamera açılamadı',
+          message: 'Kamera başlatılamadı. İzinleri kontrol edin.',
+          level: MapScreenNoticeLevel.warning,
+        );
+      }
+    }
+  }
+
+  Future<void> _stopScanner() async {
+    if (!_scannerController.value.isRunning) {
+      return;
+    }
+
+    try {
+      await _scannerController.stop();
+    } catch (_) {
+      // Kamera zaten kapanmış olabilir; görünürlük değişiminde sessiz geçiyoruz.
+    }
+  }
+
+  String _scannerErrorMessage(MobileScannerException error) {
+    return switch (error.errorCode) {
+      MobileScannerErrorCode.permissionDenied =>
+        'Kamera izni kapalı. Uygulama izinlerinden kamerayı açın.',
+      MobileScannerErrorCode.unsupported =>
+        'Bu cihazda kamera ile QR okuma desteklenmiyor.',
+      _ => 'Kamera başlatılamadı. Lütfen tekrar deneyin.',
+    };
   }
 
   @override
@@ -118,7 +200,7 @@ class MapsScreenState extends MapsScreenStateBase
     final panelMode = _mapPanelMode;
     final destinationNodes = _destinationNodes;
     final mapBottomInset = hasMap
-        ? MediaQuery.of(context).size.height * ParkBottomSheet.peekSize + 12
+        ? MediaQuery.of(context).size.height * ParkBottomSheet.peekSize + 4
         : 0.0;
     final activeNodeId = state.lastScan == null
         ? null
@@ -153,6 +235,7 @@ class MapsScreenState extends MapsScreenStateBase
                   mapAssetContentType: state.displayMapAssetContentType,
                   mapWidth: state.displayMapWidth,
                   mapHeight: state.displayMapHeight,
+                  notices: _notices,
                   scannerController: _scannerController,
                   organizations: state.organizations,
                   selectedOrganizationId: state.hierarchy?.id,
@@ -163,7 +246,7 @@ class MapsScreenState extends MapsScreenStateBase
                   floors: _availableFloors,
                   selectedFloorId: state.floor?.id,
                   onBack: widget.onBack,
-                  onClearSelectedMap: _clearSelectedMap,
+                  onDismissNotice: _dismissNotice,
                   onCollapseSheet: _collapseSheet,
                   onQrDetected: _onQrDetected,
                   onOrganizationChanged: _onOrganizationChanged,

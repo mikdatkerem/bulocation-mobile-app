@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import '../../models/facility_models.dart';
 import '../../models/graph_data.dart';
 import '../../widgets/floor_plan_widget.dart';
+import 'map_screen_notice.dart';
+import 'map_screen_notice_overlay.dart';
 
 class MapScreenContentCard extends StatelessWidget {
   const MapScreenContentCard({
     super.key,
     required this.hasMap,
+    required this.routeStatusTitle,
+    required this.routeStatusMessage,
     required this.mapBottomInset,
     required this.activeNodeId,
     required this.displayNodes,
@@ -17,6 +21,7 @@ class MapScreenContentCard extends StatelessWidget {
     required this.mapAssetContentType,
     required this.mapWidth,
     required this.mapHeight,
+    required this.notices,
     required this.organizations,
     required this.selectedOrganizationId,
     required this.sites,
@@ -29,9 +34,12 @@ class MapScreenContentCard extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    required this.onDismissNotice,
   });
 
   final bool hasMap;
+  final String? routeStatusTitle;
+  final String? routeStatusMessage;
   final double mapBottomInset;
   final String? activeNodeId;
   final List<MapNode> displayNodes;
@@ -41,6 +49,7 @@ class MapScreenContentCard extends StatelessWidget {
   final String? mapAssetContentType;
   final int? mapWidth;
   final int? mapHeight;
+  final List<MapScreenNotice> notices;
   final List<OrganizationSummary> organizations;
   final String? selectedOrganizationId;
   final List<SiteHierarchy> sites;
@@ -53,6 +62,7 @@ class MapScreenContentCard extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final ValueChanged<int> onDismissNotice;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +83,7 @@ class MapScreenContentCard extends StatelessWidget {
 
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(12, 12, 12, mapBottomInset),
+        padding: EdgeInsets.fromLTRB(12, 8, 12, mapBottomInset),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -88,23 +98,43 @@ class MapScreenContentCard extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 320),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(
-                      begin: 0.985,
-                      end: 1,
-                    ).animate(animation),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 320),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 0.985,
+                            end: 1,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
                     child: child,
                   ),
-                );
-              },
-              child: child,
+                ),
+                if (hasMap)
+                  Positioned(
+                    top: 54,
+                    left: 12,
+                    right: 12,
+                    child: MapScreenNoticeOverlay(
+                      notices: notices,
+                      infoTitle: routeStatusTitle,
+                      infoMessage: routeStatusMessage,
+                      infoScopeKey:
+                          '${mapAssetPath ?? ''}|${activeNodeId ?? ''}|${navigationRoute?.length ?? 0}',
+                      onDismissNotice: onDismissNotice,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

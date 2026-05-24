@@ -22,7 +22,7 @@ class EmbeddedScanner extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Container(
           width: width,
           height: height,
@@ -45,7 +45,10 @@ class EmbeddedScanner extends StatelessWidget {
               children: [
                 MobileScanner(
                   controller: controller,
+                  fit: BoxFit.cover,
                   onDetect: onDetect,
+                  placeholderBuilder: (_, __) => const _ScannerPlaceholder(),
+                  errorBuilder: (_, error, __) => _ScannerError(error: error),
                 ),
                 if (isLoading)
                   Container(
@@ -81,6 +84,57 @@ class EmbeddedScanner extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScannerPlaceholder extends StatelessWidget {
+  const _ScannerPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFF0F172A),
+      child: Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.4,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScannerError extends StatelessWidget {
+  const _ScannerError({required this.error});
+
+  final MobileScannerException error;
+
+  @override
+  Widget build(BuildContext context) {
+    final message = switch (error.errorCode) {
+      MobileScannerErrorCode.permissionDenied => 'Kamera izni gerekli',
+      MobileScannerErrorCode.unsupported => 'Kamera desteklenmiyor',
+      _ => 'Kamera açılamadı',
+    };
+
+    return ColoredBox(
+      color: const Color(0xFF111827),
+      child: Center(
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

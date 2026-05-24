@@ -54,7 +54,7 @@ class _AppShellState extends State<AppShell> {
         key: _homeKey,
         onOpenMaps: _handleOpenMaps,
         onQuickScan: _handleQuickScan,
-        onOpenProfile: () => setState(() => _currentIndex = 2),
+        onOpenProfile: () => _switchToIndex(2),
         onManualPageVisibleChanged: _handleHomeManualPageVisibleChanged,
         profile: widget.sessionController.profile,
       ),
@@ -124,7 +124,7 @@ class _AppShellState extends State<AppShell> {
                               activeIcon: Icons.person_rounded,
                               label: 'Profil',
                               selected: _currentIndex == 2,
-                              onTap: () => setState(() => _currentIndex = 2),
+                              onTap: () => _switchToIndex(2),
                             ),
                           ],
                         ),
@@ -138,15 +138,13 @@ class _AppShellState extends State<AppShell> {
   }
 
   Future<void> _handleQuickScan(String referenceId) async {
-    setState(() => _currentIndex = 1);
-    await Future<void>.delayed(const Duration(milliseconds: 80));
+    await _showMapPage();
     await _mapsKey.currentState?.openByQrReference(referenceId);
     await _homeKey.currentState?.refreshRecentMaps();
   }
 
   Future<void> _handleOpenMaps(MapOpenRequest? request) async {
-    setState(() => _currentIndex = 1);
-    await Future<void>.delayed(const Duration(milliseconds: 80));
+    await _showMapPage();
     if (request != null) {
       await _mapsKey.currentState?.openSelection(request);
       await _homeKey.currentState?.refreshRecentMaps();
@@ -154,16 +152,28 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _handleMapBack() {
-    setState(() => _currentIndex = 0);
+    _switchToIndex(0);
     unawaited(_homeKey.currentState?.refreshRecentMaps());
   }
 
   Future<void> _handleHomeNavTap() async {
-    setState(() {
-      _currentIndex = 0;
-      _homeManualPageVisible = false;
-    });
+    _switchToIndex(0);
+    setState(() => _homeManualPageVisible = false);
     await _homeKey.currentState?.showHeroPage();
+  }
+
+  Future<void> _showMapPage() async {
+    setState(() => _currentIndex = 1);
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    await _mapsKey.currentState?.activateScanner();
+  }
+
+  void _switchToIndex(int index) {
+    if (_currentIndex == 1 && index != 1) {
+      unawaited(_mapsKey.currentState?.deactivateScanner());
+    }
+
+    setState(() => _currentIndex = index);
   }
 
   void _handleHomeManualPageVisibleChanged(bool visible) {

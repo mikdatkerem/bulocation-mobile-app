@@ -6,6 +6,7 @@ import '../../models/graph_data.dart';
 import '../../widgets/embedded_scanner.dart';
 import 'map_screen_content_card.dart';
 import 'map_screen_header.dart';
+import 'map_screen_notice.dart';
 
 class MapScreenBody extends StatelessWidget {
   const MapScreenBody({
@@ -27,6 +28,7 @@ class MapScreenBody extends StatelessWidget {
     required this.mapAssetContentType,
     required this.mapWidth,
     required this.mapHeight,
+    required this.notices,
     required this.scannerController,
     required this.organizations,
     required this.selectedOrganizationId,
@@ -37,7 +39,7 @@ class MapScreenBody extends StatelessWidget {
     required this.floors,
     required this.selectedFloorId,
     required this.onBack,
-    required this.onClearSelectedMap,
+    required this.onDismissNotice,
     required this.onCollapseSheet,
     required this.onQrDetected,
     required this.onOrganizationChanged,
@@ -63,6 +65,7 @@ class MapScreenBody extends StatelessWidget {
   final String? mapAssetContentType;
   final int? mapWidth;
   final int? mapHeight;
+  final List<MapScreenNotice> notices;
   final MobileScannerController scannerController;
   final List<OrganizationSummary> organizations;
   final String? selectedOrganizationId;
@@ -73,7 +76,7 @@ class MapScreenBody extends StatelessWidget {
   final List<FloorHierarchy> floors;
   final String? selectedFloorId;
   final VoidCallback onBack;
-  final VoidCallback onClearSelectedMap;
+  final ValueChanged<int> onDismissNotice;
   final VoidCallback onCollapseSheet;
   final void Function(BarcodeCapture capture) onQrDetected;
   final ValueChanged<String?> onOrganizationChanged;
@@ -93,91 +96,22 @@ class MapScreenBody extends StatelessWidget {
               children: [
                 MapScreenHeader(
                   title: buildingTitle,
-                  hasMap: hasMap,
                   onBack: onBack,
-                  onClearSelectedMap: onClearSelectedMap,
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
                   child: EmbeddedScanner(
                     controller: scannerController,
                     onDetect: onQrDetected,
                     isLoading: isBusy,
                   ),
                 ),
-                if (hasMap && routeStatusTitle != null && !showActivityOverlay)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      child: Container(
-                        key: ValueKey(
-                          '${routeStatusTitle ?? ''}|${routeStatusMessage ?? ''}',
-                        ),
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x0F0F172A),
-                              blurRadius: 22,
-                              offset: Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.route_rounded,
-                                color: Color(0xFF4F46E5),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    routeStatusTitle!,
-                                    style: const TextStyle(
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  if (routeStatusMessage != null) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      routeStatusMessage!,
-                                      style: const TextStyle(
-                                        color: Color(0xFF64748B),
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 MapScreenContentCard(
                   hasMap: hasMap,
+                  routeStatusTitle:
+                      showActivityOverlay ? null : routeStatusTitle,
+                  routeStatusMessage:
+                      showActivityOverlay ? null : routeStatusMessage,
                   mapBottomInset: mapBottomInset,
                   activeNodeId: activeNodeId,
                   displayNodes: displayNodes,
@@ -187,6 +121,7 @@ class MapScreenBody extends StatelessWidget {
                   mapAssetContentType: mapAssetContentType,
                   mapWidth: mapWidth,
                   mapHeight: mapHeight,
+                  notices: notices,
                   organizations: organizations,
                   selectedOrganizationId: selectedOrganizationId,
                   sites: sites,
@@ -199,6 +134,7 @@ class MapScreenBody extends StatelessWidget {
                   onSiteChanged: onSiteChanged,
                   onBuildingChanged: onBuildingChanged,
                   onFloorChanged: onFloorChanged,
+                  onDismissNotice: onDismissNotice,
                 ),
               ],
             ),
