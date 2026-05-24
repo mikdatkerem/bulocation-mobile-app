@@ -61,12 +61,14 @@ class _HeroScene extends StatelessWidget {
     required this.description,
     required this.pulse,
     required this.onPrimaryTap,
+    this.height,
   });
 
   final String greeting;
   final String description;
   final Animation<double> pulse;
   final VoidCallback onPrimaryTap;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +78,7 @@ class _HeroScene extends StatelessWidget {
         final mediaQuery = MediaQuery.of(context);
         final viewportHeight =
             mediaQuery.size.height - mediaQuery.padding.vertical;
-        final heroHeight = (viewportHeight - 64).clamp(682.0, 760.0);
+        final heroHeight = height ?? (viewportHeight - 64).clamp(620.0, 760.0);
 
         return SizedBox(
           height: heroHeight,

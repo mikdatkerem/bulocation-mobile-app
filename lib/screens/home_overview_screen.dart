@@ -18,21 +18,24 @@ class HomeOverviewScreen extends StatefulWidget {
     required this.onOpenMaps,
     required this.onQuickScan,
     required this.onOpenProfile,
+    required this.onManualPageVisibleChanged,
     required this.profile,
   });
 
   final ValueChanged<MapOpenRequest?> onOpenMaps;
   final Future<void> Function(String referenceId) onQuickScan;
   final VoidCallback onOpenProfile;
+  final ValueChanged<bool> onManualPageVisibleChanged;
   final UserProfile? profile;
 
   @override
-  State<HomeOverviewScreen> createState() => _HomeOverviewScreenState();
+  State<HomeOverviewScreen> createState() => HomeOverviewScreenState();
 }
 
-class _HomeOverviewScreenState extends State<HomeOverviewScreen>
+class HomeOverviewScreenState extends State<HomeOverviewScreen>
     with SingleTickerProviderStateMixin {
   final _facilityService = FacilityService();
+  late final PageController _pageController = PageController();
 
   late final AnimationController _pulseController = AnimationController(
     vsync: this,
@@ -41,6 +44,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
 
   bool _loading = true;
   String? _error;
+  bool _manualPageVisible = false;
   List<OrganizationSummary> _organizations = const [];
   List<OrganizationHierarchy> _hierarchies = const [];
 
@@ -53,7 +57,30 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
   @override
   void dispose() {
     _pulseController.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  void _setManualPageVisible(bool visible) {
+    if (_manualPageVisible == visible) {
+      return;
+    }
+
+    _manualPageVisible = visible;
+    widget.onManualPageVisibleChanged(visible);
+  }
+
+  Future<void> showHeroPage() async {
+    _setManualPageVisible(false);
+    if (!_pageController.hasClients) {
+      return;
+    }
+
+    await _pageController.animateToPage(
+      0,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _loadOverview() async {
@@ -130,31 +157,49 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
             ? const Center(child: CircularProgressIndicator(color: _accent))
             : _error != null
                 ? _OverviewError(message: _error!, onRetry: _loadOverview)
-                : RefreshIndicator(
-                    color: _accent,
-                    backgroundColor: _surface,
-                    onRefresh: _loadOverview,
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
+                : PageView(
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    onPageChanged: (index) => _setManualPageVisible(index == 1),
+                    children: [
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          const headerHeight = 64.0;
+                          final heroHeight =
+                              (constraints.maxHeight - headerHeight)
+                                  .clamp(560.0, double.infinity);
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            child: Column(
+                              children: [
+                                _Header(onOpenProfile: widget.onOpenProfile),
+                                _HeroScene(
+                                  greeting: _displayName,
+                                  description: _introDescription,
+                                  pulse: _pulseController,
+                                  onPrimaryTap: () => _showQuickScanner(
+                                    context,
+                                  ),
+                                  height: heroHeight,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 64),
-                      children: [
-                        _Header(onOpenProfile: widget.onOpenProfile),
-                        _HeroScene(
-                          greeting: _displayName,
-                          description: _introDescription,
-                          pulse: _pulseController,
-                          onPrimaryTap: () => _showQuickScanner(context),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 136),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: _ManualSelectionPanel(
+                            availableFloorCount: _publishedFloorCount,
+                            organizationCount: _organizations.length,
+                            onTap: () => widget.onOpenMaps(null),
+                          ),
                         ),
-                        const SizedBox(height: 36),
-                        _ManualSelectionPanel(
-                          availableFloorCount: _publishedFloorCount,
-                          organizationCount: _organizations.length,
-                          onTap: () => widget.onOpenMaps(null),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
       ),
     );

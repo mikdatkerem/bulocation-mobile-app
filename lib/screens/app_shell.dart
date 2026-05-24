@@ -21,10 +21,13 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
+  final GlobalKey<HomeOverviewScreenState> _homeKey =
+      GlobalKey<HomeOverviewScreenState>();
   final GlobalKey<MapsScreenState> _mapsKey = GlobalKey<MapsScreenState>();
   final SessionStorage _sessionStorage = SessionStorage();
   bool _guideReady = false;
   bool _showGuide = false;
+  bool _homeManualPageVisible = false;
 
   @override
   void initState() {
@@ -47,9 +50,11 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final pages = [
       HomeOverviewScreen(
+        key: _homeKey,
         onOpenMaps: _handleOpenMaps,
         onQuickScan: _handleQuickScan,
         onOpenProfile: () => setState(() => _currentIndex = 2),
+        onManualPageVisibleChanged: _handleHomeManualPageVisibleChanged,
         profile: widget.sessionController.profile,
       ),
       MapsScreen(
@@ -71,7 +76,7 @@ class _AppShellState extends State<AppShell> {
                   index: _currentIndex,
                   children: pages,
                 ),
-      bottomNavigationBar: _currentIndex == 0 ||
+      bottomNavigationBar: (_currentIndex == 0 && !_homeManualPageVisible) ||
               _currentIndex == 1 ||
               _showGuide ||
               !_guideReady
@@ -111,7 +116,7 @@ class _AppShellState extends State<AppShell> {
                               activeIcon: Icons.home_rounded,
                               label: 'Ana Sayfa',
                               selected: _currentIndex == 0,
-                              onTap: () => setState(() => _currentIndex = 0),
+                              onTap: _handleHomeNavTap,
                             ),
                             _NavItem(
                               icon: Icons.map_outlined,
@@ -150,6 +155,22 @@ class _AppShellState extends State<AppShell> {
     if (request != null) {
       await _mapsKey.currentState?.openSelection(request);
     }
+  }
+
+  Future<void> _handleHomeNavTap() async {
+    setState(() {
+      _currentIndex = 0;
+      _homeManualPageVisible = false;
+    });
+    await _homeKey.currentState?.showHeroPage();
+  }
+
+  void _handleHomeManualPageVisibleChanged(bool visible) {
+    if (_homeManualPageVisible == visible) {
+      return;
+    }
+
+    setState(() => _homeManualPageVisible = visible);
   }
 
   Future<void> _completeGuide() async {
