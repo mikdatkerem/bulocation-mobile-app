@@ -118,7 +118,7 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
       return 'Önce QR ile başlayın. Kurum erişimleri tanımlandığında harita seçimi burada açılacak.';
     }
 
-    return 'Girişteki veya bulunduğunuz kattaki QR kodunu okutun. Harita anında açılsın.';
+    return 'Girişteki veya bulunduğunuz kattaki QR kodunu okutun.';
   }
 
   @override

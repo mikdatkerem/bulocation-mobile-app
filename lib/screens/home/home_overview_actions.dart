@@ -112,7 +112,7 @@ class _HeroScene extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Harita\nkapıda başlasın.',
+                    'Harita\nanında açılsın.',
                     style: TextStyle(
                       color: _ink,
                       fontSize: 46,
@@ -149,8 +149,7 @@ class _HeroScene extends StatelessWidget {
                   const Spacer(),
                   _PrimaryAction(
                     title: 'QR ile başla',
-                    subtitle:
-                        'Bulunduğunuz noktadaki QR kodunu okutun, harita anında açılsın.',
+                    subtitle: 'Bulunduğunuz noktadaki QR kodunu okutun.',
                     icon: Icons.qr_code_scanner_rounded,
                     onTap: onPrimaryTap,
                   ),

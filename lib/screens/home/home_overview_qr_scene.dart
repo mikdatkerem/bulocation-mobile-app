@@ -139,15 +139,6 @@ class _QrFrame extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                'Harita anında açılsın',
-                style: TextStyle(
-                  color: _soft,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ],
           ),
         ),
