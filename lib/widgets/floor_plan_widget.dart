@@ -7,6 +7,7 @@ import '../models/graph_data.dart';
 import 'floor_plan/map_viewport_controller.dart';
 import 'navigation_route_painter.dart';
 import 'pulse_marker.dart';
+import 'skeleton.dart';
 
 part 'floor_plan/map_asset_surface.dart';
 part 'floor_plan/park_cell.dart';

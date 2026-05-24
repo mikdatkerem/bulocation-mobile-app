@@ -9,11 +9,13 @@ import '../models/recent_map.dart';
 import '../services/facility_service.dart';
 import '../services/recent_maps_storage.dart';
 import '../widgets/map_asset_preview.dart';
+import '../widgets/skeleton.dart';
 import 'map/map_selection_panel.dart';
 
 part 'home/home_overview_actions.dart';
 part 'home/home_overview_qr_scene.dart';
 part 'home/home_recent_maps_section.dart';
+part 'home/home_overview_skeleton.dart';
 part 'home/home_overview_theme.dart';
 part 'home/home_overview_tiles.dart';
 part 'home/quick_scanner_sheet.dart';
@@ -232,7 +234,7 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
       backgroundColor: _bg,
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator(color: _accent))
+            ? const _HomeOverviewSkeleton()
             : _error != null
                 ? _OverviewError(message: _error!, onRetry: _loadOverview)
                 : PageView(

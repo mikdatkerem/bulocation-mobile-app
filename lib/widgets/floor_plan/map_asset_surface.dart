@@ -17,9 +17,7 @@ class _MapAssetSurface extends StatelessWidget {
         url,
         fit: BoxFit.contain,
         headers: headers,
-        placeholderBuilder: (_) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        placeholderBuilder: (_) => const _MapAssetSkeleton(),
       );
     }
 
@@ -32,11 +30,34 @@ class _MapAssetSurface extends StatelessWidget {
           return child;
         }
 
-        return const Center(child: CircularProgressIndicator());
+        return const _MapAssetSkeleton();
       },
       errorBuilder: (_, __, ___) => const Center(
         child:
             Icon(Icons.image_not_supported_outlined, color: Color(0xFF7C869C)),
+      ),
+    );
+  }
+}
+
+class _MapAssetSkeleton extends StatelessWidget {
+  const _MapAssetSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonShimmer(
+      child: Padding(
+        padding: EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonLine(width: 64, height: 34),
+            SizedBox(height: 16),
+            Expanded(
+              child: SkeletonFill(radius: 22),
+            ),
+          ],
+        ),
       ),
     );
   }

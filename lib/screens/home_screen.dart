@@ -18,6 +18,7 @@ import 'map/map_bottom_panel.dart';
 import 'map/map_panel_resolver.dart';
 import 'map/map_screen_notice.dart';
 import 'map/map_screen_body.dart';
+import 'map/map_screen_skeleton.dart';
 import 'map/map_screen_state_controller.dart';
 
 part 'map/map_screen_facility_actions.dart';
@@ -214,7 +215,7 @@ class MapsScreenState extends MapsScreenStateBase
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: state.loading && !showInlineOverlay
-          ? const Center(child: CircularProgressIndicator())
+          ? MapScreenSkeleton(onBack: widget.onBack)
           : Stack(
               children: [
                 MapScreenBody(

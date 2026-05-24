@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'skeleton.dart';
+
 class EmbeddedScanner extends StatelessWidget {
   final MobileScannerController controller;
   final void Function(BarcodeCapture) onDetect;
@@ -96,16 +98,14 @@ class _ScannerPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFF0F172A),
-      child: Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.4,
-            color: Colors.white,
-          ),
+    return const SkeletonShimmer(
+      baseColor: Color(0xFF1F2937),
+      highlightColor: Color(0xFF334155),
+      child: ColoredBox(
+        color: Color(0xFF0F172A),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: SkeletonFill(radius: 10, color: Color(0xFF1F2937)),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../app/app_session_controller.dart';
 import '../models/facility_models.dart';
 import '../services/session_storage.dart';
+import '../widgets/skeleton.dart';
 import 'home_overview_screen.dart';
 import 'home_guide_screen.dart';
 import 'home_screen.dart';
@@ -68,9 +69,7 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: !_guideReady
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF6366F1)),
-            )
+          ? const _AppBootSkeleton()
           : _showGuide
               ? HomeGuideScreen(onComplete: _completeGuide)
               : IndexedStack(
@@ -190,6 +189,45 @@ class _AppShellState extends State<AppShell> {
       return;
     }
     setState(() => _showGuide = false);
+  }
+}
+
+class _AppBootSkeleton extends StatelessWidget {
+  const _AppBootSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SafeArea(
+      child: SkeletonShimmer(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 18, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SkeletonBox(width: 128, height: 34, radius: 14),
+                  Spacer(),
+                  SkeletonBox(width: 44, height: 44, radius: 18),
+                ],
+              ),
+              SizedBox(height: 44),
+              SkeletonLine(width: 132, height: 14),
+              SizedBox(height: 18),
+              SkeletonLine(width: 288, height: 42),
+              SizedBox(height: 10),
+              SkeletonLine(width: 236, height: 42),
+              SizedBox(height: 28),
+              Expanded(
+                child: SkeletonFill(radius: 32),
+              ),
+              SizedBox(height: 20),
+              SkeletonBox(height: 72, radius: 28),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
