@@ -8,12 +8,12 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 18),
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
       child: Row(
         children: [
           SizedBox(
-            height: 56,
-            width: 150,
+            height: 44,
+            width: 128,
             child: Image.asset(
               'assets/logo3d.png',
               fit: BoxFit.contain,
@@ -28,8 +28,8 @@ class _Header extends StatelessWidget {
               onTap: onOpenProfile,
               borderRadius: BorderRadius.circular(18),
               child: Container(
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: _line),
@@ -73,8 +73,10 @@ class _HeroScene extends StatelessWidget {
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, _) {
-        final screenHeight = MediaQuery.sizeOf(context).height;
-        final heroHeight = screenHeight < 760 ? 610.0 : 650.0;
+        final mediaQuery = MediaQuery.of(context);
+        final viewportHeight =
+            mediaQuery.size.height - mediaQuery.padding.vertical;
+        final heroHeight = (viewportHeight - 64).clamp(682.0, 760.0);
 
         return SizedBox(
           height: heroHeight,
@@ -108,13 +110,13 @@ class _HeroScene extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
                   const Text(
                     'Harita\nkapıda başlasın.',
                     style: TextStyle(
                       color: _ink,
-                      fontSize: 48,
-                      height: 0.94,
+                      fontSize: 46,
+                      height: 0.96,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -2.2,
                     ),
@@ -136,15 +138,15 @@ class _HeroScene extends StatelessWidget {
                       description,
                       style: const TextStyle(
                         color: _soft,
-                        fontSize: 15,
-                        height: 1.7,
+                        fontSize: 14.5,
+                        height: 1.62,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 30),
                   Center(child: _QrStage(pulse: pulse)),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 30),
                   _PrimaryAction(
                     title: 'QR ile başla',
                     subtitle:
@@ -152,9 +154,9 @@ class _HeroScene extends StatelessWidget {
                     icon: Icons.qr_code_scanner_rounded,
                     onTap: onPrimaryTap,
                   ),
-                  const Spacer(),
+                  const Spacer(flex: 2),
                   const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(bottom: 18),
                     child: _HeroScrollHint(),
                   ),
                 ],

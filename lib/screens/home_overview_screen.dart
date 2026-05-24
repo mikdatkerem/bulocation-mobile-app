@@ -141,7 +141,6 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
                       padding: const EdgeInsets.fromLTRB(18, 0, 18, 64),
                       children: [
                         _Header(onOpenProfile: widget.onOpenProfile),
-                        const SizedBox(height: 6),
                         _HeroScene(
                           greeting: _displayName,
                           description: _introDescription,
