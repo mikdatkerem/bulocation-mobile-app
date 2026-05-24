@@ -49,6 +49,7 @@ class _AppShellState extends State<AppShell> {
       HomeOverviewScreen(
         onOpenMaps: _handleOpenMaps,
         onQuickScan: _handleQuickScan,
+        onOpenProfile: () => setState(() => _currentIndex = 2),
         profile: widget.sessionController.profile,
       ),
       MapsScreen(
@@ -70,7 +71,10 @@ class _AppShellState extends State<AppShell> {
                   index: _currentIndex,
                   children: pages,
                 ),
-      bottomNavigationBar: _currentIndex == 1 || _showGuide || !_guideReady
+      bottomNavigationBar: _currentIndex == 0 ||
+              _currentIndex == 1 ||
+              _showGuide ||
+              !_guideReady
           ? null
           : ColoredBox(
               color: const Color(0xFFF8FAFC),

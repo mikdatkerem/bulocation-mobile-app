@@ -17,11 +17,13 @@ class HomeOverviewScreen extends StatefulWidget {
     super.key,
     required this.onOpenMaps,
     required this.onQuickScan,
+    required this.onOpenProfile,
     required this.profile,
   });
 
   final ValueChanged<MapOpenRequest?> onOpenMaps;
   final Future<void> Function(String referenceId) onQuickScan;
+  final VoidCallback onOpenProfile;
   final UserProfile? profile;
 
   @override
@@ -136,9 +138,9 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen>
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
                       ),
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 136),
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 64),
                       children: [
-                        const _Header(),
+                        _Header(onOpenProfile: widget.onOpenProfile),
                         const SizedBox(height: 6),
                         _HeroScene(
                           greeting: _displayName,

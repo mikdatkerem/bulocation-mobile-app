@@ -1,21 +1,55 @@
 part of '../home_overview_screen.dart';
 
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({required this.onOpenProfile});
+
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 98,
-      child: Center(
-        child: SizedBox(
-          height: 148,
-          width: 188,
-          child: Image.asset(
-            'assets/logo_removed_bg.png',
-            fit: BoxFit.contain,
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 18),
+      child: Row(
+        children: [
+          SizedBox(
+            height: 56,
+            width: 150,
+            child: Image.asset(
+              'assets/logo3d.png',
+              fit: BoxFit.contain,
+              alignment: Alignment.centerLeft,
+            ),
           ),
-        ),
+          const Spacer(),
+          Material(
+            color: _surface.withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(18),
+            child: InkWell(
+              onTap: onOpenProfile,
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: _line),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0F0F172A),
+                      blurRadius: 16,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: _accent,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

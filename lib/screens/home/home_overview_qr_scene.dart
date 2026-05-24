@@ -39,26 +39,10 @@ class _QrStage extends StatelessWidget {
     final scanOffset = 22 + (pulse.value * 72);
 
     return SizedBox(
-      height: 224,
+      height: 206,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Container(
-            width: 308,
-            height: 212,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFF),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: const Color(0x226366F1)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x120F172A),
-                  blurRadius: 28,
-                  offset: Offset(0, 18),
-                ),
-              ],
-            ),
-          ),
           Container(
             width: 196,
             height: 196,
