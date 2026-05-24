@@ -306,10 +306,6 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
 
     final key = spotId.toUpperCase();
-    if (!_mapState.occupancy.containsKey(key)) {
-      return;
-    }
-
     final wasEmpty = _mapState.occupancy[key] == false;
     setState(() => _mapState.occupancy[key] = isOccupied);
     final targetRef =

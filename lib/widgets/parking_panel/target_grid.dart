@@ -49,8 +49,7 @@ class _TargetGrid extends StatelessWidget {
   }
 
   Widget _buildParkingCard(MapNode target) {
-    final targetKey = (target.externalReferenceId ?? target.id).toUpperCase();
-    final isOccupied = occupancyMap[targetKey];
+    final isOccupied = target.occupancyFrom(occupancyMap);
     final isTarget = targetPark?.id == target.id;
 
     return InkWell(

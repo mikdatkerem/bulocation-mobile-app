@@ -210,7 +210,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       child: _ParkCell(
         key: ValueKey(node.id),
         node: node,
-        isOccupied: widget.occupancyMap[node.id],
+        isOccupied: node.occupancyFrom(widget.occupancyMap),
         isTarget: widget.targetParkId == node.id,
       ),
     );

@@ -8,7 +8,8 @@ void main() {
     });
 
     test('compareNodeLabelsNatural sorts labels by numeric chunks', () {
-      final labels = ['P19', 'P2', 'P21', 'P10']..sort(compareNodeLabelsNatural);
+      final labels = ['P19', 'P2', 'P21', 'P10']
+        ..sort(compareNodeLabelsNatural);
 
       expect(labels, ['P2', 'P10', 'P19', 'P21']);
     });
@@ -26,6 +27,21 @@ void main() {
 
       expect(node.resolveX(1000), 500);
       expect(node.resolveY(800), 200);
+    });
+
+    test('MapNode resolves occupancy by external reference before code', () {
+      const node = MapNode(
+        id: 'P1',
+        label: 'P1',
+        x: 0,
+        y: 0,
+        type: NodeType.park,
+        externalReferenceId: 'spot-001',
+      );
+
+      expect(node.occupancyFrom({'SPOT-001': false}), isFalse);
+      expect(node.occupancyFrom({'P1': true}), isTrue);
+      expect(node.occupancyFrom({'SPOT-001': false, 'P1': true}), isFalse);
     });
   });
 }

@@ -13,7 +13,8 @@ class PathfindingService {
 
   Map<String, List<MapNode>> getParkGroups(List<MapNode> nodes) {
     final parks = nodes.where((node) => node.isPark).toList()
-      ..sort((left, right) => compareNodeLabelsNatural(left.label, right.label));
+      ..sort(
+          (left, right) => compareNodeLabelsNatural(left.label, right.label));
     return {'parks': parks};
   }
 
@@ -32,7 +33,7 @@ class PathfindingService {
     }
 
     final availableParks = nodes.where(
-      (node) => node.isPark && occupancyMap[node.id] == false,
+      (node) => node.isPark && node.occupancyFrom(occupancyMap) == false,
     );
 
     MapNode? bestPark;
@@ -133,7 +134,8 @@ class PathfindingService {
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data['detail']?.toString())
           : null;
-      throw ApiException(detail ?? error.message ?? 'Çıkış rotası hesaplanamadı');
+      throw ApiException(
+          detail ?? error.message ?? 'Çıkış rotası hesaplanamadı');
     }
   }
 
@@ -222,7 +224,7 @@ class PathfindingService {
     Map<String, bool> occupancyMap,
   ) async {
     final availableParks = nodes.where(
-      (node) => node.isPark && occupancyMap[node.id] == false,
+      (node) => node.isPark && node.occupancyFrom(occupancyMap) == false,
     );
 
     MapNode? bestPark;
@@ -429,7 +431,8 @@ class MultiRouteResult {
   factory MultiRouteResult.fromJson(Map<String, dynamic> json) {
     return MultiRouteResult(
       segments: (json['segments'] as List<dynamic>)
-          .map((item) => MultiRouteSegment.fromJson(item as Map<String, dynamic>))
+          .map((item) =>
+              MultiRouteSegment.fromJson(item as Map<String, dynamic>))
           .toList(),
       distanceMeters: (json['distanceMeters'] as num).toDouble(),
       distanceLabel: json['distanceLabel'] as String,
@@ -472,9 +475,11 @@ class RecommendedRouteResult {
 
   factory RecommendedRouteResult.fromJson(Map<String, dynamic> json) {
     return RecommendedRouteResult(
-      target: RecommendedRouteTarget.fromJson(json['target'] as Map<String, dynamic>),
+      target: RecommendedRouteTarget.fromJson(
+          json['target'] as Map<String, dynamic>),
       segments: (json['segments'] as List<dynamic>)
-          .map((item) => MultiRouteSegment.fromJson(item as Map<String, dynamic>))
+          .map((item) =>
+              MultiRouteSegment.fromJson(item as Map<String, dynamic>))
           .toList(),
       distanceMeters: (json['distanceMeters'] as num).toDouble(),
       distanceLabel: json['distanceLabel'] as String,

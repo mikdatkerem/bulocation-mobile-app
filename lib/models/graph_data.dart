@@ -163,6 +163,20 @@ class MapNode {
 
   bool get isPark => type == NodeType.park;
   bool get isQr => type == NodeType.qr;
+  String get occupancyKey => (externalReferenceId?.trim().isNotEmpty == true
+          ? externalReferenceId!.trim()
+          : id)
+      .toUpperCase();
+  bool? occupancyFrom(Map<String, bool> occupancyMap) {
+    final externalKey = externalReferenceId?.trim().toUpperCase();
+    if (externalKey?.isNotEmpty == true &&
+        occupancyMap.containsKey(externalKey)) {
+      return occupancyMap[externalKey];
+    }
+
+    return occupancyMap[id.toUpperCase()];
+  }
+
   bool get isConnector =>
       type == NodeType.entrance ||
       type == NodeType.exit ||
