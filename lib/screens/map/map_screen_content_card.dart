@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/facility_models.dart';
 import '../../models/graph_data.dart';
 import '../../widgets/floor_plan_widget.dart';
-import 'map_selection_panel.dart';
 
 class MapScreenContentCard extends StatelessWidget {
   const MapScreenContentCard({
@@ -70,21 +69,7 @@ class MapScreenContentCard extends StatelessWidget {
             mapWidth: mapWidth,
             mapHeight: mapHeight,
           )
-        : MapSelectionPanel(
-            key: const ValueKey('map-selection'),
-            organizations: organizations,
-            selectedOrganizationId: selectedOrganizationId,
-            sites: sites,
-            selectedSiteId: selectedSiteId,
-            buildings: buildings,
-            selectedBuildingId: selectedBuildingId,
-            floors: floors,
-            selectedFloorId: selectedFloorId,
-            onOrganizationChanged: onOrganizationChanged,
-            onSiteChanged: onSiteChanged,
-            onBuildingChanged: onBuildingChanged,
-            onFloorChanged: onFloorChanged,
-          );
+        : const _MapEmptyState(key: ValueKey('map-empty-state'));
 
     return Expanded(
       child: Padding(
@@ -121,6 +106,71 @@ class MapScreenContentCard extends StatelessWidget {
               },
               child: child,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapEmptyState extends StatelessWidget {
+  const _MapEmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFF),
+            Color(0xFFF3F6FC),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF2FF),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.qr_code_scanner_rounded,
+                  color: Color(0xFF6366F1),
+                  size: 34,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Haritayı QR ile başlatın',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.6,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Manuel seçim ana sayfadaki ikinci ekrana taşındı.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 14,
+                  height: 1.55,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -4,9 +4,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../models/auth_models.dart';
 import '../models/facility_models.dart';
 import '../services/facility_service.dart';
+import 'map/map_selection_panel.dart';
 
 part 'home/home_overview_actions.dart';
-part 'home/home_overview_manual_selection.dart';
 part 'home/home_overview_qr_scene.dart';
 part 'home/home_overview_theme.dart';
 part 'home/home_overview_tiles.dart';
@@ -45,6 +45,10 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
   bool _loading = true;
   String? _error;
   bool _manualPageVisible = false;
+  String? _selectedOrganizationId;
+  String? _selectedSiteId;
+  String? _selectedBuildingId;
+  String? _selectedFloorId;
   List<OrganizationSummary> _organizations = const [];
   List<OrganizationHierarchy> _hierarchies = const [];
 
@@ -133,12 +137,28 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
     return 'Merhaba';
   }
 
-  int get _publishedFloorCount => _hierarchies
-      .expand((hierarchy) => hierarchy.sites)
-      .expand((site) => site.buildings)
-      .expand((building) => building.floors)
-      .where((floor) => floor.hasPublishedMap)
-      .length;
+  OrganizationHierarchy? get _selectedHierarchy => _hierarchies
+      .where((item) => item.id == _selectedOrganizationId)
+      .firstOrNull;
+
+  List<SiteHierarchy> get _availableSites =>
+      _selectedHierarchy?.sites ?? const [];
+
+  SiteHierarchy? get _selectedSite =>
+      _availableSites.where((item) => item.id == _selectedSiteId).firstOrNull;
+
+  List<BuildingHierarchy> get _availableBuildings =>
+      _selectedSite?.buildings ?? const [];
+
+  BuildingHierarchy? get _selectedBuilding => _availableBuildings
+      .where((item) => item.id == _selectedBuildingId)
+      .firstOrNull;
+
+  List<FloorHierarchy> get _availableFloors =>
+      _selectedBuilding?.floors
+          .where((item) => item.hasPublishedMap)
+          .toList() ??
+      const [];
 
   String get _introDescription {
     if (_organizations.isEmpty) {
@@ -190,13 +210,20 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(18, 18, 18, 136),
-                        child: Align(
+                        child: MapSelectionPanel(
+                          organizations: _organizations,
+                          selectedOrganizationId: _selectedOrganizationId,
+                          sites: _availableSites,
+                          selectedSiteId: _selectedSiteId,
+                          buildings: _availableBuildings,
+                          selectedBuildingId: _selectedBuildingId,
+                          floors: _availableFloors,
+                          selectedFloorId: _selectedFloorId,
+                          onOrganizationChanged: _onOrganizationChanged,
+                          onSiteChanged: _onSiteChanged,
+                          onBuildingChanged: _onBuildingChanged,
+                          onFloorChanged: _onFloorChanged,
                           alignment: Alignment.topCenter,
-                          child: _ManualSelectionPanel(
-                            availableFloorCount: _publishedFloorCount,
-                            organizationCount: _organizations.length,
-                            onTap: () => widget.onOpenMaps(null),
-                          ),
                         ),
                       ),
                     ],
@@ -224,5 +251,63 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
     );
 
     await scanner.dispose();
+  }
+
+  void _onOrganizationChanged(String? organizationId) {
+    if (organizationId == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedOrganizationId = organizationId;
+      _selectedSiteId = null;
+      _selectedBuildingId = null;
+      _selectedFloorId = null;
+    });
+  }
+
+  void _onSiteChanged(String? siteId) {
+    if (siteId == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedSiteId = siteId;
+      _selectedBuildingId = null;
+      _selectedFloorId = null;
+    });
+  }
+
+  void _onBuildingChanged(String? buildingId) {
+    if (buildingId == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedBuildingId = buildingId;
+      _selectedFloorId = null;
+    });
+  }
+
+  void _onFloorChanged(String? floorId) {
+    final organizationId = _selectedOrganizationId;
+    final siteId = _selectedSiteId;
+    final buildingId = _selectedBuildingId;
+    if (floorId == null ||
+        organizationId == null ||
+        siteId == null ||
+        buildingId == null) {
+      return;
+    }
+
+    setState(() => _selectedFloorId = floorId);
+    widget.onOpenMaps(
+      MapOpenRequest(
+        organizationId: organizationId,
+        siteId: siteId,
+        buildingId: buildingId,
+        floorId: floorId,
+      ),
+    );
   }
 }

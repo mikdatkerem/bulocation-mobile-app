@@ -19,6 +19,7 @@ class MapSelectionPanel extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    this.alignment = Alignment.center,
   });
 
   final List<OrganizationSummary> organizations;
@@ -33,6 +34,7 @@ class MapSelectionPanel extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,7 @@ class MapSelectionPanel extends StatelessWidget {
         ),
       ),
       child: Align(
-        alignment: Alignment.center,
+        alignment: alignment,
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Container(
