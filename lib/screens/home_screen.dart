@@ -6,9 +6,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../models/facility_models.dart';
 import '../models/graph_data.dart';
+import '../models/recent_map.dart';
 import '../services/facility_service.dart';
 import '../services/parking_service.dart';
 import '../services/pathfinding_service.dart';
+import '../services/recent_maps_storage.dart';
 import '../widgets/park_bottom_sheet.dart';
 import '../widgets/park_confirm_dialog.dart';
 import '../widgets/park_suggestion_dialog.dart';
@@ -46,13 +48,14 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
     bool clearBuilding = false,
     bool clearFloor = false,
     bool clearLastScan = false,
-  }) => _mapState.resetMapViewState(
-    clearHierarchy: clearHierarchy,
-    clearSite: clearSite,
-    clearBuilding: clearBuilding,
-    clearFloor: clearFloor,
-    clearLastScan: clearLastScan,
-  );
+  }) =>
+      _mapState.resetMapViewState(
+        clearHierarchy: clearHierarchy,
+        clearSite: clearSite,
+        clearBuilding: clearBuilding,
+        clearFloor: clearFloor,
+        clearLastScan: clearLastScan,
+      );
 
   void _showError(Object error);
   void _showParkConfirmDialog(String spotId);
@@ -203,7 +206,8 @@ class MapsScreenState extends MapsScreenStateBase
   void _setActivity({
     required String title,
     required String message,
-  }) => _mapState.setActivity(title: title, message: message);
+  }) =>
+      _mapState.setActivity(title: title, message: message);
 
   @override
   void _clearActivity() => _mapState.clearActivity();

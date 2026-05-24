@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -59,7 +60,7 @@ class _AppShellState extends State<AppShell> {
       ),
       MapsScreen(
         key: _mapsKey,
-        onBack: () => setState(() => _currentIndex = 0),
+        onBack: _handleMapBack,
       ),
       ProfileScreen(sessionController: widget.sessionController),
     ];
@@ -140,6 +141,7 @@ class _AppShellState extends State<AppShell> {
     setState(() => _currentIndex = 1);
     await Future<void>.delayed(const Duration(milliseconds: 80));
     await _mapsKey.currentState?.openByQrReference(referenceId);
+    await _homeKey.currentState?.refreshRecentMaps();
   }
 
   Future<void> _handleOpenMaps(MapOpenRequest? request) async {
@@ -147,7 +149,13 @@ class _AppShellState extends State<AppShell> {
     await Future<void>.delayed(const Duration(milliseconds: 80));
     if (request != null) {
       await _mapsKey.currentState?.openSelection(request);
+      await _homeKey.currentState?.refreshRecentMaps();
     }
+  }
+
+  void _handleMapBack() {
+    setState(() => _currentIndex = 0);
+    unawaited(_homeKey.currentState?.refreshRecentMaps());
   }
 
   Future<void> _handleHomeNavTap() async {

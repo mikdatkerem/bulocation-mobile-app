@@ -9,12 +9,16 @@ class MapSelectionSearchPickerPage<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.title,
+    this.idOf,
+    this.recentIds = const {},
   });
 
   final String label;
   final List<T> items;
   final T? value;
   final String Function(T item) title;
+  final String Function(T item)? idOf;
+  final Set<String> recentIds;
 
   @override
   State<MapSelectionSearchPickerPage<T>> createState() =>
@@ -40,7 +44,13 @@ class _MapSelectionSearchPickerPageState<T>
 
   @override
   Widget build(BuildContext context) {
-    final items = _rankedItems(widget.items, _query, widget.title);
+    final items = _rankedItems(
+      widget.items,
+      _query,
+      widget.title,
+      widget.idOf,
+      widget.recentIds,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FD),
@@ -89,9 +99,11 @@ class _MapSelectionSearchPickerPageState<T>
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Aramaya harf yazarak başlayın. Sonuçlar anında filtrelenir.',
-                      style: TextStyle(
+                    Text(
+                      widget.recentIds.isEmpty
+                          ? 'Listeden seçin veya arama ile filtreleyin.'
+                          : 'Daha önce kullandıklarınız üstte, diğer seçenekler hemen altında.',
+                      style: const TextStyle(
                         color: Color(0xFF64748B),
                         fontSize: 13,
                         height: 1.45,
@@ -153,80 +165,69 @@ class _MapSelectionSearchPickerPageState<T>
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: _query.trim().isEmpty
+                child: items.isEmpty
                     ? const Center(
                         child: Text(
-                          'Aramaya başlayın.',
+                          'Sonuç bulunamadı.',
                           style: TextStyle(
                             color: Color(0xFF64748B),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       )
-                    : items.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Sonuç bulunamadı.',
-                              style: TextStyle(
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: items.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final item = items[index];
-                              final selected = widget.value == item;
+                    : ListView.separated(
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final selected = widget.value == item;
 
-                              return InkWell(
-                                onTap: () => Navigator.of(context).pop(item),
+                          return InkWell(
+                            onTap: () => Navigator.of(context).pop(item),
+                            borderRadius: BorderRadius.circular(18),
+                            child: Ink(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? const Color(0xFFEEF2FF)
+                                    : const Color(0xFFFFFFFF),
                                 borderRadius: BorderRadius.circular(18),
-                                child: Ink(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? const Color(0xFFEEF2FF)
-                                        : const Color(0xFFFFFFFF),
-                                    borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(
-                                      color: selected
-                                          ? const Color(0xFF6366F1)
-                                          : const Color(0xFFE2E8F0),
+                                border: Border.all(
+                                  color: selected
+                                      ? const Color(0xFF6366F1)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      widget.title(item),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: selected
+                                            ? const Color(0xFF4338CA)
+                                            : const Color(0xFF0F172A),
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          widget.title(item),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: selected
-                                                ? const Color(0xFF4338CA)
-                                                : const Color(0xFF0F172A),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                      if (selected)
-                                        const Icon(
-                                          Icons.check_rounded,
-                                          color: Color(0xFF6366F1),
-                                          size: 18,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                                  if (selected)
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      color: Color(0xFF6366F1),
+                                      size: 18,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -239,10 +240,12 @@ class _MapSelectionSearchPickerPageState<T>
     List<T> items,
     String query,
     String Function(T item) title,
+    String Function(T item)? idOf,
+    Set<String> recentIds,
   ) {
     final normalizedQuery = normalizeSearchText(query);
     if (normalizedQuery.isEmpty) {
-      return const [];
+      return _sortWithRecentFirst(items, title, idOf, recentIds);
     }
 
     final startsWith = <T>[];
@@ -257,13 +260,28 @@ class _MapSelectionSearchPickerPageState<T>
       }
     }
 
-    startsWith.sort(
-      (left, right) => compareNodeLabelsNatural(title(left), title(right)),
-    );
-    contains.sort(
-      (left, right) => compareNodeLabelsNatural(title(left), title(right)),
-    );
+    return [
+      ..._sortWithRecentFirst(startsWith, title, idOf, recentIds),
+      ..._sortWithRecentFirst(contains, title, idOf, recentIds),
+    ];
+  }
 
-    return [...startsWith, ...contains];
+  List<T> _sortWithRecentFirst(
+    List<T> items,
+    String Function(T item) title,
+    String Function(T item)? idOf,
+    Set<String> recentIds,
+  ) {
+    return [...items]..sort((left, right) {
+        final leftRecent =
+            idOf == null ? false : recentIds.contains(idOf(left));
+        final rightRecent =
+            idOf == null ? false : recentIds.contains(idOf(right));
+        if (leftRecent != rightRecent) {
+          return leftRecent ? -1 : 1;
+        }
+
+        return compareNodeLabelsNatural(title(left), title(right));
+      });
   }
 }

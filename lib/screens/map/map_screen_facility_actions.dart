@@ -38,7 +38,9 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _mapState.site?.buildings ?? const [];
 
   List<FloorHierarchy> get _availableFloors =>
-      _mapState.building?.floors.where((item) => item.hasPublishedMap).toList() ??
+      _mapState.building?.floors
+          .where((item) => item.hasPublishedMap)
+          .toList() ??
       const [];
 
   Future<void> _onOrganizationChanged(String? organizationId) async {
@@ -132,11 +134,15 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     final hierarchy = _mapState.hierarchy;
     final site = _mapState.site;
     final building = _mapState.building;
-    if (floorId == null || hierarchy == null || site == null || building == null) {
+    if (floorId == null ||
+        hierarchy == null ||
+        site == null ||
+        building == null) {
       return;
     }
 
-    final floor = building.floors.where((item) => item.id == floorId).firstOrNull;
+    final floor =
+        building.floors.where((item) => item.id == floorId).firstOrNull;
     if (floor == null) {
       return;
     }
@@ -255,6 +261,23 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     final publishedMap = await _getPublishedMap(floor.id);
     final buildingDestinations = await _loadBuildingDestinations(building.id);
+    await RecentMapsStorage().upsert(
+      RecentMapEntry(
+        organizationId: hierarchy.id,
+        organizationName: hierarchy.name,
+        siteId: site.id,
+        siteName: site.name,
+        buildingId: building.id,
+        buildingName: building.name,
+        floorId: floor.id,
+        floorName: floor.name,
+        mapVersionId: publishedMap.id,
+        mapName: publishedMap.name,
+        assetPath: publishedMap.assetPath,
+        assetContentType: publishedMap.assetContentType,
+        usedAt: DateTime.now(),
+      ),
+    );
 
     if (!mounted) {
       return;
@@ -300,9 +323,9 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
 
     final wasEmpty = _mapState.occupancy[key] == false;
     setState(() => _mapState.occupancy[key] = isOccupied);
-    final targetRef = (_mapState.targetPark?.externalReferenceId ??
-            _mapState.targetPark?.id)
-        ?.toUpperCase();
+    final targetRef =
+        (_mapState.targetPark?.externalReferenceId ?? _mapState.targetPark?.id)
+            ?.toUpperCase();
     if (isOccupied && wasEmpty && targetRef == key) {
       _showParkConfirmDialog(key);
     }

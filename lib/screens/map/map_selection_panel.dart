@@ -19,6 +19,10 @@ class MapSelectionPanel extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    this.recentOrganizationIds = const {},
+    this.recentSiteIds = const {},
+    this.recentBuildingIds = const {},
+    this.recentFloorIds = const {},
     this.alignment = Alignment.center,
   });
 
@@ -34,6 +38,10 @@ class MapSelectionPanel extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final Set<String> recentOrganizationIds;
+  final Set<String> recentSiteIds;
+  final Set<String> recentBuildingIds;
+  final Set<String> recentFloorIds;
   final Alignment alignment;
 
   @override
@@ -124,6 +132,10 @@ class MapSelectionPanel extends StatelessWidget {
                   sites: sites,
                   buildings: buildings,
                   floors: floors,
+                  recentOrganizationIds: recentOrganizationIds,
+                  recentSiteIds: recentSiteIds,
+                  recentBuildingIds: recentBuildingIds,
+                  recentFloorIds: recentFloorIds,
                   onOrganizationChanged: onOrganizationChanged,
                   onSiteChanged: onSiteChanged,
                   onBuildingChanged: onBuildingChanged,
@@ -207,6 +219,10 @@ class _ActiveSelectionStep extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    required this.recentOrganizationIds,
+    required this.recentSiteIds,
+    required this.recentBuildingIds,
+    required this.recentFloorIds,
   });
 
   final OrganizationSummary? selectedOrganization;
@@ -221,6 +237,10 @@ class _ActiveSelectionStep extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final Set<String> recentOrganizationIds;
+  final Set<String> recentSiteIds;
+  final Set<String> recentBuildingIds;
+  final Set<String> recentFloorIds;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +251,8 @@ class _ActiveSelectionStep extends StatelessWidget {
         value: selectedOrganization,
         items: organizations,
         title: (item) => item.name,
+        idOf: (item) => item.id,
+        recentIds: recentOrganizationIds,
         onSelected: (item) => onOrganizationChanged(item.id),
       );
     }
@@ -242,6 +264,8 @@ class _ActiveSelectionStep extends StatelessWidget {
         value: selectedSite,
         items: sites,
         title: (item) => item.name,
+        idOf: (item) => item.id,
+        recentIds: recentSiteIds,
         onSelected: (item) => onSiteChanged(item.id),
       );
     }
@@ -253,6 +277,8 @@ class _ActiveSelectionStep extends StatelessWidget {
         value: selectedBuilding,
         items: buildings,
         title: (item) => item.name,
+        idOf: (item) => item.id,
+        recentIds: recentBuildingIds,
         onSelected: (item) => onBuildingChanged(item.id),
       );
     }
@@ -265,6 +291,8 @@ class _ActiveSelectionStep extends StatelessWidget {
       value: selectedFloor,
       items: floors,
       title: (item) => item.name,
+      idOf: (item) => item.id,
+      recentIds: recentFloorIds,
       onSelected: (item) => onFloorChanged(item.id),
     );
   }

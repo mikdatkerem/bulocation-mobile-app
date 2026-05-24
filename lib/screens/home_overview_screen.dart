@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../models/auth_models.dart';
 import '../models/facility_models.dart';
+import '../models/recent_map.dart';
 import '../services/facility_service.dart';
+import '../services/recent_maps_storage.dart';
+import '../widgets/map_asset_preview.dart';
 import 'map/map_selection_panel.dart';
 
 part 'home/home_overview_actions.dart';
 part 'home/home_overview_qr_scene.dart';
+part 'home/home_recent_maps_section.dart';
 part 'home/home_overview_theme.dart';
 part 'home/home_overview_tiles.dart';
 part 'home/quick_scanner_sheet.dart';
@@ -35,6 +41,7 @@ class HomeOverviewScreen extends StatefulWidget {
 class HomeOverviewScreenState extends State<HomeOverviewScreen>
     with SingleTickerProviderStateMixin {
   final _facilityService = FacilityService();
+  final _recentMapsStorage = RecentMapsStorage();
   late final PageController _pageController = PageController();
 
   late final AnimationController _pulseController = AnimationController(
@@ -51,11 +58,13 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
   String? _selectedFloorId;
   List<OrganizationSummary> _organizations = const [];
   List<OrganizationHierarchy> _hierarchies = const [];
+  List<RecentMapEntry> _recentMaps = const [];
 
   @override
   void initState() {
     super.initState();
     _loadOverview();
+    unawaited(_loadRecentMaps());
   }
 
   @override
@@ -76,6 +85,7 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
 
   Future<void> showHeroPage() async {
     _setManualPageVisible(false);
+    unawaited(_loadRecentMaps());
     if (!_pageController.hasClients) {
       return;
     }
@@ -86,6 +96,8 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
       curve: Curves.easeOutCubic,
     );
   }
+
+  Future<void> refreshRecentMaps() => _loadRecentMaps();
 
   Future<void> _loadOverview() async {
     try {
@@ -118,6 +130,15 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
         _loading = false;
       });
     }
+  }
+
+  Future<void> _loadRecentMaps() async {
+    final recentMaps = await _recentMapsStorage.read();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _recentMaps = recentMaps);
   }
 
   String get _displayName {
@@ -159,6 +180,43 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
           .where((item) => item.hasPublishedMap)
           .toList() ??
       const [];
+
+  List<RecentMapEntry> get _visibleRecentMaps {
+    return _recentMaps.where(_isRecentMapAvailable).take(6).toList();
+  }
+
+  Set<String> get _recentOrganizationIds =>
+      _visibleRecentMaps.map((item) => item.organizationId).toSet();
+
+  Set<String> get _recentSiteIds => _visibleRecentMaps
+      .where((item) => item.organizationId == _selectedOrganizationId)
+      .map((item) => item.siteId)
+      .toSet();
+
+  Set<String> get _recentBuildingIds => _visibleRecentMaps
+      .where((item) => item.siteId == _selectedSiteId)
+      .map((item) => item.buildingId)
+      .toSet();
+
+  Set<String> get _recentFloorIds => _visibleRecentMaps
+      .where((item) => item.buildingId == _selectedBuildingId)
+      .map((item) => item.floorId)
+      .toSet();
+
+  bool _isRecentMapAvailable(RecentMapEntry entry) {
+    final hierarchy = _hierarchies
+        .where((item) => item.id == entry.organizationId)
+        .firstOrNull;
+    final site =
+        hierarchy?.sites.where((item) => item.id == entry.siteId).firstOrNull;
+    final building = site?.buildings
+        .where((item) => item.id == entry.buildingId)
+        .firstOrNull;
+    final floor =
+        building?.floors.where((item) => item.id == entry.floorId).firstOrNull;
+
+    return floor?.hasPublishedMap == true;
+  }
 
   String get _introDescription {
     if (_organizations.isEmpty) {
@@ -208,22 +266,34 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
                           );
                         },
                       ),
-                      Padding(
+                      SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(18, 18, 18, 136),
-                        child: MapSelectionPanel(
-                          organizations: _organizations,
-                          selectedOrganizationId: _selectedOrganizationId,
-                          sites: _availableSites,
-                          selectedSiteId: _selectedSiteId,
-                          buildings: _availableBuildings,
-                          selectedBuildingId: _selectedBuildingId,
-                          floors: _availableFloors,
-                          selectedFloorId: _selectedFloorId,
-                          onOrganizationChanged: _onOrganizationChanged,
-                          onSiteChanged: _onSiteChanged,
-                          onBuildingChanged: _onBuildingChanged,
-                          onFloorChanged: _onFloorChanged,
-                          alignment: Alignment.topCenter,
+                        child: Column(
+                          children: [
+                            MapSelectionPanel(
+                              organizations: _organizations,
+                              selectedOrganizationId: _selectedOrganizationId,
+                              sites: _availableSites,
+                              selectedSiteId: _selectedSiteId,
+                              buildings: _availableBuildings,
+                              selectedBuildingId: _selectedBuildingId,
+                              floors: _availableFloors,
+                              selectedFloorId: _selectedFloorId,
+                              recentOrganizationIds: _recentOrganizationIds,
+                              recentSiteIds: _recentSiteIds,
+                              recentBuildingIds: _recentBuildingIds,
+                              recentFloorIds: _recentFloorIds,
+                              onOrganizationChanged: _onOrganizationChanged,
+                              onSiteChanged: _onSiteChanged,
+                              onBuildingChanged: _onBuildingChanged,
+                              onFloorChanged: _onFloorChanged,
+                              alignment: Alignment.topCenter,
+                            ),
+                            _RecentMapsSection(
+                              items: _visibleRecentMaps,
+                              onOpen: _openRecentMap,
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -307,6 +377,17 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
         siteId: siteId,
         buildingId: buildingId,
         floorId: floorId,
+      ),
+    );
+  }
+
+  void _openRecentMap(RecentMapEntry entry) {
+    widget.onOpenMaps(
+      MapOpenRequest(
+        organizationId: entry.organizationId,
+        siteId: entry.siteId,
+        buildingId: entry.buildingId,
+        floorId: entry.floorId,
       ),
     );
   }

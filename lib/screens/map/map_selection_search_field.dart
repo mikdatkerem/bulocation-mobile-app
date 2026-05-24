@@ -11,6 +11,8 @@ class MapSelectionSearchField<T> extends StatelessWidget {
     required this.items,
     required this.title,
     required this.onSelected,
+    this.idOf,
+    this.recentIds = const {},
   });
 
   final String label;
@@ -19,6 +21,8 @@ class MapSelectionSearchField<T> extends StatelessWidget {
   final List<T> items;
   final String Function(T item) title;
   final ValueChanged<T> onSelected;
+  final String Function(T item)? idOf;
+  final Set<String> recentIds;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +63,8 @@ class MapSelectionSearchField<T> extends StatelessWidget {
                         items: items,
                         value: value,
                         title: title,
+                        idOf: idOf,
+                        recentIds: recentIds,
                       ),
                       transitionsBuilder: (_, animation, __, child) {
                         final curved = CurvedAnimation(
