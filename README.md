@@ -121,6 +121,7 @@ Android:
 - Camera and internet permissions are defined.
 - Release signing must use real store/CI keystore values, not a debug key.
 - Copy `android/key.properties.example` to `android/key.properties` locally and fill real values outside git.
+- The expected local keystore path is `android/app/bulocation-release-key.jks` unless `storeFile` is changed.
 
 iOS:
 
@@ -151,9 +152,31 @@ Release checks:
 flutter build apk --release \
   --dart-define=BASE_HOST=https://api.bulocation.com
 
+flutter build appbundle --release \
+  --dart-define=BASE_HOST=https://api.bulocation.com
+
 flutter build ios --release \
   --dart-define=BASE_HOST=https://api.bulocation.com
 ```
+
+## Android Release Signing
+
+`android/key.properties` is intentionally ignored by git. A local release signing file should look like this:
+
+```properties
+storePassword=your-secure-store-password
+keyPassword=your-secure-key-password
+keyAlias=bulocation
+storeFile=../app/bulocation-release-key.jks
+```
+
+The `storeFile` value is resolved from `android/app`, so `../app/bulocation-release-key.jks` points to:
+
+```text
+android/app/bulocation-release-key.jks
+```
+
+Keep both `android/key.properties` and the `.jks` file backed up securely. If the signing key is lost, Play Store updates for the same signing lineage can become painful or impossible depending on the release setup.
 
 ## Before Production
 

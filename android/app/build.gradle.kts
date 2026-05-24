@@ -17,6 +17,17 @@ val isReleaseTask = gradle.startParameter.taskNames.any {
     it.contains("Release", ignoreCase = true)
 }
 
+fun requireKeystoreProperty(name: String): String {
+    val value = keystoreProperties[name]?.toString()?.trim().orEmpty()
+    if (value.isBlank() || value == "change-me") {
+        throw GradleException(
+            "Release signing property '$name' is missing or still uses the placeholder value. " +
+                "Update android/key.properties before building release."
+        )
+    }
+    return value
+}
+
 android {
     namespace = "com.bulocation.app"
     compileSdk = flutter.compileSdkVersion
@@ -42,10 +53,10 @@ android {
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = requireKeystoreProperty("keyAlias")
+                keyPassword = requireKeystoreProperty("keyPassword")
+                storeFile = file(requireKeystoreProperty("storeFile"))
+                storePassword = requireKeystoreProperty("storePassword")
             }
         }
     }
@@ -54,6 +65,13 @@ android {
         release {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+                val configuredStoreFile = signingConfig?.storeFile
+                if (isReleaseTask && (configuredStoreFile == null || !configuredStoreFile.exists())) {
+                    throw GradleException(
+                        "Release keystore file not found: ${configuredStoreFile?.absolutePath}. " +
+                            "Create it with keytool or update android/key.properties storeFile."
+                    )
+                }
             } else if (isReleaseTask) {
                 throw GradleException(
                     "Release signing is not configured. Create android/key.properties from key.properties.example."
