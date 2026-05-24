@@ -144,9 +144,9 @@ class _HeroScene extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const Spacer(),
                   Center(child: _QrStage(pulse: pulse)),
-                  const SizedBox(height: 30),
+                  const Spacer(),
                   _PrimaryAction(
                     title: 'QR ile başla',
                     subtitle:
@@ -154,9 +154,9 @@ class _HeroScene extends StatelessWidget {
                     icon: Icons.qr_code_scanner_rounded,
                     onTap: onPrimaryTap,
                   ),
-                  const Spacer(flex: 2),
+                  const SizedBox(height: 22),
                   const Padding(
-                    padding: EdgeInsets.only(bottom: 18),
+                    padding: EdgeInsets.only(bottom: 16),
                     child: _HeroScrollHint(),
                   ),
                 ],
