@@ -238,6 +238,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     required BuildingHierarchy building,
     required FloorHierarchy floor,
     List<OrganizationSummary>? organizations,
+    bool preserveNavigation = false,
   }) async {
     if (mounted) {
       setState(() {
@@ -289,13 +290,15 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _mapState.displayMapHeight = publishedMap.height;
       _mapState.loading = false;
       _clearActivity();
-      _mapState.targetPark = null;
-      _mapState.parkedAt = null;
-      _mapState.route = null;
-      _mapState.multiRoute = null;
-      _mapState.activeRouteSegmentIndex = 0;
-      _mapState.lastScan = null;
-      _mapState.lastScanTime = null;
+      if (!preserveNavigation) {
+        _mapState.targetPark = null;
+        _mapState.parkedAt = null;
+        _mapState.route = null;
+        _mapState.multiRoute = null;
+        _mapState.activeRouteSegmentIndex = 0;
+        _mapState.lastScan = null;
+        _mapState.lastScanTime = null;
+      }
     });
 
     await _loadOccupancy();

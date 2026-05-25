@@ -21,6 +21,8 @@ class ParkBottomSheet extends StatefulWidget {
     required this.targetPark,
     required this.parkedAt,
     required this.mapName,
+    required this.currentFloorId,
+    required this.currentFloorName,
     required this.activeReference,
     required this.emptyCount,
     required this.fullCount,
@@ -47,6 +49,8 @@ class ParkBottomSheet extends StatefulWidget {
   final MapNode? targetPark;
   final MapNode? parkedAt;
   final String mapName;
+  final String? currentFloorId;
+  final String? currentFloorName;
   final String? activeReference;
   final int emptyCount;
   final int fullCount;
@@ -79,15 +83,17 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
       mode: widget.mode,
       mapName: widget.mapName,
       activeReference: widget.activeReference,
+      currentFloorId: widget.currentFloorId,
+      currentFloorName: widget.currentFloorName,
       emptyCount: widget.emptyCount,
       fullCount: widget.fullCount,
       totalCount: widget.totalCount,
       parks: widget.parks,
       destinations: widget.destinations,
     );
-    final targets = presenter.targetsForPanel();
+    final targetGroups = presenter.targetGroupsForPanel();
 
-    if (!presenter.isParking && _showDestinations && targets.isEmpty) {
+    if (!presenter.isParking && _showDestinations && targetGroups.isEmpty) {
       _showDestinations = false;
     }
 
@@ -158,7 +164,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                                     'sheet-expanded-${widget.mode}-${widget.multiRoute?.segments.length ?? 0}',
                                   ),
                                   presenter: presenter,
-                                  targets: targets,
+                                  targetGroups: targetGroups,
                                   showDestinations: _showDestinations,
                                   activeSegmentIndex: widget.activeSegmentIndex,
                                   mode: widget.mode,
@@ -231,7 +237,7 @@ class _SheetExpandedContent extends StatelessWidget {
   const _SheetExpandedContent({
     super.key,
     required this.presenter,
-    required this.targets,
+    required this.targetGroups,
     required this.showDestinations,
     required this.activeSegmentIndex,
     required this.mode,
@@ -251,7 +257,7 @@ class _SheetExpandedContent extends StatelessWidget {
   });
 
   final _ParkBottomSheetPresenter presenter;
-  final List<MapNode> targets;
+  final List<TargetGroup> targetGroups;
   final bool showDestinations;
   final int activeSegmentIndex;
   final MapPanelMode mode;
@@ -292,7 +298,7 @@ class _SheetExpandedContent extends StatelessWidget {
         _ModeSwitcher(
           showDestinations: showDestinations,
           destinationLabel: presenter.destinationTitle,
-          hasDestinations: targets.isNotEmpty,
+          hasDestinations: targetGroups.isNotEmpty,
           onNavigationTap: onNavigationTap,
           onDestinationsTap: onDestinationsTap,
         ),
@@ -301,7 +307,7 @@ class _SheetExpandedContent extends StatelessWidget {
           _NavigationActions(
             mode: mode,
             hasParkedCar: parkedAt != null,
-            hasDestinations: targets.isNotEmpty,
+            hasDestinations: targetGroups.isNotEmpty,
             destinationTitle: presenter.destinationTitle,
             onShowDestinations: onDestinationsTap,
             onNearestToUser: onNearestToUser,
@@ -312,7 +318,7 @@ class _SheetExpandedContent extends StatelessWidget {
         else
           _TargetGrid(
             mode: mode,
-            targets: targets,
+            groups: targetGroups,
             targetPark: targetPark,
             occupancyMap: occupancyMap,
             onSelected: onParkSelected,

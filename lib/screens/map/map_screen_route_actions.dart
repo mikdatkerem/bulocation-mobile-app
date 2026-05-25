@@ -98,7 +98,27 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       return;
     }
 
+    final site = _mapState.hierarchy?.sites
+        .where((item) => item.id == segment.siteId)
+        .firstOrNull;
+    final building = site?.buildings
+        .where((item) => item.id == segment.buildingId)
+        .firstOrNull;
+    final floor = building?.floors
+        .where((item) => item.id == segment.floorId)
+        .firstOrNull;
+
     setState(() {
+      if (site != null) {
+        _mapState.site = site;
+      }
+      if (building != null) {
+        _mapState.building = building;
+      }
+      if (floor != null) {
+        _mapState.floor = floor;
+      }
+      _mapState.map = segmentMap;
       _mapState.activeRouteSegmentIndex = index;
       _mapState.route = segment.nodes;
       _mapState.displayNodes = segmentMap.nodes;

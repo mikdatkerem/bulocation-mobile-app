@@ -91,6 +91,9 @@ class MapNode {
     this.normalizedX,
     this.normalizedY,
     this.externalReferenceId,
+    this.mapVersionId,
+    this.floorId,
+    this.floorName,
   });
 
   final String id;
@@ -101,6 +104,9 @@ class MapNode {
   final double? normalizedX;
   final double? normalizedY;
   final String? externalReferenceId;
+  final String? mapVersionId;
+  final String? floorId;
+  final String? floorName;
 
   factory MapNode.fromLegacyJson(Map<String, dynamic> json) {
     final nodeTypeInt = json['nodeType'] as int? ?? 1;
@@ -136,6 +142,9 @@ class MapNode {
       normalizedX: (json['normalizedX'] as num?)?.toDouble(),
       normalizedY: (json['normalizedY'] as num?)?.toDouble(),
       externalReferenceId: json['externalReferenceId'] as String?,
+      mapVersionId: json['mapVersionId'] as String?,
+      floorId: json['floorId'] as String?,
+      floorName: json['floorName'] as String?,
     );
   }
 
@@ -148,6 +157,9 @@ class MapNode {
     required double normalizedX,
     required double normalizedY,
     required String? externalReferenceId,
+    String? mapVersionId,
+    String? floorId,
+    String? floorName,
   }) {
     return MapNode(
       id: id.toUpperCase(),
@@ -158,6 +170,9 @@ class MapNode {
       normalizedX: normalizedX,
       normalizedY: normalizedY,
       externalReferenceId: externalReferenceId,
+      mapVersionId: mapVersionId,
+      floorId: floorId,
+      floorName: floorName,
     );
   }
 

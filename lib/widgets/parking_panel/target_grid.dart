@@ -3,14 +3,14 @@ part of '../park_bottom_sheet.dart';
 class _TargetGrid extends StatelessWidget {
   const _TargetGrid({
     required this.mode,
-    required this.targets,
+    required this.groups,
     required this.targetPark,
     required this.occupancyMap,
     required this.onSelected,
   });
 
   final MapPanelMode mode;
-  final List<MapNode> targets;
+  final List<TargetGroup> groups;
   final MapNode? targetPark;
   final Map<String, bool> occupancyMap;
   final void Function(MapNode) onSelected;
@@ -19,6 +19,20 @@ class _TargetGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final group in groups) ...[
+          _TargetGroupHeader(group: group),
+          const SizedBox(height: 10),
+          _buildGrid(group.nodes),
+          const SizedBox(height: 18),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildGrid(List<MapNode> targets) {
     if (_isParking) {
       return GridView.builder(
         shrinkWrap: true,
@@ -251,5 +265,51 @@ class _TargetGrid extends StatelessWidget {
       NodeType.qr => Icons.qr_code_2_rounded,
       NodeType.other => Icons.place_rounded,
     };
+  }
+}
+
+class _TargetGroupHeader extends StatelessWidget {
+  const _TargetGroupHeader({required this.group});
+
+  final TargetGroup group;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            group.isCurrentFloor ? '${group.title} · açık harita' : group.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF475569),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.7,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: group.isCurrentFloor
+                ? const Color(0xFFEEF2FF)
+                : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            '${group.nodes.length}',
+            style: TextStyle(
+              color: group.isCurrentFloor
+                  ? const Color(0xFF4F46E5)
+                  : const Color(0xFF64748B),
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

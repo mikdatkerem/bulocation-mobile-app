@@ -13,6 +13,8 @@ class MapBottomPanel extends StatelessWidget {
     required this.targetPark,
     required this.parkedAt,
     required this.mapName,
+    required this.currentFloorId,
+    required this.currentFloorName,
     required this.activeReference,
     required this.emptyCount,
     required this.fullCount,
@@ -36,6 +38,8 @@ class MapBottomPanel extends StatelessWidget {
   final MapNode? targetPark;
   final MapNode? parkedAt;
   final String mapName;
+  final String? currentFloorId;
+  final String? currentFloorName;
   final String? activeReference;
   final int emptyCount;
   final int fullCount;
@@ -62,6 +66,8 @@ class MapBottomPanel extends StatelessWidget {
         targetPark: targetPark,
         parkedAt: parkedAt,
         mapName: mapName,
+        currentFloorId: currentFloorId,
+        currentFloorName: currentFloorName,
         activeReference: activeReference,
         emptyCount: emptyCount,
         fullCount: fullCount,

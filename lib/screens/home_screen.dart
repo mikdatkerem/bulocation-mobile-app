@@ -77,6 +77,7 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
     required SiteHierarchy site,
     required BuildingHierarchy building,
     required FloorHierarchy floor,
+    bool preserveNavigation = false,
   });
   Future<void> _updateRoute(String fromReferenceId);
   // ignore: unused_element
@@ -268,6 +269,8 @@ class MapsScreenState extends MapsScreenStateBase
                     targetPark: state.targetPark,
                     parkedAt: state.parkedAt,
                     mapName: state.map?.name ?? 'Harita',
+                    currentFloorId: state.floor?.id,
+                    currentFloorName: state.floor?.name,
                     activeReference: state.lastScan,
                     emptyCount: emptyCount,
                     fullCount: fullCount,

@@ -29,6 +29,7 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
     if (normalizedReferenceId.isEmpty || _mapState.busy) {
       return;
     }
+    final hadActiveNavigation = _hasActiveNavigation;
 
     await HapticFeedback.mediumImpact();
     if (mounted) {
@@ -44,7 +45,10 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
     try {
       final context =
           await _facilityService.resolveQrScanContext(normalizedReferenceId);
-      await _applyScanContext(context);
+      await _applyScanContext(
+        context,
+        preserveNavigation: hadActiveNavigation,
+      );
       if (!mounted) {
         return;
       }
@@ -54,14 +58,19 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
         if (_mapState.map != null) {
           _setActivity(
             title: 'Harita hazır',
-            message: 'Şimdi hedef seçebilir veya yönlendirmeyi başlatabilirsiniz.',
+            message:
+                'Şimdi hedef seçebilir veya yönlendirmeyi başlatabilirsiniz.',
           );
         } else {
           _clearActivity();
         }
       });
 
-      if (_mapState.targetPark != null) {
+      final routeSegmentIndex = _routeSegmentIndexForScan(context);
+      if (_mapState.multiRoute != null && routeSegmentIndex != null) {
+        await _showRouteSegment(routeSegmentIndex);
+        _collapseSheet();
+      } else if (_mapState.targetPark != null) {
         await _updateRoute(normalizedReferenceId);
       } else if (_mapPanelMode == MapPanelMode.parking) {
         _showSuggestionDialog();
@@ -181,7 +190,10 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
     return value;
   }
 
-  Future<void> _applyScanContext(QrScanContext context) async {
+  Future<void> _applyScanContext(
+    QrScanContext context, {
+    bool preserveNavigation = false,
+  }) async {
     final hierarchy = _mapState.hierarchy?.id == context.organizationId
         ? _mapState.hierarchy!
         : await _facilityService
@@ -206,9 +218,42 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
         site: site,
         building: building,
         floor: floor,
+        preserveNavigation: preserveNavigation,
       );
     }
 
     _mapState.lastScan = context.referenceId;
+  }
+
+  bool get _hasActiveNavigation =>
+      _mapState.targetPark != null ||
+      _mapState.multiRoute != null ||
+      (_mapState.route?.isNotEmpty == true);
+
+  int? _routeSegmentIndexForScan(QrScanContext context) {
+    final multiRoute = _mapState.multiRoute;
+    if (multiRoute == null) {
+      return null;
+    }
+
+    final referenceId = context.referenceId.toUpperCase();
+    for (var index = 0; index < multiRoute.segments.length; index++) {
+      final segment = multiRoute.segments[index];
+      final hasScannedNode = segment.nodes.any(
+        (node) =>
+            (node.externalReferenceId ?? node.id).toUpperCase() == referenceId,
+      );
+      if (hasScannedNode) {
+        return index;
+      }
+    }
+
+    for (var index = 0; index < multiRoute.segments.length; index++) {
+      if (multiRoute.segments[index].floorId == context.floorId) {
+        return index;
+      }
+    }
+
+    return null;
   }
 }

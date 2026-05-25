@@ -298,13 +298,16 @@ class FacilityDestinationSearchResult {
   MapNode toMapNode() {
     return MapNode.fromDestination(
       id: nodeCode,
-      label: floorName == nodeLabel ? nodeLabel : '$nodeLabel · $floorName',
+      label: nodeLabel,
       nodeType: nodeType,
       pixelX: pixelX,
       pixelY: pixelY,
       normalizedX: normalizedX,
       normalizedY: normalizedY,
       externalReferenceId: externalReferenceId,
+      mapVersionId: mapVersionId,
+      floorId: floorId,
+      floorName: floorName,
     );
   }
 }
