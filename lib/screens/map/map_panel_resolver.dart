@@ -63,7 +63,7 @@ List<MapNode> resolveDestinationNodes({
       if (score != 0) {
         return score;
       }
-      return compareNodeLabelsNatural(left.label, right.label);
+      return compareNodeLabelsNatural(left.displayLabel, right.displayLabel);
     });
 
   return destinations;

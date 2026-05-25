@@ -6,16 +6,12 @@ class _PanelHeader extends StatelessWidget {
     required this.mapName,
     required this.summary,
     required this.title,
-    required this.helperText,
-    required this.trailingIcon,
   });
 
   final IconData icon;
   final String mapName;
   final String summary;
   final String title;
-  final String helperText;
-  final IconData trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -64,31 +60,10 @@ class _PanelHeader extends StatelessWidget {
                     fontSize: 12.5,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _HeaderChip(
-                      icon: Icons.tune_rounded,
-                      label: summary,
-                    ),
-                    _HeaderChip(
-                      icon: trailingIcon,
-                      label: _chipLabelForIcon(trailingIcon),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  helperText,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
+                if (summary.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _HeaderChip(label: summary),
+                ],
               ],
             ),
           ),
@@ -97,21 +72,13 @@ class _PanelHeader extends StatelessWidget {
     );
   }
 
-  String _chipLabelForIcon(IconData icon) {
-    if (icon == Icons.grid_view_rounded) {
-      return 'Hedef listesi';
-    }
-    return 'Navigasyon modu';
-  }
 }
 
 class _HeaderChip extends StatelessWidget {
   const _HeaderChip({
-    required this.icon,
     required this.label,
   });
 
-  final IconData icon;
   final String label;
 
   @override
@@ -126,7 +93,23 @@ class _HeaderChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF6366F1)),
+          Container(
+            width: 18,
+            height: 18,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEEF2FF),
+              shape: BoxShape.circle,
+            ),
+            child: const Text(
+              'P',
+              style: TextStyle(
+                color: Color(0xFF6366F1),
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
           const SizedBox(width: 6),
           Text(
             label,

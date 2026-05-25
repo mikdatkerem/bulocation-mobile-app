@@ -33,6 +33,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
 
       if (result != null) {
         _applySingleFloorRoute(result);
+        _collapseSheet();
         return;
       }
 
@@ -58,6 +59,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       });
 
       await _showRouteSegment(0);
+      _collapseSheet();
     } catch (error) {
       if (mounted) {
         setState(_clearActivity);
@@ -111,9 +113,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
   }
 
   Future<void> _navigateToBestExit() async {
-    final lastScan = _mapState.lastScan;
-    if (lastScan == null) {
-      _showError('Önce bir QR kodu okutun.');
+    final startReference = _activeStartReference();
+    if (startReference == null) {
+      _showError('Çıkış rotası için önce QR okutun.');
       return;
     }
 
@@ -128,7 +130,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       }
 
       final result =
-          await _pathfinder.findBestExitRoute(fromReferenceId: lastScan);
+          await _pathfinder.findBestExitRoute(fromReferenceId: startReference);
       if (result == null || result.segments.isEmpty) {
         if (mounted) {
           setState(_clearActivity);
@@ -144,6 +146,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       });
 
       await _showRouteSegment(0);
+      _collapseSheet();
     } catch (error) {
       if (mounted) {
         setState(_clearActivity);
@@ -153,9 +156,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
   }
 
   Future<void> _selectParkingNearEntrance() async {
-    final lastScan = _mapState.lastScan;
-    if (lastScan == null) {
-      _showError('Önce bir QR kodu okutun.');
+    final startReference = _activeStartReference();
+    if (startReference == null) {
+      _showError('Park önerisi için önce QR okutun.');
       return;
     }
 
@@ -170,7 +173,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       }
 
       final result = await _pathfinder.findRecommendedParkingNearEntrance(
-        fromReferenceId: lastScan,
+        fromReferenceId: startReference,
       );
 
       if (result == null || result.segments.isEmpty) {
@@ -202,6 +205,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       });
 
       await _showRouteSegment(0);
+      _collapseSheet();
     } catch (error) {
       if (mounted) {
         setState(_clearActivity);

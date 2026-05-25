@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app/app_session_controller.dart';
 import 'screens/app_shell.dart';
@@ -54,6 +55,9 @@ class AppConfig {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   final sessionController = AppSessionController();
   await sessionController.restore();
   runApp(BuLocationApp(sessionController: sessionController));

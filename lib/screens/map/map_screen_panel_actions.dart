@@ -3,8 +3,9 @@ part of '../home_screen.dart';
 mixin _MapScreenPanelActions on MapsScreenStateBase {
   @override
   void _showSuggestionDialog() {
-    final lastScan = _mapState.lastScan;
-    if (lastScan == null) {
+    final startReference = _activeStartReference();
+    if (startReference == null) {
+      _showError('Rota başlatmak için önce QR okutun.');
       return;
     }
 
@@ -13,7 +14,7 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       barrierColor: Colors.black26,
       builder: (_) => ParkSuggestionDialog(
         nearestToUser: _pathfinder.nearestEmptyParkToUser(
-          lastScan,
+          startReference,
           _mapState.occupancy,
           _mapState.mapNodes,
         ),
@@ -24,7 +25,7 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
             _mapState.route = null;
             _mapState.multiRoute = null;
           });
-          unawaited(_updateRoute(lastScan));
+          unawaited(_updateRoute(startReference));
         },
       ),
     );
@@ -111,6 +112,7 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     setState(() => _notices.removeWhere((notice) => notice.id == id));
   }
 
+  @override
   void _collapseSheet() {
     if (!_sheetController.isAttached) {
       return;
@@ -121,6 +123,28 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       duration: const Duration(milliseconds: 240),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  @override
+  String? _activeStartReference() {
+    final lastScan = _mapState.lastScan?.trim();
+    if (lastScan?.isNotEmpty == true) {
+      return lastScan;
+    }
+
+    final routeStart = _mapState.route?.firstOrNull;
+    final routeReference = routeStart?.externalReferenceId ?? routeStart?.id;
+    if (routeReference?.trim().isNotEmpty == true) {
+      return routeReference;
+    }
+
+    final qrNode = _mapState.mapNodes.where((node) => node.isQr).firstOrNull;
+    final qrReference = qrNode?.externalReferenceId ?? qrNode?.id;
+    if (qrReference?.trim().isNotEmpty == true) {
+      return qrReference;
+    }
+
+    return null;
   }
 
   @override
@@ -137,41 +161,49 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
             mapNodes: _mapState.mapNodes,
             mode: _mapPanelMode,
           );
-    final activeReference = _mapState.lastScan?.toUpperCase();
-
-    if (activeReference == null) {
-      return nodes;
-    }
+    final activeReference = _activeStartReference()?.toUpperCase();
 
     return nodes
-        .where((node) =>
-            (node.externalReferenceId ?? node.id).toUpperCase() !=
-            activeReference)
+        .where((node) {
+          if (_mapPanelMode != MapPanelMode.parking && node.isQr) {
+            return false;
+          }
+
+          if (activeReference == null) {
+            return true;
+          }
+
+          return (node.externalReferenceId ?? node.id).toUpperCase() !=
+              activeReference;
+        })
         .toList();
   }
 
   void _selectParkTarget(MapNode park) {
-    _sheetController.animateTo(
-      ParkBottomSheet.peekSize,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-    );
+    final startReference = _activeStartReference();
+    _collapseSheet();
     setState(() {
       _mapState.targetPark = park;
       _mapState.route = null;
       _mapState.multiRoute = null;
       _setActivity(
         title: 'Hedef seçildi',
-        message: '${park.label} için rota hazırlanıyor.',
+        message: '${park.displayLabel} için rota hazırlanıyor.',
       );
     });
-    if (_mapState.lastScan != null) {
-      unawaited(_updateRoute(_mapState.lastScan!));
+
+    if (startReference != null) {
+      unawaited(_updateRoute(startReference));
+      return;
     }
+
+    setState(_clearActivity);
+    _showError('Rota başlatmak için önce QR okutun.');
   }
 
   void _navigateToCar() {
-    if (_mapState.parkedAt == null || _mapState.lastScan == null) {
+    final startReference = _activeStartReference();
+    if (_mapState.parkedAt == null || startReference == null) {
       return;
     }
 
@@ -179,10 +211,12 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       _mapState.targetPark = _mapState.parkedAt;
       _setActivity(
         title: 'Aracınıza gidiliyor',
-        message: '${_mapState.parkedAt!.label} için rota hazırlanıyor.',
+        message:
+            '${_mapState.parkedAt!.displayLabel} için rota hazırlanıyor.',
       );
     });
-    unawaited(_updateRoute(_mapState.lastScan!));
+    _collapseSheet();
+    unawaited(_updateRoute(startReference));
   }
 
   void _clearNavigation() {
@@ -196,17 +230,19 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
   }
 
   void _navigateToNearestToUser() {
-    final lastScan = _mapState.lastScan;
-    if (lastScan == null) {
+    final startReference = _activeStartReference();
+    if (startReference == null) {
+      _showError('Rota başlatmak için önce QR okutun.');
       return;
     }
 
     final park = _pathfinder.nearestEmptyParkToUser(
-      lastScan,
+      startReference,
       _mapState.occupancy,
       _mapState.mapNodes,
     );
     if (park == null) {
+      _showError('Uygun boş park alanı bulunamadı.');
       return;
     }
 
@@ -215,9 +251,10 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       _mapState.multiRoute = null;
       _setActivity(
         title: 'En yakın park seçildi',
-        message: '${park.label} için rota hazırlanıyor.',
+        message: '${park.displayLabel} için rota hazırlanıyor.',
       );
     });
-    unawaited(_updateRoute(lastScan));
+    _collapseSheet();
+    unawaited(_updateRoute(startReference));
   }
 }

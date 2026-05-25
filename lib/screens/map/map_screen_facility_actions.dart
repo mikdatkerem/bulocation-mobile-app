@@ -225,7 +225,8 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
         .where((item) => item.externalReferenceId != null)
         .map((item) => item.toMapNode())
         .toList()
-      ..sort((left, right) => left.label.compareTo(right.label));
+      ..sort((left, right) =>
+          compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
 
     return nodes;
   }

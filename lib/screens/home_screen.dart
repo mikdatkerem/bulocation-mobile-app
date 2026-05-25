@@ -82,6 +82,8 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
   // ignore: unused_element
   Future<void> _showRouteSegment(int index);
   void _showSuggestionDialog();
+  void _collapseSheet();
+  String? _activeStartReference();
   MapPanelMode get _mapPanelMode;
 }
 
@@ -203,10 +205,13 @@ class MapsScreenState extends MapsScreenStateBase
     final mapBottomInset = hasMap
         ? MediaQuery.of(context).size.height * ParkBottomSheet.peekSize + 4
         : 0.0;
-    final activeNodeId = state.lastScan == null
+    final activeReference = _activeStartReference()?.toUpperCase();
+    final activeNodeId = activeReference == null
         ? null
         : state.displayNodes
-            .where((node) => node.externalReferenceId == state.lastScan)
+            .where((node) =>
+                (node.externalReferenceId ?? node.id).toUpperCase() ==
+                activeReference)
             .firstOrNull
             ?.id;
     final routeStatusTitle = _routeStatusTitle(panelMode);
@@ -305,13 +310,13 @@ class MapsScreenState extends MapsScreenStateBase
     if (state.targetPark != null &&
         (state.route?.isNotEmpty == true || state.multiRoute != null)) {
       return panelMode == MapPanelMode.parking
-          ? '${state.targetPark!.label} için rota hazır'
+          ? '${state.targetPark!.displayLabel} için rota hazır'
           : 'Seçili hedef için rota hazır';
     }
 
     if (state.targetPark != null) {
       return panelMode == MapPanelMode.parking
-          ? '${state.targetPark!.label} hedef olarak seçildi'
+          ? '${state.targetPark!.displayLabel} hedef olarak seçildi'
           : 'Hedef seçildi';
     }
 

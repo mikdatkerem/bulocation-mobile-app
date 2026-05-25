@@ -41,7 +41,7 @@ class _TargetGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: mode == MapPanelMode.hospital ? 1.45 : 1.58,
+        childAspectRatio: mode == MapPanelMode.hospital ? 1.7 : 1.78,
       ),
       itemCount: targets.length,
       itemBuilder: (context, index) => _buildFacilityCard(targets[index]),
@@ -51,6 +51,7 @@ class _TargetGrid extends StatelessWidget {
   Widget _buildParkingCard(MapNode target) {
     final isOccupied = target.occupancyFrom(occupancyMap);
     final isTarget = targetPark?.id == target.id;
+    final label = target.displayLabel;
 
     return InkWell(
       onTap: () => onSelected(target),
@@ -68,7 +69,7 @@ class _TargetGrid extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              target.label,
+              label,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -77,7 +78,7 @@ class _TargetGrid extends StatelessWidget {
                     ? const Color(0xFFFFFFFF)
                     : const Color(0xFF0F172A),
                 fontWeight: FontWeight.w800,
-                fontSize: target.label.length > 10 ? 11 : 13,
+                fontSize: label.length > 10 ? 11 : 13,
               ),
             ),
             const SizedBox(height: 6),
@@ -97,6 +98,7 @@ class _TargetGrid extends StatelessWidget {
 
   Widget _buildFacilityCard(MapNode target) {
     final isTarget = targetPark?.id == target.id;
+    final label = target.displayLabel;
 
     return InkWell(
       onTap: () => onSelected(target),
@@ -167,7 +169,7 @@ class _TargetGrid extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              target.label,
+              label,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -179,63 +181,10 @@ class _TargetGrid extends StatelessWidget {
                 height: 1.16,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              _subtitleForTarget(target),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isTarget
-                    ? Colors.white.withValues(alpha: 0.82)
-                    : const Color(0xFF64748B),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  String _subtitleForTarget(MapNode node) {
-    return switch (mode) {
-      MapPanelMode.hospital => switch (node.type) {
-          NodeType.entrance => 'Ana giriş ve kabul yönlendirmesi',
-          NodeType.exit => 'Bulunduğunuz kattan çıkış yönlendirmesi',
-          NodeType.elevator => 'Kat geçişi için asansör noktası',
-          NodeType.stair => 'Merdiven erişim noktası',
-          NodeType.parkingEntrance => 'Otoparktan hastane giriş bağlantısı',
-          NodeType.parkingExit => 'Hastaneden otopark çıkış bağlantısı',
-          NodeType.qr => 'QR ile doğrulanabilen başlangıç noktası',
-          NodeType.park => 'Yakındaki park ile ilişkili hedef',
-          NodeType.other => 'Hastane içindeki erişilebilir hedef noktası',
-        },
-      MapPanelMode.mall => switch (node.type) {
-          NodeType.entrance => 'AVM giriş noktası ve ana akış başlangıcı',
-          NodeType.exit => 'AVM çıkış yönlendirmesi',
-          NodeType.elevator => 'Katlar arası erişim noktası',
-          NodeType.stair => 'Merdiven bağlantısı',
-          NodeType.parkingEntrance => 'Otoparktan AVM giriş bağlantısı',
-          NodeType.parkingExit => 'AVM’den otopark bağlantısı',
-          NodeType.qr => 'QR ile açılan başlangıç veya mağaza noktası',
-          NodeType.park => 'Otopark bağlantılı hedef',
-          NodeType.other => 'Mağaza veya servis noktası',
-        },
-      MapPanelMode.other => switch (node.type) {
-          NodeType.entrance => 'Giriş yönlendirme noktası',
-          NodeType.exit => 'Çıkış yönlendirme noktası',
-          NodeType.elevator => 'Asansör ile kat geçişi',
-          NodeType.stair => 'Merdiven ile kat geçişi',
-          NodeType.parkingEntrance => 'Otopark bağlantı girişi',
-          NodeType.parkingExit => 'Otopark bağlantı çıkışı',
-          NodeType.qr => 'QR ile doğrulanabilen hedef noktası',
-          NodeType.park => 'Park bağlantılı hedef',
-          NodeType.other => 'Harita üzerindeki hedef noktası',
-        },
-      MapPanelMode.parking => '',
-    };
   }
 
   String? _badgeLabel(MapNode node) {
@@ -246,7 +195,7 @@ class _TargetGrid extends StatelessWidget {
       NodeType.stair => 'MERDİVEN',
       NodeType.parkingEntrance => 'OTOPARK',
       NodeType.parkingExit => 'OTOPARK',
-      NodeType.qr => 'QR',
+      NodeType.qr => null,
       NodeType.park => mode == MapPanelMode.mall ? 'PARK' : null,
       NodeType.other => null,
     };

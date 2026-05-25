@@ -163,6 +163,33 @@ class MapNode {
 
   bool get isPark => type == NodeType.park;
   bool get isQr => type == NodeType.qr;
+  String get displayLabel {
+    final value = label.trim();
+    final code = id.trim();
+    final reference = externalReferenceId?.trim();
+    final looksLikeCode = value.isEmpty ||
+        value.toUpperCase() == code.toUpperCase() ||
+        (reference != null &&
+            reference.isNotEmpty &&
+            value.toUpperCase() == reference.toUpperCase());
+
+    if (!looksLikeCode) {
+      return value;
+    }
+
+    return switch (type) {
+      NodeType.qr => 'Başlangıç noktası',
+      NodeType.park => code.isNotEmpty ? code : 'Park alanı',
+      NodeType.entrance => 'Giriş',
+      NodeType.exit => 'Çıkış',
+      NodeType.elevator => 'Asansör',
+      NodeType.stair => 'Merdiven',
+      NodeType.parkingEntrance => 'Otopark girişi',
+      NodeType.parkingExit => 'Otopark çıkışı',
+      NodeType.other => 'Hedef noktası',
+    };
+  }
+
   String get occupancyKey => (externalReferenceId?.trim().isNotEmpty == true
           ? externalReferenceId!.trim()
           : id)

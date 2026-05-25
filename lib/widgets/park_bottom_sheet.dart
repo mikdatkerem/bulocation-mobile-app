@@ -133,44 +133,54 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                     ),
                   ],
                 ),
-                child: ListView(
+                child: CustomScrollView(
                   controller: scrollController,
                   physics: const ClampingScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(18, 0, 18, bottom + 18),
-                  children: [
-                    const _SheetGrabber(),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      child: isCollapsed
-                          ? const SizedBox(
-                              key: ValueKey('sheet-collapsed'),
-                              height: 8,
-                            )
-                          : _SheetExpandedContent(
-                              key: const ValueKey('sheet-expanded'),
-                              presenter: presenter,
-                              targets: targets,
-                              showDestinations: _showDestinations,
-                              activeSegmentIndex: widget.activeSegmentIndex,
-                              mode: widget.mode,
-                              multiRoute: widget.multiRoute,
-                              targetPark: widget.targetPark,
-                              parkedAt: widget.parkedAt,
-                              occupancyMap: widget.occupancyMap,
-                              onSegmentTap: widget.onSegmentTap,
-                              onParkSelected: widget.onParkSelected,
-                              onNavigateToExit: widget.onNavigateToExit,
-                              onNavigateToCar: widget.onNavigateToCar,
-                              onClearNav: widget.onClearNav,
-                              onNearestToUser: widget.onNearestToUser,
-                              onNearestToHospital: widget.onNearestToHospital,
-                              onNavigationTap: () =>
-                                  setState(() => _showDestinations = false),
-                              onDestinationsTap: () =>
-                                  setState(() => _showDestinations = true),
-                            ),
+                  slivers: [
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _SheetGrabberHeaderDelegate(),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(18, 0, 18, bottom + 18),
+                      sliver: SliverToBoxAdapter(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: isCollapsed
+                              ? const SizedBox(
+                                  key: ValueKey('sheet-collapsed'),
+                                  height: 1,
+                                )
+                              : _SheetExpandedContent(
+                                  key: ValueKey(
+                                    'sheet-expanded-${widget.mode}-${widget.multiRoute?.segments.length ?? 0}',
+                                  ),
+                                  presenter: presenter,
+                                  targets: targets,
+                                  showDestinations: _showDestinations,
+                                  activeSegmentIndex: widget.activeSegmentIndex,
+                                  mode: widget.mode,
+                                  multiRoute: widget.multiRoute,
+                                  targetPark: widget.targetPark,
+                                  parkedAt: widget.parkedAt,
+                                  occupancyMap: widget.occupancyMap,
+                                  onSegmentTap: widget.onSegmentTap,
+                                  onParkSelected: widget.onParkSelected,
+                                  onNavigateToExit: widget.onNavigateToExit,
+                                  onNavigateToCar: widget.onNavigateToCar,
+                                  onClearNav: widget.onClearNav,
+                                  onNearestToUser: widget.onNearestToUser,
+                                  onNearestToHospital:
+                                      widget.onNearestToHospital,
+                                  onNavigationTap: () =>
+                                      setState(() => _showDestinations = false),
+                                  onDestinationsTap: () =>
+                                      setState(() => _showDestinations = true),
+                                ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -183,12 +193,21 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
   }
 }
 
-class _SheetGrabber extends StatelessWidget {
-  const _SheetGrabber();
+class _SheetGrabberHeaderDelegate extends SliverPersistentHeaderDelegate {
+  @override
+  double get minExtent => 52;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
+  double get maxExtent => 52;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: const Color(0xFFFFFFFF).withValues(alpha: 0.96),
       height: 52,
       child: Center(
         child: Container(
@@ -202,6 +221,10 @@ class _SheetGrabber extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
 }
 
 class _SheetExpandedContent extends StatelessWidget {
@@ -256,9 +279,6 @@ class _SheetExpandedContent extends StatelessWidget {
           mapName: presenter.mapName,
           summary: presenter.summaryText,
           title: presenter.panelTitle,
-          helperText: presenter.headerHelperText,
-          trailingIcon:
-              showDestinations ? Icons.grid_view_rounded : presenter.modeIcon,
         ),
         if (multiRoute != null && multiRoute!.segments.length > 1) ...[
           const SizedBox(height: 14),
@@ -300,7 +320,7 @@ class _SheetExpandedContent extends StatelessWidget {
         if (targetPark != null) ...[
           const SizedBox(height: 12),
           _GhostAction(
-            label: 'Rotayi temizle',
+            label: 'Rotayı temizle',
             onTap: onClearNav,
           ),
         ],

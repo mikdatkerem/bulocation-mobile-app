@@ -25,7 +25,7 @@ class _ParkBottomSheetPresenter {
 
   String get panelTitle {
     return switch (mode) {
-      MapPanelMode.parking => 'Rota ve park alanları',
+      MapPanelMode.parking => 'Park alanları',
       MapPanelMode.hospital => 'Hastane hedefleri',
       MapPanelMode.mall => 'AVM hedefleri',
       MapPanelMode.other => 'Navigasyon hedefleri',
@@ -44,24 +44,10 @@ class _ParkBottomSheetPresenter {
 
   String get summaryText {
     if (isParking) {
-      return '$emptyCount boş · $fullCount dolu · $totalCount toplam';
+      return '$emptyCount boş · $fullCount dolu';
     }
 
-    final active = activeReference ?? 'QR bekleniyor';
-    return '${destinations.length} hedef · başlangıç $active';
-  }
-
-  String get headerHelperText {
-    return switch (mode) {
-      MapPanelMode.parking =>
-        'Canlı doluluk takibi ile uygun alan ve çıkış yönlendirmesi',
-      MapPanelMode.hospital =>
-        'Bölümler, giriş bağlantıları ve kat geçişleri burada listelenir',
-      MapPanelMode.mall =>
-        'Mağaza, servis noktası ve çıkış hedefleri buradan açılır',
-      MapPanelMode.other =>
-        'Haritadaki hedefler ve bağlantı noktaları buradan yönetilir',
-    };
+    return '';
   }
 
   IconData get modeIcon {
@@ -75,7 +61,9 @@ class _ParkBottomSheetPresenter {
 
   List<MapNode> targetsForPanel() {
     if (!isParking) {
-      return destinations;
+      return destinations.where((node) => !node.isQr).toList()
+        ..sort((left, right) =>
+            compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
     }
 
     if (destinations.isEmpty) {
@@ -86,13 +74,14 @@ class _ParkBottomSheetPresenter {
     for (final park in parks) {
       nodesByKey[(park.externalReferenceId ?? park.id).toUpperCase()] = park;
     }
-    for (final destination in destinations) {
-      nodesByKey[(destination.externalReferenceId ?? destination.id).toUpperCase()] =
-          destination;
+    for (final destination in destinations.where((node) => !node.isQr)) {
+      nodesByKey[(destination.externalReferenceId ?? destination.id)
+          .toUpperCase()] = destination;
     }
 
     final nodes = nodesByKey.values.toList()
-      ..sort((left, right) => compareNodeLabelsNatural(left.label, right.label));
+      ..sort((left, right) =>
+          compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
     return nodes;
   }
 }
