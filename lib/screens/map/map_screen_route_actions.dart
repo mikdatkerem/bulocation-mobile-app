@@ -129,8 +129,12 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
         });
       }
 
-      final result =
-          await _pathfinder.findBestExitRoute(fromReferenceId: startReference);
+      final result = await _pathfinder.findBestExitRoute(
+        fromReferenceId: startReference,
+        exitTarget: _mapPanelMode == MapPanelMode.parking
+            ? ExitTargetType.parking
+            : ExitTargetType.facility,
+      );
       if (result == null || result.segments.isEmpty) {
         if (mounted) {
           setState(_clearActivity);

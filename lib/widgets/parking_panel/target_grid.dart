@@ -189,12 +189,12 @@ class _TargetGrid extends StatelessWidget {
 
   String? _badgeLabel(MapNode node) {
     return switch (node.type) {
-      NodeType.entrance => 'GİRİŞ',
-      NodeType.exit => 'ÇIKIŞ',
+      NodeType.entrance => 'BİNA',
+      NodeType.exit => 'BİNA',
       NodeType.elevator => 'ASANSÖR',
       NodeType.stair => 'MERDİVEN',
-      NodeType.parkingEntrance => 'OTOPARK',
-      NodeType.parkingExit => 'OTOPARK',
+      NodeType.parkingEntrance => 'ARAÇ GİRİŞ',
+      NodeType.parkingExit => 'ARAÇ ÇIKIŞ',
       NodeType.qr => null,
       NodeType.park => mode == MapPanelMode.mall ? 'PARK' : null,
       NodeType.other => null,

@@ -180,12 +180,12 @@ class MapNode {
     return switch (type) {
       NodeType.qr => 'Başlangıç noktası',
       NodeType.park => code.isNotEmpty ? code : 'Park alanı',
-      NodeType.entrance => 'Giriş',
-      NodeType.exit => 'Çıkış',
+      NodeType.entrance => 'Bina girişi',
+      NodeType.exit => 'Bina çıkışı',
       NodeType.elevator => 'Asansör',
       NodeType.stair => 'Merdiven',
-      NodeType.parkingEntrance => 'Otopark girişi',
-      NodeType.parkingExit => 'Otopark çıkışı',
+      NodeType.parkingEntrance => 'Otopark araç girişi',
+      NodeType.parkingExit => 'Otopark araç çıkışı',
       NodeType.other => 'Hedef noktası',
     };
   }

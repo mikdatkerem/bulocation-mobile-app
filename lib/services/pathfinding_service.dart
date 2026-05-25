@@ -6,6 +6,16 @@ import '../core/api_client.dart';
 import '../models/exceptions.dart';
 import '../models/graph_data.dart';
 
+enum ExitTargetType {
+  any('any'),
+  facility('facility'),
+  parking('parking');
+
+  const ExitTargetType(this.apiValue);
+
+  final String apiValue;
+}
+
 class PathfindingService {
   PathfindingService({Dio? dio}) : _dio = dio ?? ApiClient.instance;
 
@@ -117,6 +127,7 @@ class PathfindingService {
   Future<MultiRouteResult?> findBestExitRoute({
     required String fromReferenceId,
     bool accessibleOnly = false,
+    ExitTargetType exitTarget = ExitTargetType.any,
   }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -124,6 +135,7 @@ class PathfindingService {
         queryParameters: {
           'fromReferenceId': fromReferenceId,
           'accessibleOnly': accessibleOnly,
+          'exitTarget': exitTarget.apiValue,
         },
       );
       return MultiRouteResult.fromJson(response.data!);

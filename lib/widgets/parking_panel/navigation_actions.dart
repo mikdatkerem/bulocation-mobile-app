@@ -120,7 +120,7 @@ class _NavigationActions extends StatelessWidget {
         ),
         _ActionData(
           icon: Icons.logout_rounded,
-          title: 'Çıkışa git',
+          title: 'Otopark çıkışına git',
           enabled: true,
           onTap: onNavigateToExit,
         ),
@@ -137,7 +137,7 @@ class _NavigationActions extends StatelessWidget {
       ),
       _ActionData(
         icon: Icons.logout_rounded,
-        title: 'Çıkışa git',
+        title: 'Bina çıkışına git',
         enabled: true,
         onTap: onNavigateToExit,
       ),
