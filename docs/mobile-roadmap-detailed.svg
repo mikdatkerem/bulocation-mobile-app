@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1700" viewBox="0 0 2400 1700" role="img" aria-labelledby="title desc">
+  <title id="title">Bulocation Mobile Detailed Roadmap</title>
+  <desc id="desc">Bulocation mobil uygulaması için detaylı faz, iş akışı, kabul kriteri ve risk yol haritası.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060814"/>
+      <stop offset="0.46" stop-color="#111634"/>
+      <stop offset="1" stop-color="#080A11"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.045"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8B5CF6"/>
+      <stop offset="0.55" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="shadow" x="-18%" y="-18%" width="136%" height="136%">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="22" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { font: 900 76px 'Manrope', 'Segoe UI', sans-serif; letter-spacing: -2.6px; fill: #F8FAFC; }
+      .subtitle { font: 600 24px 'Inter', 'Segoe UI', sans-serif; fill: #AEB8CC; }
+      .kicker { font: 900 15px 'Inter', 'Segoe UI', sans-serif; letter-spacing: 4.4px; fill: #C4B5FD; }
+      .phase { font: 900 27px 'Manrope', 'Segoe UI', sans-serif; fill: #FFFFFF; }
+      .lane-title { font: 900 22px 'Manrope', 'Segoe UI', sans-serif; fill: #F8FAFC; }
+      .body { font: 650 18px 'Inter', 'Segoe UI', sans-serif; fill: #D9E0EC; }
+      .small { font: 700 15px 'Inter', 'Segoe UI', sans-serif; fill: #A7B0C3; }
+      .muted { font: 600 15px 'Inter', 'Segoe UI', sans-serif; fill: #93A0B6; }
+      .micro { font: 800 13px 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.4px; fill: #DDE4F3; }
+      .metric { font: 900 23px 'Manrope', 'Segoe UI', sans-serif; fill: #FFFFFF; }
+      .pill { font: 900 13px 'Inter', 'Segoe UI', sans-serif; letter-spacing: 1.5px; fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <rect width="2400" height="1700" fill="url(#bg)"/>
+  <g opacity="0.22">
+    <path d="M0 180H2400M0 300H2400M0 420H2400M0 540H2400M0 660H2400M0 780H2400M0 900H2400M0 1020H2400M0 1140H2400M0 1260H2400M0 1380H2400M0 1500H2400M0 1620H2400" stroke="#FFFFFF" stroke-opacity="0.10"/>
+    <path d="M150 0V1700M300 0V1700M450 0V1700M600 0V1700M750 0V1700M900 0V1700M1050 0V1700M1200 0V1700M1350 0V1700M1500 0V1700M1650 0V1700M1800 0V1700M1950 0V1700M2100 0V1700M2250 0V1700" stroke="#FFFFFF" stroke-opacity="0.07"/>
+  </g>
+  <circle cx="2050" cy="130" r="300" fill="#6366F1" opacity="0.14" filter="url(#glow)"/>
+  <circle cx="260" cy="1460" r="290" fill="#8B5CF6" opacity="0.12" filter="url(#glow)"/>
+
+  <g transform="translate(86 78)">
+    <text class="kicker" x="0" y="0">BULOCATION MOBILE ROADMAP</text>
+    <text class="title" x="0" y="82">Detaylı ürün ve release yol haritası</text>
+    <text class="subtitle" x="0" y="128">Kapsam: Flutter mobil uygulama • Auth/session • QR scanner • indoor map • route engine • canlı park doluluğu • store release</text>
+  </g>
+
+  <g transform="translate(86 220)" filter="url(#shadow)">
+    <rect width="520" height="178" rx="30" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <rect x="28" y="28" width="104" height="34" rx="17" fill="url(#green)" fill-opacity="0.9"/>
+    <text class="pill" x="52" y="51">MEVCUT</text>
+    <text class="metric" x="28" y="96">Ürün iskeleti hazır</text>
+    <text class="small" x="28" y="130">Auth, QR, manuel seçim, recent maps,</text>
+    <text class="small" x="28" y="154">harita, rota ve SignalR akışı çalışıyor.</text>
+  </g>
+
+  <g transform="translate(636 220)" filter="url(#shadow)">
+    <rect width="520" height="178" rx="30" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <rect x="28" y="28" width="112" height="34" rx="17" fill="#6366F1"/>
+    <text class="pill" x="52" y="51">TEMİZ</text>
+    <text class="metric" x="28" y="96">Doğrulama geçti</text>
+    <text class="small" x="28" y="130">flutter analyze temiz.</text>
+    <text class="small" x="28" y="154">flutter test: 11/11 mevcut test geçti.</text>
+  </g>
+
+  <g transform="translate(1186 220)" filter="url(#shadow)">
+    <rect width="520" height="178" rx="30" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <rect x="28" y="28" width="108" height="34" rx="17" fill="#F97316"/>
+    <text class="pill" x="50" y="51">RİSK</text>
+    <text class="metric" x="28" y="96">Cihaz QA eksikliği</text>
+    <text class="small" x="28" y="130">Kamera, sheet, pan/zoom ve rota geçişi</text>
+    <text class="small" x="28" y="154">gerçek cihaz matrisiyle sertleşmeli.</text>
+  </g>
+
+  <g transform="translate(1736 220)" filter="url(#shadow)">
+    <rect width="578" height="178" rx="30" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <rect x="28" y="28" width="154" height="34" rx="17" fill="#0EA5E9"/>
+    <text class="pill" x="53" y="51">NORTH STAR</text>
+    <text class="metric" x="28" y="96">QR → doğru harita → rota</text>
+    <text class="small" x="28" y="130">Kullanıcı bulunduğu noktadan hedefe</text>
+    <text class="small" x="28" y="154">kesintisiz ve anlaşılır şekilde ulaşmalı.</text>
+  </g>
+
+  <g transform="translate(86 455)">
+    <text class="kicker" x="0" y="0">12 HAFTALIK DETAY PLANI</text>
+    <text class="subtitle" x="0" y="40">Fazlar sprint bazlı işlere bölündü. Her satır mobil uygulamanın ayrı bir çalışma hattını gösterir.</text>
+  </g>
+
+  <g transform="translate(365 535)" filter="url(#shadow)">
+    <rect width="450" height="88" rx="26" fill="#111827" stroke="#FFFFFF" stroke-opacity="0.14"/>
+    <text class="micro" x="28" y="32">FAZ 1 • 0-2 HAFTA • P0</text>
+    <text class="phase" x="28" y="65">Release hazırlığı</text>
+  </g>
+  <g transform="translate(839 535)" filter="url(#shadow)">
+    <rect width="450" height="88" rx="26" fill="#111827" stroke="#FFFFFF" stroke-opacity="0.14"/>
+    <text class="micro" x="28" y="32">FAZ 2 • 2-5 HAFTA • P0/P1</text>
+    <text class="phase" x="28" y="65">Navigasyon güveni</text>
+  </g>
+  <g transform="translate(1313 535)" filter="url(#shadow)">
+    <rect width="450" height="88" rx="26" fill="#111827" stroke="#FFFFFF" stroke-opacity="0.14"/>
+    <text class="micro" x="28" y="32">FAZ 3 • 5-8 HAFTA • P1</text>
+    <text class="phase" x="28" y="65">Canlı veri &amp; güvenlik</text>
+  </g>
+  <g transform="translate(1787 535)" filter="url(#shadow)">
+    <rect width="450" height="88" rx="26" fill="#111827" stroke="#FFFFFF" stroke-opacity="0.14"/>
+    <text class="micro" x="28" y="32">FAZ 4 • 8-12 HAFTA • P1/P2</text>
+    <text class="phase" x="28" y="65">Mağaza &amp; ölçek</text>
+  </g>
+
+  <g transform="translate(86 660)">
+    <rect width="2148" height="760" rx="34" fill="#FFFFFF" fill-opacity="0.045" stroke="#FFFFFF" stroke-opacity="0.10"/>
+    <path d="M260 0V760M734 0V760M1208 0V760M1682 0V760" stroke="#FFFFFF" stroke-opacity="0.10"/>
+    <path d="M0 190H2148M0 380H2148M0 570H2148" stroke="#FFFFFF" stroke-opacity="0.10"/>
+
+    <g transform="translate(28 42)">
+      <rect width="204" height="42" rx="21" fill="#6366F1" fill-opacity="0.18" stroke="#818CF8" stroke-opacity="0.38"/>
+      <text class="lane-title" x="18" y="29">UX &amp; Onboarding</text>
+    </g>
+    <g transform="translate(28 232)">
+      <rect width="204" height="42" rx="21" fill="#6366F1" fill-opacity="0.18" stroke="#818CF8" stroke-opacity="0.38"/>
+      <text class="lane-title" x="18" y="29">Map Runtime</text>
+    </g>
+    <g transform="translate(28 422)">
+      <rect width="204" height="42" rx="21" fill="#6366F1" fill-opacity="0.18" stroke="#818CF8" stroke-opacity="0.38"/>
+      <text class="lane-title" x="18" y="29">Security/Data</text>
+    </g>
+    <g transform="translate(28 612)">
+      <rect width="204" height="42" rx="21" fill="#6366F1" fill-opacity="0.18" stroke="#818CF8" stroke-opacity="0.38"/>
+      <text class="lane-title" x="18" y="29">QA &amp; Release</text>
+    </g>
+
+    <g transform="translate(288 32)">
+      <text class="body" x="0" y="0">• Production/staging dart-define setleri</text>
+      <text class="body" x="0" y="34">• Permission ve hata metinlerini sadeleştir</text>
+      <text class="body" x="0" y="68">• Login/register/forgot copy pass</text>
+      <text class="muted" x="0" y="116">Çıkış: release build kullanıcıya teknik hata sızdırmaz.</text>
+    </g>
+    <g transform="translate(762 32)">
+      <text class="body" x="0" y="0">• QR scanner lifecycle cihaz matrisi</text>
+      <text class="body" x="0" y="34">• Kat değişiminde rota anlatımı</text>
+      <text class="body" x="0" y="68">• Manuel seçim + recent maps akışı</text>
+      <text class="muted" x="0" y="116">Çıkış: kullanıcı nerede kaldığını kaybetmez.</text>
+    </g>
+    <g transform="translate(1236 32)">
+      <text class="body" x="0" y="0">• Reconnect/stale data bildirim dili</text>
+      <text class="body" x="0" y="34">• Canlı park durumunda güven sinyali</text>
+      <text class="body" x="0" y="68">• Uyarı ve bilgi toast standardı</text>
+      <text class="muted" x="0" y="116">Çıkış: canlı veri yoksa uygulama bunu açık söyler.</text>
+    </g>
+    <g transform="translate(1710 32)">
+      <text class="body" x="0" y="0">• Store ekran görüntüleri ve kısa demo akışı</text>
+      <text class="body" x="0" y="34">• Erişilebilirlik: kontrast, font, dokunma alanı</text>
+      <text class="body" x="0" y="68">• İlk açılış onboarding sadeleştirme</text>
+      <text class="muted" x="0" y="116">Çıkış: mağaza önizlemesi ürünü doğru anlatır.</text>
+    </g>
+
+    <g transform="translate(288 222)">
+      <text class="body" x="0" y="0">• Release build smoke: map asset, camera, route</text>
+      <text class="body" x="0" y="34">• Harita resmi ve node koordinat sanity check</text>
+      <text class="body" x="0" y="68">• Büyük haritalar için ilk render ölçümü</text>
+      <text class="muted" x="0" y="116">Çıkış: prod build debug build ile aynı davranır.</text>
+    </g>
+    <g transform="translate(762 222)">
+      <text class="body" x="0" y="0">• Pan/zoom/sheet regression suite</text>
+      <text class="body" x="0" y="34">• QR re-scan ile rota koruma</text>
+      <text class="body" x="0" y="68">• Otopark/hastane/AVM hedef ayrımı</text>
+      <text class="body" x="0" y="102">• Hedef isimlendirme: QR kodu değil okunur ad</text>
+      <text class="muted" x="0" y="146">Çıkış: harita hareketi ve sheet her modda stabil.</text>
+    </g>
+    <g transform="translate(1236 222)">
+      <text class="body" x="0" y="0">• Occupancy → overlay eşleşmesini sertleştir</text>
+      <text class="body" x="0" y="34">• Çok katlı rota segment durumları</text>
+      <text class="body" x="0" y="68">• Park/hospital quick action doğrulaması</text>
+      <text class="muted" x="0" y="116">Çıkış: canlı veri ve rota görseli çelişmez.</text>
+    </g>
+    <g transform="translate(1710 222)">
+      <text class="body" x="0" y="0">• Map viewport performans profiling</text>
+      <text class="body" x="0" y="34">• Recent map cache ve zayıf ağ fallback</text>
+      <text class="body" x="0" y="68">• Büyük kurum listelerinde hızlı arama</text>
+      <text class="muted" x="0" y="116">Çıkış: düşük cihazda bile harita hissi akıcı.</text>
+    </g>
+
+    <g transform="translate(288 412)">
+      <text class="body" x="0" y="0">• Prod secret sadece dart-define ile gelir</text>
+      <text class="body" x="0" y="34">• JWT refresh single-flight tekrar testi</text>
+      <text class="body" x="0" y="68">• 401/403/timeout kullanıcı mesaj standardı</text>
+      <text class="muted" x="0" y="116">Çıkış: token hataları kullanıcıyı kilitlemez.</text>
+    </g>
+    <g transform="translate(762 412)">
+      <text class="body" x="0" y="0">• Invalid QR ve yetkisiz map senaryoları</text>
+      <text class="body" x="0" y="34">• Kamera izni reddi/sonradan açma akışı</text>
+      <text class="body" x="0" y="68">• App-secret beklentisi dokümante edilir</text>
+      <text class="muted" x="0" y="116">Çıkış: app-secret güvenlik sınırı sanılmaz.</text>
+    </g>
+    <g transform="translate(1236 412)">
+      <text class="body" x="0" y="0">• Short-lived SignalR access token</text>
+      <text class="body" x="0" y="34">• Reconnect backoff + token yenileme</text>
+      <text class="body" x="0" y="68">• Occupancy freshness timestamp</text>
+      <text class="muted" x="0" y="116">Çıkış: canlı kanal korunur ve eskime görünür.</text>
+    </g>
+    <g transform="translate(1710 412)">
+      <text class="body" x="0" y="0">• Privacy review: kamera, konum, hesap verisi</text>
+      <text class="body" x="0" y="34">• API rate-limit beklentileriyle uyum</text>
+      <text class="body" x="0" y="68">• Loglarda token/secret redaction</text>
+      <text class="muted" x="0" y="116">Çıkış: store ve prod güvenlik kontrolü hazır.</text>
+    </g>
+
+    <g transform="translate(288 602)">
+      <text class="body" x="0" y="0">• Android signing/keystore checklist</text>
+      <text class="body" x="0" y="34">• CI: flutter analyze + test + build apk/aab</text>
+      <text class="body" x="0" y="68">• Release smoke checklist dosyası</text>
+      <text class="muted" x="0" y="116">Çıkış: tek komutla güvenli release adayı.</text>
+    </g>
+    <g transform="translate(762 602)">
+      <text class="body" x="0" y="0">• Emulator smoke: login → QR → map → route</text>
+      <text class="body" x="0" y="34">• Map/sheet widget testleri</text>
+      <text class="body" x="0" y="68">• Service/model test kapsamını büyüt</text>
+      <text class="muted" x="0" y="116">Çıkış: regressions commit öncesi yakalanır.</text>
+    </g>
+    <g transform="translate(1236 602)">
+      <text class="body" x="0" y="0">• Crash/error reporting entegrasyonu</text>
+      <text class="body" x="0" y="34">• Önemli metrikler: QR açılış, route success</text>
+      <text class="body" x="0" y="68">• Ağ ve SignalR hata panosu</text>
+      <text class="muted" x="0" y="116">Çıkış: sorun kullanıcıdan önce görünür.</text>
+    </g>
+    <g transform="translate(1710 602)">
+      <text class="body" x="0" y="0">• Dependency upgrade audit</text>
+      <text class="body" x="0" y="34">• Play Store/App Store release checklist</text>
+      <text class="body" x="0" y="68">• Beta test ve geri bildirim döngüsü</text>
+      <text class="muted" x="0" y="116">Çıkış: yayınlanabilir ve sürdürülebilir mobil ürün.</text>
+    </g>
+  </g>
+
+  <g transform="translate(86 1460)" filter="url(#shadow)">
+    <rect width="700" height="160" rx="32" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <text class="kicker" x="34" y="38">KABUL KRİTERLERİ</text>
+    <text class="body" x="34" y="78">• QR → doğru harita açılışı hedefi: 3 saniye altı</text>
+    <text class="body" x="34" y="110">• Kat değişiminde rota korunur, kullanıcı tekrar rota seçmez</text>
+    <text class="body" x="34" y="142">• Kamera, sheet, pan/zoom kritik cihazlarda sorunsuz</text>
+  </g>
+
+  <g transform="translate(836 1460)" filter="url(#shadow)">
+    <rect width="700" height="160" rx="32" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <text class="kicker" x="34" y="38">KRİTİK BAĞIMLILIKLAR</text>
+    <text class="body" x="34" y="78">• API: published map, short-lived realtime token, occupancy freshness</text>
+    <text class="body" x="34" y="110">• Admin: node tipleri, okunur hedef adları, map asset tutarlılığı</text>
+    <text class="body" x="34" y="142">• Cloudflare: route düzeni, HTTPS, header ve cache davranışı</text>
+  </g>
+
+  <g transform="translate(1586 1460)" filter="url(#shadow)">
+    <rect width="728" height="160" rx="32" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <text class="kicker" x="34" y="38">RELEASE TANIMI</text>
+    <text class="body" x="34" y="78">• analyze/test/build CI yeşil, release signing tamam</text>
+    <text class="body" x="34" y="110">• Canlı veri yoksa kullanıcıya doğru ve sakin durum gösterilir</text>
+    <text class="body" x="34" y="142">• Crash reporting ve beta feedback döngüsü aktif</text>
+  </g>
+</svg>
