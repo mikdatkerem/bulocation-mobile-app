@@ -46,6 +46,15 @@ class _ParkBottomSheetPresenter {
     };
   }
 
+  String get searchHintText {
+    return switch (mode) {
+      MapPanelMode.parking => 'Park, giriş veya çıkış ara',
+      MapPanelMode.hospital => 'Bölüm, giriş veya asansör ara',
+      MapPanelMode.mall => 'Mağaza, giriş veya kat geçişi ara',
+      MapPanelMode.other => 'Hedef, giriş veya çıkış ara',
+    };
+  }
+
   String get summaryText {
     if (isParking) {
       return '$emptyCount boş · $fullCount dolu';
@@ -85,9 +94,12 @@ class _ParkBottomSheetPresenter {
     return nodesByKey.values.toList()..sort(_compareTargets);
   }
 
-  List<TargetGroup> targetGroupsForPanel() {
+  List<TargetGroup> targetGroupsForPanel({String query = ''}) {
+    final normalizedQuery = normalizeSearchText(query);
     final grouped = <String, TargetGroup>{};
-    for (final node in targetsForPanel()) {
+    for (final node in targetsForPanel().where(
+      (node) => _matchesQuery(node, normalizedQuery),
+    )) {
       final floorId = node.floorId ?? currentFloorId ?? 'current';
       final floorName = node.floorName ?? currentFloorName ?? 'Bu kat';
       final isCurrent = _isCurrentFloor(floorId, floorName);
@@ -119,6 +131,22 @@ class _ParkBottomSheetPresenter {
     }
 
     return groups;
+  }
+
+  bool _matchesQuery(MapNode node, String normalizedQuery) {
+    if (normalizedQuery.isEmpty) {
+      return true;
+    }
+
+    final searchable = [
+      node.displayLabel,
+      node.label,
+      node.id,
+      node.externalReferenceId ?? '',
+      node.floorName ?? '',
+    ].map(normalizeSearchText).join(' ');
+
+    return searchable.contains(normalizedQuery);
   }
 
   int _compareTargets(MapNode left, MapNode right) {

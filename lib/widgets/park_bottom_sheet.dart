@@ -75,6 +75,17 @@ class ParkBottomSheet extends StatefulWidget {
 class _ParkBottomSheetState extends State<ParkBottomSheet> {
   bool _showDestinations = false;
   double _extent = ParkBottomSheet.peekSize;
+  String _targetSearchQuery = '';
+
+  @override
+  void didUpdateWidget(covariant ParkBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.mode != widget.mode ||
+        oldWidget.currentFloorId != widget.currentFloorId ||
+        oldWidget.mapName != widget.mapName) {
+      _targetSearchQuery = '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +102,14 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
       parks: widget.parks,
       destinations: widget.destinations,
     );
-    final targetGroups = presenter.targetGroupsForPanel();
+    final allTargetGroups = presenter.targetGroupsForPanel();
+    final targetGroups = presenter.targetGroupsForPanel(
+      query: _showDestinations ? _targetSearchQuery : '',
+    );
 
-    if (!presenter.isParking && _showDestinations && targetGroups.isEmpty) {
+    if (!presenter.isParking && _showDestinations && allTargetGroups.isEmpty) {
       _showDestinations = false;
+      _targetSearchQuery = '';
     }
 
     return NotificationListener<DraggableScrollableNotification>(
@@ -161,12 +176,14 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                                 )
                               : _SheetExpandedContent(
                                   key: ValueKey(
-                                    'sheet-expanded-${widget.mode}-${widget.multiRoute?.segments.length ?? 0}',
+                                    'sheet-expanded-${widget.mode}-${widget.multiRoute?.segments.length ?? 0}-${_showDestinations ? 'targets' : 'actions'}',
                                   ),
                                   presenter: presenter,
                                   targetGroups: targetGroups,
+                                  hasTargets: allTargetGroups.isNotEmpty,
                                   actionNodes: presenter.targetsForPanel(),
                                   showDestinations: _showDestinations,
+                                  targetSearchQuery: _targetSearchQuery,
                                   activeSegmentIndex: widget.activeSegmentIndex,
                                   mode: widget.mode,
                                   multiRoute: widget.multiRoute,
@@ -185,6 +202,12 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                                       setState(() => _showDestinations = false),
                                   onDestinationsTap: () =>
                                       setState(() => _showDestinations = true),
+                                  onTargetSearchChanged: (value) => setState(
+                                    () => _targetSearchQuery = value,
+                                  ),
+                                  onTargetSearchCleared: () => setState(
+                                    () => _targetSearchQuery = '',
+                                  ),
                                 ),
                         ),
                       ),
@@ -316,6 +339,94 @@ class _SelectedTargetBanner extends StatelessWidget {
   }
 }
 
+class _TargetSearchField extends StatefulWidget {
+  const _TargetSearchField({
+    required this.query,
+    required this.hintText,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final String query;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  State<_TargetSearchField> createState() => _TargetSearchFieldState();
+}
+
+class _TargetSearchFieldState extends State<_TargetSearchField> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.query,
+  );
+
+  @override
+  void didUpdateWidget(covariant _TargetSearchField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.query == _controller.text) {
+      return;
+    }
+
+    _controller.value = TextEditingValue(
+      text: widget.query,
+      selection: TextSelection.collapsed(offset: widget.query.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      key: const ValueKey('target-search-field'),
+      controller: _controller,
+      onChanged: widget.onChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: widget.hintText,
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+          color: Color(0xFF6366F1),
+        ),
+        suffixIcon: widget.query.trim().isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Aramayı temizle',
+                onPressed: widget.onClear,
+                icon: const Icon(Icons.close_rounded),
+              ),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(
+            color: Color(0xFF6366F1),
+            width: 1.3,
+          ),
+        ),
+      ),
+      style: const TextStyle(
+        color: Color(0xFF0F172A),
+        fontSize: 14.5,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
 class _SheetGrabberHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 52;
@@ -355,8 +466,10 @@ class _SheetExpandedContent extends StatelessWidget {
     super.key,
     required this.presenter,
     required this.targetGroups,
+    required this.hasTargets,
     required this.actionNodes,
     required this.showDestinations,
+    required this.targetSearchQuery,
     required this.activeSegmentIndex,
     required this.mode,
     required this.multiRoute,
@@ -372,12 +485,16 @@ class _SheetExpandedContent extends StatelessWidget {
     required this.onNearestToHospital,
     required this.onNavigationTap,
     required this.onDestinationsTap,
+    required this.onTargetSearchChanged,
+    required this.onTargetSearchCleared,
   });
 
   final _ParkBottomSheetPresenter presenter;
   final List<TargetGroup> targetGroups;
+  final bool hasTargets;
   final List<MapNode> actionNodes;
   final bool showDestinations;
+  final String targetSearchQuery;
   final int activeSegmentIndex;
   final MapPanelMode mode;
   final MultiRouteResult? multiRoute;
@@ -393,6 +510,8 @@ class _SheetExpandedContent extends StatelessWidget {
   final VoidCallback onNearestToHospital;
   final VoidCallback onNavigationTap;
   final VoidCallback onDestinationsTap;
+  final ValueChanged<String> onTargetSearchChanged;
+  final VoidCallback onTargetSearchCleared;
 
   @override
   Widget build(BuildContext context) {
@@ -444,12 +563,26 @@ class _SheetExpandedContent extends StatelessWidget {
             onNavigateToExit: onNavigateToExit,
           )
         else
-          _TargetGrid(
-            mode: mode,
-            groups: targetGroups,
-            targetPark: targetPark,
-            occupancyMap: occupancyMap,
-            onSelected: onParkSelected,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _TargetSearchField(
+                query: targetSearchQuery,
+                hintText: presenter.searchHintText,
+                onChanged: onTargetSearchChanged,
+                onClear: onTargetSearchCleared,
+              ),
+              const SizedBox(height: 14),
+              _TargetGrid(
+                mode: mode,
+                groups: targetGroups,
+                hasTargets: hasTargets,
+                query: targetSearchQuery,
+                targetPark: targetPark,
+                occupancyMap: occupancyMap,
+                onSelected: onParkSelected,
+              ),
+            ],
           ),
         if (targetPark != null) ...[
           const SizedBox(height: 12),

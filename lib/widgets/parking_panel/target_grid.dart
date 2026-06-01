@@ -4,6 +4,8 @@ class _TargetGrid extends StatelessWidget {
   const _TargetGrid({
     required this.mode,
     required this.groups,
+    required this.hasTargets,
+    required this.query,
     required this.targetPark,
     required this.occupancyMap,
     required this.onSelected,
@@ -11,6 +13,8 @@ class _TargetGrid extends StatelessWidget {
 
   final MapPanelMode mode;
   final List<TargetGroup> groups;
+  final bool hasTargets;
+  final String query;
   final MapNode? targetPark;
   final Map<String, bool> occupancyMap;
   final void Function(MapNode) onSelected;
@@ -20,7 +24,10 @@ class _TargetGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (groups.isEmpty) {
-      return const _EmptyTargetHint();
+      return _EmptyTargetHint(
+        hasTargets: hasTargets,
+        query: query,
+      );
     }
 
     return Column(
@@ -353,7 +360,13 @@ class _TargetGroupHeader extends StatelessWidget {
 }
 
 class _EmptyTargetHint extends StatelessWidget {
-  const _EmptyTargetHint();
+  const _EmptyTargetHint({
+    required this.hasTargets,
+    required this.query,
+  });
+
+  final bool hasTargets;
+  final String query;
 
   @override
   Widget build(BuildContext context) {
@@ -364,9 +377,9 @@ class _EmptyTargetHint extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: const Text(
-        'Bu haritada seçilebilir hedef bulunamadı.',
-        style: TextStyle(
+      child: Text(
+        _message,
+        style: const TextStyle(
           color: Color(0xFF64748B),
           fontSize: 13.5,
           height: 1.4,
@@ -374,5 +387,13 @@ class _EmptyTargetHint extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String get _message {
+    if (!hasTargets) {
+      return 'Bu haritada seçilebilir hedef bulunamadı.';
+    }
+
+    return '"${query.trim()}" için sonuç bulunamadı. Farklı bir hedef adı, kod veya kat adı deneyin.';
   }
 }
