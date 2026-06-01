@@ -30,65 +30,78 @@ class _AmbientGlow extends StatelessWidget {
 }
 
 class _QrStage extends StatelessWidget {
-  const _QrStage({required this.pulse});
+  const _QrStage({
+    required this.pulse,
+    required this.onTap,
+  });
 
   final Animation<double> pulse;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final scanOffset = 22 + (pulse.value * 72);
 
-    return SizedBox(
-      height: 194,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 184,
-            height: 184,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.98),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: const Color(0x336366F1), width: 1.4),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x140F172A),
-                  blurRadius: 24,
-                  offset: Offset(0, 18),
+    return Semantics(
+      button: true,
+      label: 'QR okut',
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 194,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 184,
+                height: 184,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.98),
+                  borderRadius: BorderRadius.circular(32),
+                  border:
+                      Border.all(color: const Color(0x336366F1), width: 1.4),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x140F172A),
+                      blurRadius: 24,
+                      offset: Offset(0, 18),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                const Positioned.fill(
-                  child: Padding(
-                    padding: EdgeInsets.all(22),
-                    child: _QrFrame(),
-                  ),
-                ),
-                Positioned(
-                  left: 26,
-                  right: 26,
-                  top: scanOffset,
-                  child: Container(
-                    height: 3,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0x0022D3EE),
-                          Color(0xAA22D3EE),
-                          Color(0xAA6366F1),
-                          Color(0x0022D3EE),
-                        ],
+                child: Stack(
+                  children: [
+                    const Positioned.fill(
+                      child: Padding(
+                        padding: EdgeInsets.all(22),
+                        child: _QrFrame(),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      left: 26,
+                      right: 26,
+                      top: scanOffset,
+                      child: Container(
+                        height: 3,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0x0022D3EE),
+                              Color(0xAA22D3EE),
+                              Color(0xAA6366F1),
+                              Color(0x0022D3EE),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

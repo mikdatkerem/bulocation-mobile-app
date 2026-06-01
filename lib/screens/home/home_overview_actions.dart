@@ -147,7 +147,12 @@ class _HeroScene extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Center(child: _QrStage(pulse: pulse)),
+                  Center(
+                    child: _QrStage(
+                      pulse: pulse,
+                      onTap: onPrimaryTap,
+                    ),
+                  ),
                   const Spacer(),
                   _PrimaryAction(
                     title: 'QR ile başla',

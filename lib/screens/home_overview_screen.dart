@@ -45,6 +45,7 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
   final _facilityService = FacilityService();
   final _recentMapsStorage = RecentMapsStorage();
   late final PageController _pageController = PageController();
+  late final ScrollController _manualScrollController = ScrollController();
 
   late final AnimationController _pulseController = AnimationController(
     vsync: this,
@@ -61,6 +62,8 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
   List<OrganizationSummary> _organizations = const [];
   List<OrganizationHierarchy> _hierarchies = const [];
   List<RecentMapEntry> _recentMaps = const [];
+  double? _manualPagePointerStartY;
+  bool _manualPagePointerStartedAtTop = false;
 
   @override
   void initState() {
@@ -73,6 +76,7 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
   void dispose() {
     _pulseController.dispose();
     _pageController.dispose();
+    _manualScrollController.dispose();
     super.dispose();
   }
 
@@ -268,40 +272,73 @@ class HomeOverviewScreenState extends State<HomeOverviewScreen>
                           );
                         },
                       ),
-                      SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 136),
-                        child: Column(
-                          children: [
-                            MapSelectionPanel(
-                              organizations: _organizations,
-                              selectedOrganizationId: _selectedOrganizationId,
-                              sites: _availableSites,
-                              selectedSiteId: _selectedSiteId,
-                              buildings: _availableBuildings,
-                              selectedBuildingId: _selectedBuildingId,
-                              floors: _availableFloors,
-                              selectedFloorId: _selectedFloorId,
-                              recentOrganizationIds: _recentOrganizationIds,
-                              recentSiteIds: _recentSiteIds,
-                              recentBuildingIds: _recentBuildingIds,
-                              recentFloorIds: _recentFloorIds,
-                              onOrganizationChanged: _onOrganizationChanged,
-                              onSiteChanged: _onSiteChanged,
-                              onBuildingChanged: _onBuildingChanged,
-                              onFloorChanged: _onFloorChanged,
-                              alignment: Alignment.topCenter,
-                            ),
-                            _RecentMapsSection(
-                              items: _visibleRecentMaps,
-                              onOpen: _openRecentMap,
-                            ),
-                          ],
+                      Listener(
+                        onPointerDown: _handleManualPagePointerDown,
+                        onPointerUp: _handleManualPagePointerUp,
+                        onPointerCancel: (_) => _resetManualPagePointer(),
+                        child: SingleChildScrollView(
+                          controller: _manualScrollController,
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 136),
+                          child: Column(
+                            children: [
+                              MapSelectionPanel(
+                                organizations: _organizations,
+                                selectedOrganizationId: _selectedOrganizationId,
+                                sites: _availableSites,
+                                selectedSiteId: _selectedSiteId,
+                                buildings: _availableBuildings,
+                                selectedBuildingId: _selectedBuildingId,
+                                floors: _availableFloors,
+                                selectedFloorId: _selectedFloorId,
+                                recentOrganizationIds: _recentOrganizationIds,
+                                recentSiteIds: _recentSiteIds,
+                                recentBuildingIds: _recentBuildingIds,
+                                recentFloorIds: _recentFloorIds,
+                                onOrganizationChanged: _onOrganizationChanged,
+                                onSiteChanged: _onSiteChanged,
+                                onBuildingChanged: _onBuildingChanged,
+                                onFloorChanged: _onFloorChanged,
+                                alignment: Alignment.topCenter,
+                              ),
+                              _RecentMapsSection(
+                                items: _visibleRecentMaps,
+                                onOpen: _openRecentMap,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
       ),
     );
+  }
+
+  void _handleManualPagePointerDown(PointerDownEvent event) {
+    _manualPagePointerStartY = event.position.dy;
+    _manualPagePointerStartedAtTop = !_manualScrollController.hasClients ||
+        _manualScrollController.position.pixels <=
+            _manualScrollController.position.minScrollExtent + 2;
+  }
+
+  void _handleManualPagePointerUp(PointerUpEvent event) {
+    final startY = _manualPagePointerStartY;
+    final startedAtTop = _manualPagePointerStartedAtTop;
+    _resetManualPagePointer();
+
+    if (!startedAtTop || startY == null || !_manualPageVisible) {
+      return;
+    }
+
+    final draggedDown = event.position.dy - startY;
+    if (draggedDown > 72) {
+      unawaited(showHeroPage());
+    }
+  }
+
+  void _resetManualPagePointer() {
+    _manualPagePointerStartY = null;
+    _manualPagePointerStartedAtTop = false;
   }
 
   Future<void> _showQuickScanner(BuildContext context) async {
