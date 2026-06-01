@@ -19,6 +19,10 @@ class _TargetGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (groups.isEmpty) {
+      return const _EmptyTargetHint();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -203,8 +207,8 @@ class _TargetGrid extends StatelessWidget {
 
   String? _badgeLabel(MapNode node) {
     return switch (node.type) {
-      NodeType.entrance => 'BİNA',
-      NodeType.exit => 'BİNA',
+      NodeType.entrance => 'GİRİŞ',
+      NodeType.exit => 'ÇIKIŞ',
       NodeType.elevator => 'ASANSÖR',
       NodeType.stair => 'MERDİVEN',
       NodeType.parkingEntrance => 'ARAÇ GİRİŞ',
@@ -275,41 +279,100 @@ class _TargetGroupHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Text(
-            group.isCurrentFloor ? '${group.title} · açık harita' : group.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF475569),
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.7,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                group.sectionTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.7,
+                ),
+              ),
             ),
-          ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: group.isCurrentFloor
+                    ? const Color(0xFFEEF2FF)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${group.nodes.length}',
+                style: TextStyle(
+                  color: group.isCurrentFloor
+                      ? const Color(0xFF4F46E5)
+                      : const Color(0xFF64748B),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          decoration: BoxDecoration(
-            color: group.isCurrentFloor
-                ? const Color(0xFFEEF2FF)
-                : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            '${group.nodes.length}',
-            style: TextStyle(
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            Icon(
+              group.isCurrentFloor
+                  ? Icons.layers_rounded
+                  : Icons.stacked_line_chart_rounded,
+              size: 15,
               color: group.isCurrentFloor
-                  ? const Color(0xFF4F46E5)
-                  : const Color(0xFF64748B),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
+                  ? const Color(0xFF6366F1)
+                  : const Color(0xFF94A3B8),
             ),
-          ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                group.isCurrentFloor
+                    ? '${group.title} · açık harita'
+                    : group.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+class _EmptyTargetHint extends StatelessWidget {
+  const _EmptyTargetHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Text(
+        'Bu haritada seçilebilir hedef bulunamadı.',
+        style: TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 13.5,
+          height: 1.4,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

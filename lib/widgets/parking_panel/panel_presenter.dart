@@ -66,12 +66,11 @@ class _ParkBottomSheetPresenter {
   List<MapNode> targetsForPanel() {
     if (!isParking) {
       return destinations.where((node) => !node.isQr).toList()
-        ..sort((left, right) =>
-            compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
+        ..sort(_compareTargets);
     }
 
     if (destinations.isEmpty) {
-      return parks;
+      return parks.toList()..sort(_compareTargets);
     }
 
     final nodesByKey = <String, MapNode>{};
@@ -83,10 +82,7 @@ class _ParkBottomSheetPresenter {
           .toUpperCase()] = destination;
     }
 
-    final nodes = nodesByKey.values.toList()
-      ..sort((left, right) =>
-          compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
-    return nodes;
+    return nodesByKey.values.toList()..sort(_compareTargets);
   }
 
   List<TargetGroup> targetGroupsForPanel() {
@@ -94,13 +90,15 @@ class _ParkBottomSheetPresenter {
     for (final node in targetsForPanel()) {
       final floorId = node.floorId ?? currentFloorId ?? 'current';
       final floorName = node.floorName ?? currentFloorName ?? 'Bu kat';
+      final isCurrent = _isCurrentFloor(floorId, floorName);
       final existing = grouped[floorId];
       if (existing == null) {
         grouped[floorId] = TargetGroup(
           floorId: floorId,
           title: floorName,
+          sectionTitle: isCurrent ? 'Bu katta öne çıkanlar' : 'Diğer katlar',
           nodes: [node],
-          isCurrentFloor: _isCurrentFloor(floorId, floorName),
+          isCurrentFloor: isCurrent,
         );
         continue;
       }
@@ -117,11 +115,61 @@ class _ParkBottomSheetPresenter {
       });
 
     for (final group in groups) {
-      group.nodes.sort((left, right) =>
-          compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
+      group.nodes.sort(_compareTargets);
     }
 
     return groups;
+  }
+
+  int _compareTargets(MapNode left, MapNode right) {
+    final score = _targetPriority(left).compareTo(_targetPriority(right));
+    if (score != 0) {
+      return score;
+    }
+
+    return compareNodeLabelsNatural(left.displayLabel, right.displayLabel);
+  }
+
+  int _targetPriority(MapNode node) {
+    return switch (mode) {
+      MapPanelMode.parking => switch (node.type) {
+          NodeType.park => 0,
+          NodeType.parkingExit => 1,
+          NodeType.parkingEntrance => 2,
+          NodeType.entrance => 3,
+          NodeType.exit => 4,
+          NodeType.elevator || NodeType.stair => 5,
+          NodeType.other => 6,
+          NodeType.qr => 7,
+        },
+      MapPanelMode.hospital => switch (node.type) {
+          NodeType.entrance => 0,
+          NodeType.other => 1,
+          NodeType.elevator || NodeType.stair => 2,
+          NodeType.exit => 3,
+          NodeType.parkingEntrance || NodeType.parkingExit => 4,
+          NodeType.park => 5,
+          NodeType.qr => 6,
+        },
+      MapPanelMode.mall => switch (node.type) {
+          NodeType.other => 0,
+          NodeType.entrance => 1,
+          NodeType.elevator || NodeType.stair => 2,
+          NodeType.exit => 3,
+          NodeType.park => 4,
+          NodeType.parkingEntrance || NodeType.parkingExit => 5,
+          NodeType.qr => 6,
+        },
+      MapPanelMode.other => switch (node.type) {
+          NodeType.entrance => 0,
+          NodeType.other => 1,
+          NodeType.elevator || NodeType.stair => 2,
+          NodeType.exit => 3,
+          NodeType.parkingEntrance || NodeType.parkingExit => 4,
+          NodeType.park => 5,
+          NodeType.qr => 6,
+        },
+    };
   }
 
   bool _isCurrentFloor(String floorId, String floorName) {
@@ -139,12 +187,14 @@ class TargetGroup {
   TargetGroup({
     required this.floorId,
     required this.title,
+    required this.sectionTitle,
     required this.nodes,
     required this.isCurrentFloor,
   });
 
   final String floorId;
   final String title;
+  final String sectionTitle;
   final List<MapNode> nodes;
   final bool isCurrentFloor;
 }

@@ -83,6 +83,10 @@ class _NavigationActions extends StatelessWidget {
       actionNodes.any((node) => node.type == NodeType.parkingExit);
   MapNode? get _primaryEntrance =>
       actionNodes.where((node) => node.type == NodeType.entrance).firstOrNull;
+  MapNode? get _primaryConnector => actionNodes
+      .where((node) =>
+          node.type == NodeType.elevator || node.type == NodeType.stair)
+      .firstOrNull;
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +173,7 @@ class _NavigationActions extends StatelessWidget {
   List<_ActionData> get _facilityActions {
     final actions = <_ActionData>[];
     final entrance = _primaryEntrance;
+    final connector = _primaryConnector;
 
     if (entrance != null) {
       actions.add(
@@ -190,6 +195,21 @@ class _NavigationActions extends StatelessWidget {
           enabled: true,
           onTap: onShowDestinations,
           highlight: entrance == null,
+        ),
+      );
+    }
+
+    if (connector != null) {
+      actions.add(
+        _ActionData(
+          icon: connector.type == NodeType.elevator
+              ? Icons.elevator_rounded
+              : Icons.stairs_rounded,
+          title: connector.type == NodeType.elevator
+              ? 'Asansöre git'
+              : 'Merdivene git',
+          enabled: true,
+          onTap: () => onTargetSelected(connector),
         ),
       );
     }

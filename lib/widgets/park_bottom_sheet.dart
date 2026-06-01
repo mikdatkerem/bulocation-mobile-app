@@ -200,6 +200,122 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
   }
 }
 
+class _SelectedTargetBanner extends StatelessWidget {
+  const _SelectedTargetBanner({
+    required this.target,
+    required this.occupancyMap,
+  });
+
+  final MapNode target;
+  final Map<String, bool> occupancyMap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOccupied = target.occupancyFrom(occupancyMap);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFCBD5FF)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(_iconForTarget, color: Colors.white, size: 23),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Seçili hedef',
+                  style: TextStyle(
+                    color: Color(0xFF4F46E5),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  target.displayLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _statusText(isOccupied),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _statusText(bool? isOccupied) {
+    if (!target.isPark) {
+      return _typeLabel;
+    }
+
+    return switch (isOccupied) {
+      true => 'Park alanı · dolu görünüyor',
+      false => 'Park alanı · boş görünüyor',
+      null => 'Park alanı · durum bilinmiyor',
+    };
+  }
+
+  String get _typeLabel {
+    return switch (target.type) {
+      NodeType.qr => 'QR başlangıç noktası',
+      NodeType.park => 'Park alanı',
+      NodeType.entrance => 'Giriş noktası',
+      NodeType.exit => 'Çıkış noktası',
+      NodeType.elevator => 'Kat geçişi · asansör',
+      NodeType.stair => 'Kat geçişi · merdiven',
+      NodeType.parkingEntrance => 'Otopark araç girişi',
+      NodeType.parkingExit => 'Otopark araç çıkışı',
+      NodeType.other => 'Hedef noktası',
+    };
+  }
+
+  IconData get _iconForTarget {
+    return switch (target.type) {
+      NodeType.qr => Icons.qr_code_2_rounded,
+      NodeType.park => Icons.local_parking_rounded,
+      NodeType.entrance => Icons.login_rounded,
+      NodeType.exit => Icons.logout_rounded,
+      NodeType.elevator => Icons.elevator_rounded,
+      NodeType.stair => Icons.stairs_rounded,
+      NodeType.parkingEntrance => Icons.local_parking_rounded,
+      NodeType.parkingExit => Icons.exit_to_app_rounded,
+      NodeType.other => Icons.place_rounded,
+    };
+  }
+}
+
 class _SheetGrabberHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 52;
@@ -295,6 +411,13 @@ class _SheetExpandedContent extends StatelessWidget {
             result: multiRoute!,
             activeIndex: activeSegmentIndex,
             onSegmentTap: onSegmentTap,
+          ),
+        ],
+        if (targetPark != null) ...[
+          const SizedBox(height: 14),
+          _SelectedTargetBanner(
+            target: targetPark!,
+            occupancyMap: occupancyMap,
           ),
         ],
         const SizedBox(height: 16),
