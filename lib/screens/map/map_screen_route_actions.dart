@@ -49,7 +49,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
 
       if (multiRoute == null || multiRoute.segments.isEmpty) {
         setState(_clearActivity);
-        _showError('Bu konumdan hedefe rota bulunamadı.');
+        _showError(
+          'Bu noktadan seçili hedefe rota bulunamadı. Yakındaki bir QR kodu tekrar okutun veya sheet içinden farklı bir hedef seçin.',
+        );
         return;
       }
 
@@ -64,7 +66,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       if (mounted) {
         setState(_clearActivity);
       }
-      _showError('Rota hesaplanamadı: $error');
+      _showError(
+        'Rota hazırlanamadı. QR kodu tekrar okutun veya hedefi yeniden seçin. Detay: $error',
+      );
     }
   }
 
@@ -135,7 +139,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
   Future<void> _navigateToBestExit() async {
     final startReference = _activeStartReference();
     if (startReference == null) {
-      _showError('Çıkış rotası için önce QR okutun.');
+      _showError(
+        'Çıkış rotasını başlatmak için önce bulunduğunuz noktadaki QR kodu okutun.',
+      );
       return;
     }
 
@@ -159,7 +165,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
         if (mounted) {
           setState(_clearActivity);
         }
-        _showError('Çıkış rotası bulunamadı.');
+        _showError(
+          'Bu noktadan uygun çıkış rotası bulunamadı. Yakındaki farklı bir QR kodu okutmayı deneyin.',
+        );
         return;
       }
 
@@ -175,14 +183,18 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       if (mounted) {
         setState(_clearActivity);
       }
-      _showError('Çıkış rotası hesaplanamadı: $error');
+      _showError(
+        'Çıkış rotası hazırlanamadı. Lütfen QR kodu tekrar okutun. Detay: $error',
+      );
     }
   }
 
   Future<void> _selectParkingNearEntrance() async {
     final startReference = _activeStartReference();
     if (startReference == null) {
-      _showError('Park önerisi için önce QR okutun.');
+      _showError(
+        'Park önerisi için önce bulunduğunuz noktadaki QR kodu okutun.',
+      );
       return;
     }
 
@@ -204,7 +216,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
         if (mounted) {
           setState(_clearActivity);
         }
-        _showError('Girişe yakın uygun park alanı bulunamadı.');
+        _showError(
+          'Girişe yakın uygun boş park alanı bulunamadı. Park listesinden farklı bir alan seçebilirsiniz.',
+        );
         return;
       }
 
@@ -234,7 +248,9 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       if (mounted) {
         setState(_clearActivity);
       }
-      _showError('Girişe yakın park önerisi alınamadı: $error');
+      _showError(
+        'Girişe yakın park önerisi alınamadı. Bir park alanını manuel seçmeyi deneyin. Detay: $error',
+      );
     }
   }
 }

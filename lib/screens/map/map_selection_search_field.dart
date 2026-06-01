@@ -43,10 +43,11 @@ class MapSelectionSearchField<T> extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          isDisabled ? 'Bu adım için kayıt bulunamadı.' : helper,
+          isDisabled ? _emptyHelper : helper,
           style: const TextStyle(
             color: Color(0xFF94A3B8),
             fontSize: 12,
+            height: 1.35,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -149,5 +150,19 @@ class MapSelectionSearchField<T> extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String get _emptyHelper {
+    return switch (label.toLowerCase()) {
+      'kurum' =>
+        'Henüz seçilebilir kurum yok. Erişim tanımlandığında burada görünecek.',
+      'yerleşke' =>
+        'Bu kurum için seçilebilir yerleşke bulunamadı. Farklı bir kurum seçebilirsiniz.',
+      'bina' =>
+        'Bu yerleşke için seçilebilir bina bulunamadı. Farklı bir yerleşke seçebilirsiniz.',
+      'kat' =>
+        'Bu bina için yayında kat haritası bulunamadı. QR kod okutmayı veya başka bina seçmeyi deneyin.',
+      _ => 'Bu adım için seçilebilir kayıt bulunamadı.',
+    };
   }
 }

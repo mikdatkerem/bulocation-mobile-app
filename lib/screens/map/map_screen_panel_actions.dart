@@ -5,7 +5,9 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
   void _showSuggestionDialog() {
     final startReference = _activeStartReference();
     if (startReference == null) {
-      _showError('Rota başlatmak için önce QR okutun.');
+      _showError(
+        'Rota başlatmak için önce bulunduğunuz noktadaki QR kodu okutun.',
+      );
       return;
     }
 
@@ -225,7 +227,9 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     }
 
     setState(_clearActivity);
-    _showError('Rota başlatmak için önce QR okutun.');
+    _showError(
+      'Rota başlatmak için önce bulunduğunuz noktadaki QR kodu okutun.',
+    );
   }
 
   void _navigateToCar() {
@@ -258,7 +262,9 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
   void _navigateToNearestToUser() {
     final startReference = _activeStartReference();
     if (startReference == null) {
-      _showError('Rota başlatmak için önce QR okutun.');
+      _showError(
+        'Rota başlatmak için önce bulunduğunuz noktadaki QR kodu okutun.',
+      );
       return;
     }
 
@@ -268,7 +274,9 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       _mapState.mapNodes,
     );
     if (park == null) {
-      _showError('Uygun boş park alanı bulunamadı.');
+      _showError(
+        'Yakınınızda uygun boş park alanı bulunamadı. Park listesinden farklı bir alan seçebilirsiniz.',
+      );
       return;
     }
 

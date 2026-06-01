@@ -101,7 +101,7 @@ class _MapSelectionSearchPickerPageState<T>
                     const SizedBox(height: 10),
                     Text(
                       widget.recentIds.isEmpty
-                          ? 'Listeden seçin veya arama ile filtreleyin.'
+                          ? 'Listeden seçim yapın veya arama ile filtreleyin.'
                           : 'Daha önce kullandıklarınız üstte, diğer seçenekler hemen altında.',
                       style: const TextStyle(
                         color: Color(0xFF64748B),
@@ -166,14 +166,9 @@ class _MapSelectionSearchPickerPageState<T>
               const SizedBox(height: 16),
               Expanded(
                 child: items.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Sonuç bulunamadı.',
-                          style: TextStyle(
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    ? _EmptySearchResult(
+                        label: widget.label,
+                        query: _query,
                       )
                     : ListView.separated(
                         itemCount: items.length,
@@ -283,5 +278,40 @@ class _MapSelectionSearchPickerPageState<T>
 
         return compareNodeLabelsNatural(title(left), title(right));
       });
+  }
+}
+
+class _EmptySearchResult extends StatelessWidget {
+  const _EmptySearchResult({
+    required this.label,
+    required this.query,
+  });
+
+  final String label;
+  final String query;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Text(
+          query.trim().isEmpty
+              ? '$label listesi şu an boş görünüyor.'
+              : '"${query.trim()}" için sonuç bulunamadı. Daha kısa bir kelime deneyebilir veya önceki adıma dönebilirsiniz.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            fontWeight: FontWeight.w700,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
   }
 }
