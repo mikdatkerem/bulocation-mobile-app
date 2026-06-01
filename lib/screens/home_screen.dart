@@ -64,6 +64,11 @@ abstract class MapsScreenStateBase extends State<MapsScreen> {
       );
 
   void _showError(Object error);
+  void _showNotice({
+    required String title,
+    String? message,
+    MapScreenNoticeLevel level = MapScreenNoticeLevel.info,
+  });
   void _showParkConfirmDialog(String spotId);
   Map<String, bool> _normalizeOccupancy(Map<String, bool> occupancy);
   Future<PublishedMapData> _getPublishedMap(String floorId);

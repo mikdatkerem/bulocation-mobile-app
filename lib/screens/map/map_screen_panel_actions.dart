@@ -72,6 +72,7 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     );
   }
 
+  @override
   void _showNotice({
     required String title,
     String? message,

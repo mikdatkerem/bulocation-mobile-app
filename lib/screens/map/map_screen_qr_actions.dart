@@ -19,7 +19,6 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
       return;
     }
 
-    _mapState.lastScan = referenceId;
     _mapState.lastScanTime = now;
     await openByQrReference(referenceId);
   }
@@ -45,6 +44,25 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
     try {
       final context =
           await _facilityService.resolveQrScanContext(normalizedReferenceId);
+      final routeSegmentIndex = _routeSegmentIndexForScan(context);
+      if (_mapState.multiRoute != null && routeSegmentIndex == null) {
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _mapState.busy = false;
+          _clearActivity();
+        });
+        _showNotice(
+          title: 'Rota korunuyor',
+          message:
+              'Okuttuğunuz QR mevcut rotadaki katlarla eşleşmedi. Rotanız bozulmadan açık haritada kaldı.',
+          level: MapScreenNoticeLevel.warning,
+        );
+        return;
+      }
+
       await _applyScanContext(
         context,
         preserveNavigation: hadActiveNavigation,
@@ -66,9 +84,13 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
         }
       });
 
-      final routeSegmentIndex = _routeSegmentIndexForScan(context);
       if (_mapState.multiRoute != null && routeSegmentIndex != null) {
         await _showRouteSegment(routeSegmentIndex);
+        _showNotice(
+          title: 'Kat rotası açıldı',
+          message:
+              'Rotanız korunuyor. Bu kat için ilgili rota segmenti gösteriliyor.',
+        );
         _collapseSheet();
       } else if (_mapState.targetPark != null) {
         await _updateRoute(normalizedReferenceId);

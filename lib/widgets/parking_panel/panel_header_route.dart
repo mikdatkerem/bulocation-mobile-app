@@ -71,7 +71,6 @@ class _PanelHeader extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _HeaderChip extends StatelessWidget {
@@ -138,40 +137,135 @@ class _RouteSegments extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 42,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: result.segments.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final segment = result.segments[index];
-          final active = index == activeIndex;
-          return InkWell(
-            onTap: () => onSegmentTap(index),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color:
-                    active ? const Color(0xFF6366F1) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.route_rounded,
+              color: Color(0xFF6366F1),
+              size: 17,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
               child: Text(
-                '${segment.buildingName} / ${segment.floorName}',
-                style: TextStyle(
-                  color: active
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF334155),
-                  fontWeight: FontWeight.w700,
+                'Kat geçişleri · ${activeIndex + 1}/${result.segments.length}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF475569),
                   fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.2,
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ],
+        ),
+        const SizedBox(height: 9),
+        SizedBox(
+          height: 54,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: result.segments.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final segment = result.segments[index];
+              final active = index == activeIndex;
+              final completed = index < activeIndex;
+              return InkWell(
+                onTap: () => onSegmentTap(index),
+                borderRadius: BorderRadius.circular(16),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: active ? 172 : 148,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: active
+                        ? const Color(0xFF6366F1)
+                        : completed
+                            ? const Color(0xFFEFF6FF)
+                            : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: active
+                          ? const Color(0xFF6366F1)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? Colors.white.withValues(alpha: 0.18)
+                              : completed
+                                  ? const Color(0xFFDBEAFE)
+                                  : const Color(0xFFEEF2FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color:
+                                active ? Colors.white : const Color(0xFF4F46E5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              active
+                                  ? 'Açık kat'
+                                  : completed
+                                      ? 'Geçildi'
+                                      : 'Sıradaki',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: active
+                                    ? Colors.white.withValues(alpha: 0.82)
+                                    : const Color(0xFF64748B),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              segment.floorName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: active
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
