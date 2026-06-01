@@ -35,6 +35,7 @@ class MapScreenContentCard extends StatelessWidget {
     required this.onBuildingChanged,
     required this.onFloorChanged,
     required this.onDismissNotice,
+    required this.onMapNodeSelected,
   });
 
   final bool hasMap;
@@ -63,6 +64,7 @@ class MapScreenContentCard extends StatelessWidget {
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
   final ValueChanged<int> onDismissNotice;
+  final ValueChanged<MapNode> onMapNodeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class MapScreenContentCard extends StatelessWidget {
             mapAssetContentType: mapAssetContentType,
             mapWidth: mapWidth,
             mapHeight: mapHeight,
+            onNodeSelected: onMapNodeSelected,
           )
         : const _MapEmptyState(key: ValueKey('map-empty-state'));
 

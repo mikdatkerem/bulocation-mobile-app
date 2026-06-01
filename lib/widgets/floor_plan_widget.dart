@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -24,6 +26,7 @@ class FloorPlanWidget extends StatefulWidget {
     this.mapAssetContentType,
     this.mapWidth,
     this.mapHeight,
+    this.onNodeSelected,
   });
 
   final Set<String> visitedIds;
@@ -35,6 +38,7 @@ class FloorPlanWidget extends StatefulWidget {
   final String? mapAssetContentType;
   final int? mapWidth;
   final int? mapHeight;
+  final ValueChanged<MapNode>? onNodeSelected;
 
   String? get targetParkId {
     if (navigationRoute == null || navigationRoute!.isEmpty) {
@@ -61,6 +65,8 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   late final AnimationController _glowController;
   late final Animation<double> _glowAnimation;
   late final MapViewportController _viewportController;
+  Timer? _previewTimer;
+  MapNode? _previewNode;
 
   @override
   void initState() {
@@ -85,6 +91,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
 
   @override
   void dispose() {
+    _previewTimer?.cancel();
     _glowController.dispose();
     _viewportController.dispose();
     super.dispose();
@@ -99,6 +106,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
         oldWidget.mapHeight != widget.mapHeight;
 
     if (mapChanged) {
+      _hideNodePreview();
       _viewportController.handleMapChanged(
         mapWidth: _mapWidth,
         mapHeight: _mapHeight,
@@ -108,6 +116,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     }
 
     if (oldWidget.activeZoneId != widget.activeZoneId) {
+      _hideNodePreview();
       _viewportController.handleActiveNodeChanged(
         mapWidth: _mapWidth,
         mapHeight: _mapHeight,
@@ -130,11 +139,32 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
   int get _zoomPercentage => _viewportController.zoomPercentage;
 
   void _handleDoubleTap() {
+    _hideNodePreview();
     _viewportController.handleDoubleTap(
       mapWidth: _mapWidth,
       mapHeight: _mapHeight,
       activeNode: _activeNode,
     );
+  }
+
+  void _handleNodeTap(MapNode node) {
+    _hideNodePreview();
+    widget.onNodeSelected?.call(node);
+  }
+
+  void _showNodePreview(MapNode node) {
+    _previewTimer?.cancel();
+    setState(() => _previewNode = node);
+    _previewTimer = Timer(const Duration(seconds: 3), _hideNodePreview);
+  }
+
+  void _hideNodePreview() {
+    _previewTimer?.cancel();
+    _previewTimer = null;
+    if (_previewNode == null || !mounted) {
+      return;
+    }
+    setState(() => _previewNode = null);
   }
 
   Widget _buildZoomBadge() {
@@ -205,6 +235,9 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
           ...parkNodes.map(_buildParkCell),
           ...markerNodes.map(_buildMapNodeMarker),
           if (activeNode != null) _buildActiveNodeMarker(activeNode),
+          if (_previewNode case final previewNode?
+              when sourceNodes.any((node) => node.id == previewNode.id))
+            _buildNodePreview(previewNode),
         ],
       ),
     );
@@ -219,11 +252,16 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     return Positioned(
       left: nodeX - cellWidth / 2,
       top: nodeY - cellHeight / 2,
-      child: _ParkCell(
-        key: ValueKey(node.id),
-        node: node,
-        isOccupied: node.occupancyFrom(widget.occupancyMap),
-        isTarget: widget.targetParkId == node.id,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _handleNodeTap(node),
+        onLongPress: () => _showNodePreview(node),
+        child: _ParkCell(
+          key: ValueKey(node.id),
+          node: node,
+          isOccupied: node.occupancyFrom(widget.occupancyMap),
+          isTarget: widget.targetParkId == node.id,
+        ),
       ),
     );
   }
@@ -238,12 +276,17 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     return Positioned(
       left: nodeX - markerWidth / 2,
       top: nodeY - markerHeight / 2,
-      child: _MapNodeMarker(
-        key: ValueKey('map-node-${node.type}-${node.id}'),
-        node: node,
-        width: markerWidth,
-        height: markerHeight,
-        isTarget: isTarget,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _handleNodeTap(node),
+        onLongPress: () => _showNodePreview(node),
+        child: _MapNodeMarker(
+          key: ValueKey('map-node-${node.type}-${node.id}'),
+          node: node,
+          width: markerWidth,
+          height: markerHeight,
+          isTarget: isTarget,
+        ),
       ),
     );
   }
@@ -253,6 +296,56 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
       left: activeNode.resolveX(_mapWidth) - 20,
       top: activeNode.resolveY(_mapHeight) - 20,
       child: const PulseMarker(),
+    );
+  }
+
+  Widget _buildNodePreview(MapNode node) {
+    const tooltipWidth = 172.0;
+    const tooltipMinHeight = 40.0;
+    final nodeX = node.resolveX(_mapWidth);
+    final nodeY = node.resolveY(_mapHeight);
+    final left =
+        (nodeX - tooltipWidth / 2).clamp(8.0, _mapWidth - tooltipWidth - 8);
+    final top = (nodeY - 58).clamp(8.0, _mapHeight - tooltipMinHeight - 8);
+
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 160),
+          opacity: 1,
+          child: Container(
+            width: tooltipWidth,
+            constraints: const BoxConstraints(minHeight: tooltipMinHeight),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: const Color(0xEE0F172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x330F172A),
+                  blurRadius: 14,
+                  offset: Offset(0, 7),
+                ),
+              ],
+            ),
+            child: Text(
+              node.displayLabel,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                height: 1.15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -294,8 +387,10 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
                     _viewportController.maxZoomMultiplier,
                 boundaryMargin:
                     EdgeInsets.all(_viewportController.panBoundaryMargin),
-                onInteractionStart: (_) =>
-                    _viewportController.onInteractionStart(),
+                onInteractionStart: (_) {
+                  _hideNodePreview();
+                  _viewportController.onInteractionStart();
+                },
                 onInteractionEnd: (_) => _viewportController.settleViewport(
                   mapWidth: _mapWidth,
                   mapHeight: _mapHeight,

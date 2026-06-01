@@ -265,6 +265,7 @@ class MapsScreenState extends MapsScreenStateBase
                   onSiteChanged: _onSiteChanged,
                   onBuildingChanged: _onBuildingChanged,
                   onFloorChanged: _onFloorChanged,
+                  onMapNodeSelected: _selectParkTarget,
                 ),
                 if (hasMap)
                   MapBottomPanel(

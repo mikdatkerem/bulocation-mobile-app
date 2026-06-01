@@ -46,6 +46,7 @@ class MapScreenBody extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    required this.onMapNodeSelected,
   });
 
   final bool hasMap;
@@ -83,6 +84,7 @@ class MapScreenBody extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final ValueChanged<MapNode> onMapNodeSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +137,7 @@ class MapScreenBody extends StatelessWidget {
                   onBuildingChanged: onBuildingChanged,
                   onFloorChanged: onFloorChanged,
                   onDismissNotice: onDismissNotice,
+                  onMapNodeSelected: onMapNodeSelected,
                 ),
               ],
             ),
