@@ -40,7 +40,11 @@ class _QrStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scanOffset = 22 + (pulse.value * 72);
+    const framePadding = 22.0;
+    const cornerInset = 12.0;
+    const scanTop = framePadding + cornerInset + 8;
+    const scanTravel = 184 - ((framePadding + cornerInset + 8) * 2);
+    final scanOffset = scanTop + (pulse.value * scanTravel);
 
     return Semantics(
       button: true,
@@ -73,13 +77,13 @@ class _QrStage extends StatelessWidget {
                   children: [
                     const Positioned.fill(
                       child: Padding(
-                        padding: EdgeInsets.all(22),
+                        padding: EdgeInsets.all(framePadding),
                         child: _QrFrame(),
                       ),
                     ),
                     Positioned(
-                      left: 26,
-                      right: 26,
+                      left: framePadding + cornerInset + 4,
+                      right: framePadding + cornerInset + 4,
                       top: scanOffset,
                       child: Container(
                         height: 3,
