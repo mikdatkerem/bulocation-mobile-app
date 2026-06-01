@@ -49,10 +49,12 @@ class _ModeSwitcher extends StatelessWidget {
 class _NavigationActions extends StatelessWidget {
   const _NavigationActions({
     required this.mode,
+    required this.actionNodes,
     required this.hasParkedCar,
     required this.hasDestinations,
     required this.destinationTitle,
     required this.onShowDestinations,
+    required this.onTargetSelected,
     required this.onNearestToUser,
     required this.onNearestToHospital,
     required this.onNavigateToCar,
@@ -60,20 +62,35 @@ class _NavigationActions extends StatelessWidget {
   });
 
   final MapPanelMode mode;
+  final List<MapNode> actionNodes;
   final bool hasParkedCar;
   final bool hasDestinations;
   final String destinationTitle;
   final VoidCallback onShowDestinations;
+  final ValueChanged<MapNode> onTargetSelected;
   final VoidCallback onNearestToUser;
   final VoidCallback onNearestToHospital;
   final VoidCallback? onNavigateToCar;
   final VoidCallback onNavigateToExit;
 
   bool get _isParking => mode == MapPanelMode.parking;
+  bool get _hasParks => actionNodes.any((node) => node.isPark);
+  bool get _hasFacilityEntrance =>
+      actionNodes.any((node) => node.type == NodeType.entrance);
+  bool get _hasFacilityExit =>
+      actionNodes.any((node) => node.type == NodeType.exit);
+  bool get _hasParkingExit =>
+      actionNodes.any((node) => node.type == NodeType.parkingExit);
+  MapNode? get _primaryEntrance =>
+      actionNodes.where((node) => node.type == NodeType.entrance).firstOrNull;
 
   @override
   Widget build(BuildContext context) {
     final actions = _isParking ? _parkingActions : _facilityActions;
+
+    if (actions.isEmpty) {
+      return const _EmptyActionsHint();
+    }
 
     return GridView.builder(
       shrinkWrap: true,
@@ -98,50 +115,115 @@ class _NavigationActions extends StatelessWidget {
     );
   }
 
-  List<_ActionData> get _parkingActions => [
+  List<_ActionData> get _parkingActions {
+    final actions = <_ActionData>[];
+
+    if (_hasParks) {
+      actions.add(
         _ActionData(
           icon: Icons.near_me_rounded,
-          title: 'Bana en yakın',
+          title: 'Bana en yakın park',
           enabled: true,
           onTap: onNearestToUser,
           highlight: true,
         ),
+      );
+    }
+
+    if (_hasFacilityEntrance) {
+      actions.add(
         _ActionData(
-          icon: Icons.local_hospital_outlined,
-          title: 'Hastane girişine yakın',
+          icon: _facilityIcon,
+          title: 'Girişe yakın park',
           enabled: true,
           onTap: onNearestToHospital,
         ),
+      );
+    }
+
+    if (hasParkedCar) {
+      actions.add(
         _ActionData(
           icon: Icons.directions_car_outlined,
           title: 'Aracıma git',
-          enabled: hasParkedCar,
+          enabled: true,
           onTap: onNavigateToCar,
         ),
+      );
+    }
+
+    if (_hasParkingExit || _hasFacilityExit) {
+      actions.add(
         _ActionData(
           icon: Icons.logout_rounded,
-          title: 'Otopark çıkışına git',
+          title: _hasParkingExit ? 'Otopark çıkışına git' : 'Çıkışa git',
           enabled: true,
           onTap: onNavigateToExit,
         ),
-      ];
+      );
+    }
+
+    return actions;
+  }
 
   List<_ActionData> get _facilityActions {
-    return [
-      _ActionData(
-        icon: _facilityIcon,
-        title: destinationTitle,
-        enabled: hasDestinations,
-        onTap: hasDestinations ? onShowDestinations : null,
-        highlight: true,
-      ),
-      _ActionData(
-        icon: Icons.logout_rounded,
-        title: 'Bina çıkışına git',
-        enabled: true,
-        onTap: onNavigateToExit,
-      ),
-    ];
+    final actions = <_ActionData>[];
+    final entrance = _primaryEntrance;
+
+    if (entrance != null) {
+      actions.add(
+        _ActionData(
+          icon: _facilityIcon,
+          title: _entryActionTitle,
+          enabled: true,
+          onTap: () => onTargetSelected(entrance),
+          highlight: true,
+        ),
+      );
+    }
+
+    if (hasDestinations) {
+      actions.add(
+        _ActionData(
+          icon: Icons.grid_view_rounded,
+          title: destinationTitle,
+          enabled: true,
+          onTap: onShowDestinations,
+          highlight: entrance == null,
+        ),
+      );
+    }
+
+    if (_hasFacilityExit || _hasParkingExit) {
+      actions.add(
+        _ActionData(
+          icon: Icons.logout_rounded,
+          title: _exitActionTitle,
+          enabled: true,
+          onTap: onNavigateToExit,
+        ),
+      );
+    }
+
+    return actions;
+  }
+
+  String get _entryActionTitle {
+    return switch (mode) {
+      MapPanelMode.hospital => 'Hastane girişine git',
+      MapPanelMode.mall => 'AVM girişine git',
+      MapPanelMode.other => 'Girişe git',
+      MapPanelMode.parking => 'Otopark girişine git',
+    };
+  }
+
+  String get _exitActionTitle {
+    return switch (mode) {
+      MapPanelMode.hospital => 'Hastane çıkışına git',
+      MapPanelMode.mall => 'AVM çıkışına git',
+      MapPanelMode.other => 'Çıkışa git',
+      MapPanelMode.parking => 'Otopark çıkışına git',
+    };
   }
 
   IconData get _facilityIcon {
@@ -151,6 +233,31 @@ class _NavigationActions extends StatelessWidget {
       MapPanelMode.other => Icons.place_rounded,
       MapPanelMode.parking => Icons.local_parking_rounded,
     };
+  }
+}
+
+class _EmptyActionsHint extends StatelessWidget {
+  const _EmptyActionsHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Text(
+        'Bu haritada hızlı aksiyon oluşturacak giriş, çıkış veya hedef noktası bulunamadı.',
+        style: TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 13.5,
+          height: 1.4,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 

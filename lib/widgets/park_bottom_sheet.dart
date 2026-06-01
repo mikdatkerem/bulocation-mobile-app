@@ -165,6 +165,7 @@ class _ParkBottomSheetState extends State<ParkBottomSheet> {
                                   ),
                                   presenter: presenter,
                                   targetGroups: targetGroups,
+                                  actionNodes: presenter.targetsForPanel(),
                                   showDestinations: _showDestinations,
                                   activeSegmentIndex: widget.activeSegmentIndex,
                                   mode: widget.mode,
@@ -238,6 +239,7 @@ class _SheetExpandedContent extends StatelessWidget {
     super.key,
     required this.presenter,
     required this.targetGroups,
+    required this.actionNodes,
     required this.showDestinations,
     required this.activeSegmentIndex,
     required this.mode,
@@ -258,6 +260,7 @@ class _SheetExpandedContent extends StatelessWidget {
 
   final _ParkBottomSheetPresenter presenter;
   final List<TargetGroup> targetGroups;
+  final List<MapNode> actionNodes;
   final bool showDestinations;
   final int activeSegmentIndex;
   final MapPanelMode mode;
@@ -306,10 +309,12 @@ class _SheetExpandedContent extends StatelessWidget {
         if (!showDestinations)
           _NavigationActions(
             mode: mode,
+            actionNodes: actionNodes,
             hasParkedCar: parkedAt != null,
             hasDestinations: targetGroups.isNotEmpty,
             destinationTitle: presenter.destinationTitle,
             onShowDestinations: onDestinationsTap,
+            onTargetSelected: onParkSelected,
             onNearestToUser: onNearestToUser,
             onNearestToHospital: onNearestToHospital,
             onNavigateToCar: parkedAt != null ? onNavigateToCar : null,

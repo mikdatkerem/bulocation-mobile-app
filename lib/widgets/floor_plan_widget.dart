@@ -44,6 +44,14 @@ class FloorPlanWidget extends StatefulWidget {
     return lastNode.isPark ? lastNode.id : null;
   }
 
+  String? get targetNodeId {
+    if (navigationRoute == null || navigationRoute!.isEmpty) {
+      return null;
+    }
+
+    return navigationRoute!.last.id;
+  }
+
   @override
   State<FloorPlanWidget> createState() => _FloorPlanWidgetState();
 }
@@ -166,6 +174,9 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     required MapNode? activeNode,
   }) {
     final parkNodes = sourceNodes.where((node) => node.isPark).toList();
+    final markerNodes = sourceNodes
+        .where((node) => !node.isPark && node.id != activeNode?.id)
+        .toList();
 
     return SizedBox(
       width: _mapWidth,
@@ -192,6 +203,7 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
               ),
             ),
           ...parkNodes.map(_buildParkCell),
+          ...markerNodes.map(_buildMapNodeMarker),
           if (activeNode != null) _buildActiveNodeMarker(activeNode),
         ],
       ),
@@ -212,6 +224,26 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
         node: node,
         isOccupied: node.occupancyFrom(widget.occupancyMap),
         isTarget: widget.targetParkId == node.id,
+      ),
+    );
+  }
+
+  Widget _buildMapNodeMarker(MapNode node) {
+    final nodeX = node.resolveX(_mapWidth);
+    final nodeY = node.resolveY(_mapHeight);
+    final isTarget = widget.targetNodeId == node.id;
+    final markerWidth = node.type == NodeType.other ? 72.0 : 58.0;
+    final markerHeight = node.type == NodeType.other ? 34.0 : 32.0;
+
+    return Positioned(
+      left: nodeX - markerWidth / 2,
+      top: nodeY - markerHeight / 2,
+      child: _MapNodeMarker(
+        key: ValueKey('map-node-${node.type}-${node.id}'),
+        node: node,
+        width: markerWidth,
+        height: markerHeight,
+        isTarget: isTarget,
       ),
     );
   }
@@ -293,5 +325,122 @@ class _FloorPlanWidgetState extends State<FloorPlanWidget>
     }
 
     return '${AppConfig.baseHost}$assetPath';
+  }
+}
+
+class _MapNodeMarker extends StatelessWidget {
+  const _MapNodeMarker({
+    super.key,
+    required this.node,
+    required this.width,
+    required this.height,
+    required this.isTarget,
+  });
+
+  final MapNode node;
+  final double width;
+  final double height;
+  final bool isTarget;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _color;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      width: width,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 7),
+      decoration: BoxDecoration(
+        color: isTarget ? const Color(0xFF4F46E5) : Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: isTarget
+              ? const Color(0xFF4F46E5)
+              : color.withValues(alpha: 0.36),
+          width: isTarget ? 1.6 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isTarget ? const Color(0xFF4F46E5) : color)
+                .withValues(alpha: isTarget ? 0.28 : 0.18),
+            blurRadius: isTarget ? 9 : 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _icon,
+            size: node.type == NodeType.other ? 13 : 14,
+            color: isTarget ? Colors.white : color,
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              _label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isTarget ? Colors.white : const Color(0xFF0F172A),
+                fontSize: node.type == NodeType.other ? 8.6 : 9.2,
+                height: 1,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String get _label {
+    final fallback = switch (node.type) {
+      NodeType.qr => 'QR',
+      NodeType.entrance => 'Giriş',
+      NodeType.exit => 'Çıkış',
+      NodeType.elevator => 'Asansör',
+      NodeType.stair => 'Merdiven',
+      NodeType.parkingEntrance => 'P Giriş',
+      NodeType.parkingExit => 'P Çıkış',
+      NodeType.other => node.displayLabel,
+      NodeType.park => node.displayLabel,
+    };
+    final value = fallback.trim();
+    if (value.length <= 12) {
+      return value;
+    }
+
+    return '${value.substring(0, 11)}…';
+  }
+
+  IconData get _icon {
+    return switch (node.type) {
+      NodeType.qr => Icons.qr_code_2_rounded,
+      NodeType.entrance => Icons.login_rounded,
+      NodeType.exit => Icons.logout_rounded,
+      NodeType.elevator => Icons.elevator_rounded,
+      NodeType.stair => Icons.stairs_rounded,
+      NodeType.parkingEntrance => Icons.local_parking_rounded,
+      NodeType.parkingExit => Icons.exit_to_app_rounded,
+      NodeType.park => Icons.local_parking_rounded,
+      NodeType.other => Icons.place_rounded,
+    };
+  }
+
+  Color get _color {
+    return switch (node.type) {
+      NodeType.qr => const Color(0xFF6366F1),
+      NodeType.entrance => const Color(0xFF0284C7),
+      NodeType.exit => const Color(0xFFE11D48),
+      NodeType.elevator => const Color(0xFF4F46E5),
+      NodeType.stair => const Color(0xFF9333EA),
+      NodeType.parkingEntrance => const Color(0xFF16A34A),
+      NodeType.parkingExit => const Color(0xFFEA580C),
+      NodeType.park => const Color(0xFF4F46E5),
+      NodeType.other => const Color(0xFF475569),
+    };
   }
 }

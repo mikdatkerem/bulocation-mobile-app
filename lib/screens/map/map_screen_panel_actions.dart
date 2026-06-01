@@ -155,28 +155,54 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       );
 
   List<MapNode> get _destinationNodes {
-    final nodes = _mapState.buildingDestinations.isNotEmpty
-        ? _mapState.buildingDestinations
-        : resolveDestinationNodes(
-            mapNodes: _mapState.mapNodes,
-            mode: _mapPanelMode,
+    final mapDestinations = resolveDestinationNodes(
+      mapNodes: _mapState.mapNodes,
+      mode: _mapPanelMode,
+    );
+    final nodes = _mapState.buildingDestinations.isEmpty
+        ? mapDestinations
+        : _mergeDestinationNodes(
+            _mapState.buildingDestinations,
+            mapDestinations,
           );
     final activeReference = _activeStartReference()?.toUpperCase();
 
-    return nodes
-        .where((node) {
-          if (_mapPanelMode != MapPanelMode.parking && node.isQr) {
-            return false;
-          }
+    return nodes.where((node) {
+      if (_mapPanelMode != MapPanelMode.parking && node.isQr) {
+        return false;
+      }
 
-          if (activeReference == null) {
-            return true;
-          }
+      if (activeReference == null) {
+        return true;
+      }
 
-          return (node.externalReferenceId ?? node.id).toUpperCase() !=
-              activeReference;
-        })
-        .toList();
+      return (node.externalReferenceId ?? node.id).toUpperCase() !=
+          activeReference;
+    }).toList();
+  }
+
+  List<MapNode> _mergeDestinationNodes(
+    List<MapNode> primaryNodes,
+    List<MapNode> mapNodes,
+  ) {
+    final merged = <String, MapNode>{};
+    for (final node in primaryNodes) {
+      merged[_destinationNodeKey(node)] = node;
+    }
+    for (final node in mapNodes) {
+      merged.putIfAbsent(_destinationNodeKey(node), () => node);
+    }
+
+    return merged.values.toList()
+      ..sort((left, right) =>
+          compareNodeLabelsNatural(left.displayLabel, right.displayLabel));
+  }
+
+  String _destinationNodeKey(MapNode node) {
+    return (node.externalReferenceId?.trim().isNotEmpty == true
+            ? node.externalReferenceId!.trim()
+            : node.id)
+        .toUpperCase();
   }
 
   void _selectParkTarget(MapNode park) {
@@ -211,8 +237,7 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
       _mapState.targetPark = _mapState.parkedAt;
       _setActivity(
         title: 'Aracınıza gidiliyor',
-        message:
-            '${_mapState.parkedAt!.displayLabel} için rota hazırlanıyor.',
+        message: '${_mapState.parkedAt!.displayLabel} için rota hazırlanıyor.',
       );
     });
     _collapseSheet();
