@@ -4,14 +4,20 @@ class _PanelHeader extends StatelessWidget {
   const _PanelHeader({
     required this.icon,
     required this.mapName,
-    required this.summary,
     required this.title,
+    required this.emptyCount,
+    required this.fullCount,
+    required this.totalCount,
+    required this.showParkingMetrics,
   });
 
   final IconData icon;
   final String mapName;
-  final String summary;
   final String title;
+  final int emptyCount;
+  final int fullCount;
+  final int totalCount;
+  final bool showParkingMetrics;
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +66,13 @@ class _PanelHeader extends StatelessWidget {
                     fontSize: 12.5,
                   ),
                 ),
-                if (summary.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  _HeaderChip(label: summary),
+                if (showParkingMetrics) ...[
+                  const SizedBox(height: 10),
+                  _ParkingMetrics(
+                    emptyCount: emptyCount,
+                    fullCount: fullCount,
+                    totalCount: totalCount,
+                  ),
                 ],
               ],
             ),
@@ -73,49 +83,108 @@ class _PanelHeader extends StatelessWidget {
   }
 }
 
-class _HeaderChip extends StatelessWidget {
-  const _HeaderChip({
+class _ParkingMetrics extends StatelessWidget {
+  const _ParkingMetrics({
+    required this.emptyCount,
+    required this.fullCount,
+    required this.totalCount,
+  });
+
+  final int emptyCount;
+  final int fullCount;
+  final int totalCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 7,
+      runSpacing: 7,
+      children: [
+        _MetricPill(
+          key: ValueKey('empty-$emptyCount'),
+          label: 'Boş',
+          value: emptyCount,
+          color: const Color(0xFF059669),
+          backgroundColor: const Color(0xFFEAFBF3),
+        ),
+        _MetricPill(
+          key: ValueKey('full-$fullCount'),
+          label: 'Dolu',
+          value: fullCount,
+          color: const Color(0xFFDC2626),
+          backgroundColor: const Color(0xFFFFF1F2),
+        ),
+        _MetricPill(
+          key: ValueKey('total-$totalCount'),
+          label: 'Toplam',
+          value: totalCount,
+          color: const Color(0xFF4F46E5),
+          backgroundColor: const Color(0xFFEEF2FF),
+        ),
+      ],
+    );
+  }
+}
+
+class _MetricPill extends StatelessWidget {
+  const _MetricPill({
+    super.key,
     required this.label,
+    required this.value,
+    required this.color,
+    required this.backgroundColor,
   });
 
   final String label;
+  final int value;
+  final Color color;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(9, 7, 10, 7),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 18,
-            height: 18,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEEF2FF),
-              shape: BoxShape.circle,
-            ),
-            child: const Text(
-              'P',
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, -0.28),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: Text(
+              '$value',
+              key: ValueKey(value),
               style: TextStyle(
-                color: Color(0xFF6366F1),
-                fontSize: 11,
+                color: color,
+                fontSize: 12,
                 fontWeight: FontWeight.w900,
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Text(
             label,
             style: const TextStyle(
               color: Color(0xFF334155),
-              fontWeight: FontWeight.w700,
               fontSize: 11,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],

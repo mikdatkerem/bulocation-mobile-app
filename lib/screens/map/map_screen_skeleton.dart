@@ -18,7 +18,14 @@ class MapScreenSkeleton extends StatelessWidget {
       child: SkeletonShimmer(
         child: Column(
           children: [
-            MapScreenHeader(title: 'Harita hazirlaniyor', onBack: onBack),
+            MapScreenHeader(
+              title: 'Harita hazırlanıyor',
+              floors: const [],
+              selectedFloorId: null,
+              routeFloorIds: const {},
+              onBack: onBack,
+              onFloorChanged: (_) {},
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
               child: ClipRRect(

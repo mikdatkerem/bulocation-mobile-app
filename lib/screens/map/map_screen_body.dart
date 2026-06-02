@@ -102,7 +102,11 @@ class MapScreenBody extends StatelessWidget {
               children: [
                 MapScreenHeader(
                   title: buildingTitle,
+                  floors: floors,
+                  selectedFloorId: selectedFloorId,
+                  routeFloorIds: routeFloorIds,
                   onBack: onBack,
+                  onFloorChanged: onMapFloorChanged,
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
@@ -111,6 +115,12 @@ class MapScreenBody extends StatelessWidget {
                     onDetect: onQrDetected,
                     isLoading: isBusy,
                   ),
+                ),
+                _FloorContextStrip(
+                  hasMap: hasMap,
+                  floors: floors,
+                  selectedFloorId: selectedFloorId,
+                  routeFloorIds: routeFloorIds,
                 ),
                 MapScreenContentCard(
                   hasMap: hasMap,
@@ -128,19 +138,6 @@ class MapScreenBody extends StatelessWidget {
                   mapWidth: mapWidth,
                   mapHeight: mapHeight,
                   notices: notices,
-                  organizations: organizations,
-                  selectedOrganizationId: selectedOrganizationId,
-                  sites: sites,
-                  selectedSiteId: selectedSiteId,
-                  buildings: buildings,
-                  selectedBuildingId: selectedBuildingId,
-                  floors: floors,
-                  selectedFloorId: selectedFloorId,
-                  routeFloorIds: routeFloorIds,
-                  onOrganizationChanged: onOrganizationChanged,
-                  onSiteChanged: onSiteChanged,
-                  onBuildingChanged: onBuildingChanged,
-                  onFloorChanged: onMapFloorChanged,
                   onDismissNotice: onDismissNotice,
                   onMapNodeSelected: onMapNodeSelected,
                 ),
@@ -223,6 +220,113 @@ class MapScreenBody extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloorContextStrip extends StatelessWidget {
+  const _FloorContextStrip({
+    required this.hasMap,
+    required this.floors,
+    required this.selectedFloorId,
+    required this.routeFloorIds,
+  });
+
+  final bool hasMap;
+  final List<FloorHierarchy> floors;
+  final String? selectedFloorId;
+  final Set<String> routeFloorIds;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasMap || selectedFloorId == null) {
+      return const SizedBox(height: 8);
+    }
+
+    final selectedFloor =
+        floors.where((floor) => floor.id == selectedFloorId).firstOrNull;
+    if (selectedFloor == null) {
+      return const SizedBox(height: 8);
+    }
+
+    final isRouteFloor = routeFloorIds.contains(selectedFloor.id);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.96),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(18),
+            bottom: Radius.circular(10),
+          ),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F0F172A),
+              blurRadius: 16,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEEF2FF),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.layers_rounded,
+                color: Color(0xFF6366F1),
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                selectedFloor.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            if (routeFloorIds.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isRouteFloor
+                      ? const Color(0xFFEEF2FF)
+                      : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: isRouteFloor
+                        ? const Color(0xFFC7D2FE)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Text(
+                  isRouteFloor ? 'Rota üzerinde' : 'Rotanın dışında',
+                  style: TextStyle(
+                    color: isRouteFloor
+                        ? const Color(0xFF4F46E5)
+                        : const Color(0xFF64748B),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),

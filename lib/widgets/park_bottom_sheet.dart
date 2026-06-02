@@ -521,8 +521,11 @@ class _SheetExpandedContent extends StatelessWidget {
         _PanelHeader(
           icon: presenter.modeIcon,
           mapName: presenter.mapName,
-          summary: presenter.summaryText,
           title: presenter.panelTitle,
+          emptyCount: presenter.emptyCount,
+          fullCount: presenter.fullCount,
+          totalCount: presenter.totalCount,
+          showParkingMetrics: presenter.isParking,
         ),
         if (multiRoute != null && multiRoute!.segments.length > 1) ...[
           const SizedBox(height: 14),
