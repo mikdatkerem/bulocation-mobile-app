@@ -174,6 +174,8 @@ mixin _MapScreenQrActions on MapsScreenStateBase {
         _mapState.floor = null;
         _mapState.map = null;
         _mapState.route = null;
+        _mapState.singleFloorRoute = null;
+        _mapState.singleFloorRouteFloorId = null;
         _mapState.multiRoute = null;
         _mapState.targetPark = null;
         _mapState.displayNodes = const [];

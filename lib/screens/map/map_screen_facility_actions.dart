@@ -176,6 +176,110 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     }
   }
 
+  Future<void> _onMapFloorChanged(String? floorId) async {
+    final hierarchy = _mapState.hierarchy;
+    final site = _mapState.site;
+    final building = _mapState.building;
+    if (floorId == null ||
+        hierarchy == null ||
+        site == null ||
+        building == null ||
+        floorId == _mapState.floor?.id) {
+      return;
+    }
+
+    final routeSegmentIndex = _mapState.multiRoute?.segments
+        .indexWhere((segment) => segment.floorId == floorId);
+    if (routeSegmentIndex != null && routeSegmentIndex >= 0) {
+      await _showRouteSegment(routeSegmentIndex);
+      return;
+    }
+
+    final floor =
+        building.floors.where((item) => item.id == floorId).firstOrNull;
+    if (floor == null) {
+      return;
+    }
+
+    try {
+      await _openFloorForBrowsing(
+        hierarchy: hierarchy,
+        site: site,
+        building: building,
+        floor: floor,
+      );
+
+      final hasActiveNavigation = _mapState.targetPark != null ||
+          _mapState.multiRoute != null ||
+          (_mapState.singleFloorRoute?.isNotEmpty == true) ||
+          (_mapState.route?.isNotEmpty == true);
+      if (hasActiveNavigation && _mapState.route == null) {
+        _showNotice(
+          title: 'Rota korunuyor',
+          message:
+              '${floor.name} mevcut rotanın parçası değil. Rotalı kata dönünce çizgi yeniden görünecek.',
+        );
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _mapState.loading = false;
+        _clearActivity();
+      });
+      _showError(error);
+    }
+  }
+
+  Future<void> _openFloorForBrowsing({
+    required OrganizationHierarchy hierarchy,
+    required SiteHierarchy site,
+    required BuildingHierarchy building,
+    required FloorHierarchy floor,
+  }) async {
+    if (mounted) {
+      setState(() {
+        _mapState.loading = true;
+        _setActivity(
+          title: 'Kat açılıyor',
+          message: '${floor.name} haritası hazırlanıyor.',
+        );
+      });
+    }
+
+    final publishedMap = await _getPublishedMap(floor.id);
+    final buildingDestinations = await _loadBuildingDestinations(building.id);
+    final occupancy = await _parkingService.getOccupancyMap(floor.id);
+    final visibleRoute = _mapState.singleFloorRouteFloorId == floor.id
+        ? _mapState.singleFloorRoute
+        : null;
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _mapState.hierarchy = hierarchy;
+      _mapState.site = site;
+      _mapState.building = building;
+      _mapState.floor = floor;
+      _mapState.map = publishedMap;
+      _mapState.displayNodes = publishedMap.nodes;
+      _mapState.mapNodes = publishedMap.nodes;
+      _mapState.buildingDestinations = buildingDestinations;
+      _mapState.route = visibleRoute;
+      _mapState.displayMapAssetPath = publishedMap.assetPath;
+      _mapState.displayMapAssetContentType = publishedMap.assetContentType;
+      _mapState.displayMapWidth = publishedMap.width;
+      _mapState.displayMapHeight = publishedMap.height;
+      _mapState.occupancy = _normalizeOccupancy(occupancy);
+      _mapState.loading = false;
+      _clearActivity();
+    });
+  }
+
   Future<void> _loadOccupancy() async {
     final floor = _mapState.floor;
     if (floor == null) {
@@ -294,6 +398,8 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
         _mapState.targetPark = null;
         _mapState.parkedAt = null;
         _mapState.route = null;
+        _mapState.singleFloorRoute = null;
+        _mapState.singleFloorRouteFloorId = null;
         _mapState.multiRoute = null;
         _mapState.activeRouteSegmentIndex = 0;
         _mapState.lastScan = null;

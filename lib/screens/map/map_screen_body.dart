@@ -38,6 +38,7 @@ class MapScreenBody extends StatelessWidget {
     required this.selectedBuildingId,
     required this.floors,
     required this.selectedFloorId,
+    required this.routeFloorIds,
     required this.onBack,
     required this.onDismissNotice,
     required this.onCollapseSheet,
@@ -46,6 +47,7 @@ class MapScreenBody extends StatelessWidget {
     required this.onSiteChanged,
     required this.onBuildingChanged,
     required this.onFloorChanged,
+    required this.onMapFloorChanged,
     required this.onMapNodeSelected,
   });
 
@@ -76,6 +78,7 @@ class MapScreenBody extends StatelessWidget {
   final String? selectedBuildingId;
   final List<FloorHierarchy> floors;
   final String? selectedFloorId;
+  final Set<String> routeFloorIds;
   final VoidCallback onBack;
   final ValueChanged<int> onDismissNotice;
   final VoidCallback onCollapseSheet;
@@ -84,6 +87,7 @@ class MapScreenBody extends StatelessWidget {
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
   final ValueChanged<String?> onFloorChanged;
+  final ValueChanged<String?> onMapFloorChanged;
   final ValueChanged<MapNode> onMapNodeSelected;
 
   @override
@@ -132,10 +136,11 @@ class MapScreenBody extends StatelessWidget {
                   selectedBuildingId: selectedBuildingId,
                   floors: floors,
                   selectedFloorId: selectedFloorId,
+                  routeFloorIds: routeFloorIds,
                   onOrganizationChanged: onOrganizationChanged,
                   onSiteChanged: onSiteChanged,
                   onBuildingChanged: onBuildingChanged,
-                  onFloorChanged: onFloorChanged,
+                  onFloorChanged: onMapFloorChanged,
                   onDismissNotice: onDismissNotice,
                   onMapNodeSelected: onMapNodeSelected,
                 ),

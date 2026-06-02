@@ -25,6 +25,8 @@ class MapScreenStateController {
   MapNode? targetPark;
   MapNode? parkedAt;
   List<MapNode>? route;
+  List<MapNode>? singleFloorRoute;
+  String? singleFloorRouteFloorId;
   MultiRouteResult? multiRoute;
   int activeRouteSegmentIndex = 0;
   String? lastScan;
@@ -59,6 +61,8 @@ class MapScreenStateController {
     targetPark = null;
     parkedAt = null;
     route = null;
+    singleFloorRoute = null;
+    singleFloorRouteFloorId = null;
     multiRoute = null;
     activeRouteSegmentIndex = 0;
     displayNodes = const [];

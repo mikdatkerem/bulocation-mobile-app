@@ -222,6 +222,11 @@ class MapsScreenState extends MapsScreenStateBase
             ?.id;
     final routeStatusTitle = _routeStatusTitle(panelMode);
     final routeStatusMessage = _routeStatusMessage(panelMode);
+    final routeFloorIds = <String>{
+      if (state.singleFloorRouteFloorId != null) state.singleFloorRouteFloorId!,
+      if (state.multiRoute != null)
+        for (final segment in state.multiRoute!.segments) segment.floorId,
+    };
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -257,6 +262,7 @@ class MapsScreenState extends MapsScreenStateBase
                   selectedBuildingId: state.building?.id,
                   floors: _availableFloors,
                   selectedFloorId: state.floor?.id,
+                  routeFloorIds: routeFloorIds,
                   onBack: widget.onBack,
                   onDismissNotice: _dismissNotice,
                   onCollapseSheet: _collapseSheet,
@@ -265,6 +271,8 @@ class MapsScreenState extends MapsScreenStateBase
                   onSiteChanged: _onSiteChanged,
                   onBuildingChanged: _onBuildingChanged,
                   onFloorChanged: _onFloorChanged,
+                  onMapFloorChanged: (floorId) =>
+                      unawaited(_onMapFloorChanged(floorId)),
                   onMapNodeSelected: _selectParkTarget,
                 ),
                 if (hasMap)

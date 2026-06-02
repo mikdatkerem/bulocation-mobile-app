@@ -25,6 +25,8 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
           setState(() {
             _mapState.targetPark = park;
             _mapState.route = null;
+            _mapState.singleFloorRoute = null;
+            _mapState.singleFloorRouteFloorId = null;
             _mapState.multiRoute = null;
           });
           unawaited(_updateRoute(startReference));
@@ -54,6 +56,8 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
             _mapState.parkedAt = park;
             _mapState.targetPark = null;
             _mapState.route = null;
+            _mapState.singleFloorRoute = null;
+            _mapState.singleFloorRouteFloorId = null;
             _mapState.multiRoute = null;
             _mapState.displayNodes = _mapState.mapNodes;
             _clearActivity();
@@ -214,6 +218,8 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     setState(() {
       _mapState.targetPark = park;
       _mapState.route = null;
+      _mapState.singleFloorRoute = null;
+      _mapState.singleFloorRouteFloorId = null;
       _mapState.multiRoute = null;
       _setActivity(
         title: 'Hedef seçildi',
@@ -253,6 +259,8 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     setState(() {
       _mapState.targetPark = null;
       _mapState.route = null;
+      _mapState.singleFloorRoute = null;
+      _mapState.singleFloorRouteFloorId = null;
       _mapState.multiRoute = null;
       _mapState.displayNodes = _mapState.mapNodes;
       _clearActivity();
@@ -283,6 +291,8 @@ mixin _MapScreenPanelActions on MapsScreenStateBase {
     setState(() {
       _mapState.targetPark = park;
       _mapState.multiRoute = null;
+      _mapState.singleFloorRoute = null;
+      _mapState.singleFloorRouteFloorId = null;
       _setActivity(
         title: 'En yakın park seçildi',
         message: '${park.displayLabel} için rota hazırlanıyor.',

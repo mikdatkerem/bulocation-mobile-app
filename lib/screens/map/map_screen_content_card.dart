@@ -30,6 +30,7 @@ class MapScreenContentCard extends StatelessWidget {
     required this.selectedBuildingId,
     required this.floors,
     required this.selectedFloorId,
+    required this.routeFloorIds,
     required this.onOrganizationChanged,
     required this.onSiteChanged,
     required this.onBuildingChanged,
@@ -59,6 +60,7 @@ class MapScreenContentCard extends StatelessWidget {
   final String? selectedBuildingId;
   final List<FloorHierarchy> floors;
   final String? selectedFloorId;
+  final Set<String> routeFloorIds;
   final ValueChanged<String?> onOrganizationChanged;
   final ValueChanged<String?> onSiteChanged;
   final ValueChanged<String?> onBuildingChanged;
@@ -125,6 +127,17 @@ class MapScreenContentCard extends StatelessWidget {
                 ),
                 if (hasMap)
                   Positioned(
+                    top: 12,
+                    right: 12,
+                    child: _MapFloorPicker(
+                      floors: floors,
+                      selectedFloorId: selectedFloorId,
+                      routeFloorIds: routeFloorIds,
+                      onFloorChanged: onFloorChanged,
+                    ),
+                  ),
+                if (hasMap)
+                  Positioned(
                     top: 54,
                     left: 12,
                     right: 12,
@@ -141,6 +154,184 @@ class MapScreenContentCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MapFloorPicker extends StatelessWidget {
+  const _MapFloorPicker({
+    required this.floors,
+    required this.selectedFloorId,
+    required this.routeFloorIds,
+    required this.onFloorChanged,
+  });
+
+  final List<FloorHierarchy> floors;
+  final String? selectedFloorId;
+  final Set<String> routeFloorIds;
+  final ValueChanged<String?> onFloorChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (floors.length <= 1) {
+      return const SizedBox.shrink();
+    }
+
+    final sortedFloors = [...floors]..sort((left, right) {
+        final levelCompare = left.level.compareTo(right.level);
+        if (levelCompare != 0) {
+          return levelCompare;
+        }
+        return compareNodeLabelsNatural(left.name, right.name);
+      });
+    final selectedFloor =
+        sortedFloors.where((floor) => floor.id == selectedFloorId).firstOrNull;
+
+    return PopupMenuButton<String>(
+      elevation: 16,
+      offset: const Offset(0, 10),
+      color: Colors.white,
+      surfaceTintColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      onSelected: onFloorChanged,
+      itemBuilder: (context) => [
+        for (final floor in sortedFloors)
+          PopupMenuItem<String>(
+            value: floor.id,
+            child: _FloorPickerMenuItem(
+              floor: floor,
+              selected: floor.id == selectedFloorId,
+              onRoute: routeFloorIds.contains(floor.id),
+            ),
+          ),
+      ],
+      child: Container(
+        height: 42,
+        constraints: const BoxConstraints(minWidth: 96, maxWidth: 164),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.74)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x180F172A),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEEF2FF),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.layers_rounded,
+                size: 15,
+                color: Color(0xFF6366F1),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                selectedFloor?.name ?? 'Kat seç',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: Color(0xFF64748B),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloorPickerMenuItem extends StatelessWidget {
+  const _FloorPickerMenuItem({
+    required this.floor,
+    required this.selected,
+    required this.onRoute,
+  });
+
+  final FloorHierarchy floor;
+  final bool selected;
+  final bool onRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 220,
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color:
+                  selected ? const Color(0xFF6366F1) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              selected ? Icons.check_rounded : Icons.layers_rounded,
+              size: 17,
+              color: selected ? Colors.white : const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  floor.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  onRoute ? 'Rota üzerinde' : 'Haritayı göster',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: onRoute
+                        ? const Color(0xFF6366F1)
+                        : const Color(0xFF64748B),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

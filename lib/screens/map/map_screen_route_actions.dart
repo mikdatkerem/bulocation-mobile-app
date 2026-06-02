@@ -57,6 +57,8 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
 
       setState(() {
         _mapState.multiRoute = multiRoute;
+        _mapState.singleFloorRoute = null;
+        _mapState.singleFloorRouteFloorId = null;
         _mapState.activeRouteSegmentIndex = 0;
       });
 
@@ -77,6 +79,8 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       _mapState.multiRoute = null;
       _mapState.activeRouteSegmentIndex = 0;
       _mapState.route = result.nodes;
+      _mapState.singleFloorRoute = result.nodes;
+      _mapState.singleFloorRouteFloorId = _mapState.floor?.id;
       _mapState.displayNodes = _mapState.mapNodes;
       _mapState.displayMapAssetPath = _mapState.map?.assetPath;
       _mapState.displayMapAssetContentType = _mapState.map?.assetContentType;
@@ -125,6 +129,8 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       _mapState.map = segmentMap;
       _mapState.activeRouteSegmentIndex = index;
       _mapState.route = segment.nodes;
+      _mapState.singleFloorRoute = null;
+      _mapState.singleFloorRouteFloorId = null;
       _mapState.displayNodes = segmentMap.nodes;
       _mapState.mapNodes = segmentMap.nodes;
       _mapState.occupancy = _normalizeOccupancy(occupancy);
@@ -174,6 +180,8 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       setState(() {
         _mapState.targetPark = null;
         _mapState.multiRoute = result;
+        _mapState.singleFloorRoute = null;
+        _mapState.singleFloorRouteFloorId = null;
         _mapState.activeRouteSegmentIndex = 0;
       });
 
@@ -239,6 +247,8 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
           distanceMeters: result.distanceMeters,
           distanceLabel: result.distanceLabel,
         );
+        _mapState.singleFloorRoute = null;
+        _mapState.singleFloorRouteFloorId = null;
         _mapState.activeRouteSegmentIndex = 0;
       });
 
