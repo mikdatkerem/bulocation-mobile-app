@@ -37,15 +37,8 @@ class MapScreenHeader extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: _MarqueeTitle(
               title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF182033),
-              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -56,6 +49,120 @@ class MapScreenHeader extends StatelessWidget {
             onFloorChanged: onFloorChanged,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MarqueeTitle extends StatefulWidget {
+  const _MarqueeTitle(this.title);
+
+  final String title;
+
+  @override
+  State<_MarqueeTitle> createState() => _MarqueeTitleState();
+}
+
+class _MarqueeTitleState extends State<_MarqueeTitle> {
+  late final ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startMarquee());
+  }
+
+  @override
+  void didUpdateWidget(covariant _MarqueeTitle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.title == widget.title) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startMarquee());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startMarquee() async {
+    if (!mounted || !_controller.hasClients) {
+      return;
+    }
+
+    await _controller.animateTo(
+      0,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+    );
+
+    final maxScroll = _controller.position.maxScrollExtent;
+    if (maxScroll <= 1 || !mounted) {
+      return;
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted || !_controller.hasClients) {
+      return;
+    }
+
+    await _controller.animateTo(
+      maxScroll,
+      duration:
+          Duration(milliseconds: (maxScroll * 42).clamp(2600, 6200).round()),
+      curve: Curves.linear,
+    );
+    if (!mounted || !_controller.hasClients) {
+      return;
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    if (!mounted || !_controller.hasClients) {
+      return;
+    }
+
+    await _controller.animateTo(
+      0,
+      duration: const Duration(milliseconds: 520),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (bounds) {
+        return const LinearGradient(
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: [0, 0.08, 0.92, 1],
+        ).createShader(bounds);
+      },
+      blendMode: BlendMode.dstIn,
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            widget.title,
+            maxLines: 1,
+            softWrap: false,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF182033),
+            ),
+          ),
+        ),
       ),
     );
   }

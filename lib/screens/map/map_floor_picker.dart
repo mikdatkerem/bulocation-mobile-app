@@ -30,9 +30,6 @@ class MapFloorPicker extends StatelessWidget {
         }
         return compareNodeLabelsNatural(left.name, right.name);
       });
-    final selectedFloor =
-        sortedFloors.where((floor) => floor.id == selectedFloorId).firstOrNull;
-
     return PopupMenuButton<String>(
       elevation: 16,
       offset: const Offset(0, 10),
@@ -56,8 +53,8 @@ class MapFloorPicker extends StatelessWidget {
       ],
       child: Container(
         height: 40,
-        constraints: const BoxConstraints(minWidth: 82, maxWidth: 132),
-        padding: const EdgeInsets.symmetric(horizontal: 11),
+        width: 48,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
@@ -70,31 +67,19 @@ class MapFloorPicker extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            const Icon(
+            Icon(
               Icons.layers_rounded,
-              size: 17,
+              size: 18,
               color: Color(0xFF6366F1),
             ),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                selectedFloor?.name ?? 'Kat',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(width: 3),
-            const Icon(
+            SizedBox(width: 2),
+            Icon(
               Icons.keyboard_arrow_down_rounded,
-              size: 17,
+              size: 15,
               color: Color(0xFF64748B),
             ),
           ],

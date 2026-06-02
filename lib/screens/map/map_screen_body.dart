@@ -120,7 +120,6 @@ class MapScreenBody extends StatelessWidget {
                   hasMap: hasMap,
                   floors: floors,
                   selectedFloorId: selectedFloorId,
-                  routeFloorIds: routeFloorIds,
                 ),
                 MapScreenContentCard(
                   hasMap: hasMap,
@@ -235,13 +234,11 @@ class _FloorContextStrip extends StatelessWidget {
     required this.hasMap,
     required this.floors,
     required this.selectedFloorId,
-    required this.routeFloorIds,
   });
 
   final bool hasMap;
   final List<FloorHierarchy> floors;
   final String? selectedFloorId;
-  final Set<String> routeFloorIds;
 
   @override
   Widget build(BuildContext context) {
@@ -255,17 +252,17 @@ class _FloorContextStrip extends StatelessWidget {
       return const SizedBox(height: 8);
     }
 
-    final isRouteFloor = routeFloorIds.contains(selectedFloor.id);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
       child: Container(
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 13),
+        height: 36,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.96),
+          color: Colors.white,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(18),
-            bottom: Radius.circular(10),
+            top: Radius.circular(22),
+            bottom: Radius.circular(8),
           ),
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: const [
@@ -276,61 +273,17 @@ class _FloorContextStrip extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEEF2FF),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.layers_rounded,
-                color: Color(0xFF6366F1),
-                size: 16,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                selectedFloor.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            if (routeFloorIds.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isRouteFloor
-                      ? const Color(0xFFEEF2FF)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: isRouteFloor
-                        ? const Color(0xFFC7D2FE)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                child: Text(
-                  isRouteFloor ? 'Rota üzerinde' : 'Rotanın dışında',
-                  style: TextStyle(
-                    color: isRouteFloor
-                        ? const Color(0xFF4F46E5)
-                        : const Color(0xFF64748B),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-          ],
+        child: Text(
+          selectedFloor.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.1,
+          ),
         ),
       ),
     );
