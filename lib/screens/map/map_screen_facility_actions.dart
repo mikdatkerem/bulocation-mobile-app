@@ -278,6 +278,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
       _mapState.loading = false;
       _clearActivity();
     });
+    unawaited(_parkingService.subscribeToFloor(floor.id));
   }
 
   Future<void> _loadOccupancy() async {
@@ -408,6 +409,7 @@ mixin _MapScreenFacilityActions on MapsScreenStateBase {
     });
 
     await _loadOccupancy();
+    await _parkingService.subscribeToFloor(floor.id);
   }
 
   void _onOccupancyChanged(String spotId, bool isOccupied) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
@@ -19,6 +20,8 @@ class ParkingService {
   String get _hubUrl => AppConfig.hubBaseUrl;
 
   HubConnection? _hubConnection;
+  String? _activeFloorId;
+  String? _subscribedFloorId;
 
   Future<Map<String, bool>> getOccupancyMap(String floorId) async {
     final uri =
@@ -51,8 +54,13 @@ class ParkingService {
     return result;
   }
 
-  Future<void> startListening() async {
+  Future<void> startListening({String? floorId}) async {
+    if (floorId != null && floorId.trim().isNotEmpty) {
+      _activeFloorId = floorId.trim();
+    }
+
     if (_hubConnection != null) {
+      await _subscribeToActiveFloor();
       return;
     }
 
@@ -102,6 +110,7 @@ class ParkingService {
         'SignalR baglantisi kapandi: $error',
         name: 'ParkingService',
       );
+      _subscribedFloorId = null;
       _hubConnection = null;
     });
 
@@ -117,15 +126,58 @@ class ParkingService {
         'SignalR yeniden baglandi: $connectionId',
         name: 'ParkingService',
       );
+      _subscribedFloorId = null;
+      unawaited(_subscribeToActiveFloor());
     });
 
     await _hubConnection!.start();
+    await _subscribeToActiveFloor();
     developer.log('SignalR baglandi', name: 'ParkingService');
+  }
+
+  Future<void> subscribeToFloor(String floorId) async {
+    if (floorId.trim().isEmpty) {
+      return;
+    }
+
+    _activeFloorId = floorId.trim();
+    await _subscribeToActiveFloor();
+  }
+
+  Future<void> _subscribeToActiveFloor() async {
+    final floorId = _activeFloorId;
+    final connection = _hubConnection;
+    if (floorId == null || connection == null) {
+      return;
+    }
+
+    if (_subscribedFloorId == floorId) {
+      return;
+    }
+
+    try {
+      final previousFloorId = _subscribedFloorId;
+      if (previousFloorId != null) {
+        await connection.invoke(
+          'UnsubscribeFromFloor',
+          args: <Object>[previousFloorId],
+        );
+      }
+
+      await connection.invoke('SubscribeToFloor', args: <Object>[floorId]);
+      _subscribedFloorId = floorId;
+    } catch (error) {
+      developer.log(
+        'SignalR kat aboneligi yapilamadi: $error',
+        name: 'ParkingService',
+      );
+    }
   }
 
   Future<void> stopListening() async {
     await _hubConnection?.stop();
     _hubConnection = null;
+    _subscribedFloorId = null;
   }
 
   void dispose() {

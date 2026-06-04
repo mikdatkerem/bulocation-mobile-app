@@ -140,6 +140,7 @@ mixin _MapScreenRouteActions on MapsScreenStateBase {
       _mapState.displayMapHeight = segmentMap.height;
       _clearActivity();
     });
+    unawaited(_parkingService.subscribeToFloor(segment.floorId));
   }
 
   Future<void> _navigateToBestExit() async {
