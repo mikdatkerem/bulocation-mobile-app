@@ -1,188 +1,186 @@
-# Bulocation Mobile
+<div align="center">
 
-Bulocation mobile is the Flutter client for QR-first indoor navigation, manual organization/site/building/floor selection, published map viewing, route drawing, and live parking occupancy.
+# 📱 Bulocation Mobile
 
-The app is not only a parking product. Parking is one operational mode inside the broader indoor navigation experience.
+### QR kodla konumunu belirle, kat planını görüntüle, hedefe rota oluştur.
 
-## Core Flows
+[![Flutter](https://img.shields.io/badge/Flutter-Mobile-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-3-0175C2?logo=dart&logoColor=white)](https://dart.dev/)
+[![Android](https://img.shields.io/badge/Android-Supported-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+[![iOS](https://img.shields.io/badge/iOS-Project%20Included-111111?logo=apple&logoColor=white)](https://developer.apple.com/)
 
-- Login, registration, Google sign-in, refresh token, and session restore
-- First-run guide and app boot skeleton states
-- Home hero with QR-first start, top-right profile access, and hidden bottom bar while the hero is active
-- Manual map selection as a full-page home flow
-- Recent maps under manual selection, including map asset previews
-- Recent-first suggestions while searching sites, buildings, and floors
-- QR reference resolution into scan context and the related published floor map
-- Map screen with camera scanning, published map rendering, route drawing, glass notices, and a draggable facility panel
-- SignalR-based live parking occupancy updates
+**[Web Sitesi](https://bulocation.com)** · **[Backend API](https://github.com/mikdatkerem/bulocation-api)** · **[Web Yönetim Paneli](https://github.com/mikdatkerem/bulocation-landing-page)**
 
-## Requirements
+</div>
 
-- Flutter stable with Dart 3.x
-- Android Studio / Xcode platform tooling
-- For Android builds on Windows, `JAVA_HOME` should point to the Android Studio JBR/JDK. Example: `C:\Program Files\Android\Android Studio\jbr`
-- Running Bulocation API
+---
 
-## Setup
+## 🎯 Proje Hakkında
+
+**Bulocation Mobile**, alışveriş merkezleri, hastaneler, otoparklar ve benzeri karmaşık kapalı alanlarda navigasyon deneyimi sunmak için geliştirilen **Flutter** uygulamasıdır.
+
+Temel fikir basit: Kullanıcı bulunduğu noktadaki **QR kodu okutur** veya konumunu **tesis / bina / kat seçerek** belirler. Ardından yayımlanmış kat haritasını görüntüler ve hedef noktaya giden rotayı takip edebilir.
+
+Otopark doluluk takibi, platformun sunduğu kullanım alanlarından **biridir**; Bulocation yalnızca bir otopark uygulaması değildir.
+
+## ✨ Temel Özellikler
+
+| Özellik | Açıklama |
+| --- | --- |
+| 📷 **QR kod ile başlama** | Kamerayla QR tarayarak ilgili alanın harita bağlamını açma |
+| 🏢 **Manuel konum seçimi** | Organizasyon, yerleşke, bina ve kat seçimi |
+| 🗺️ **Kat planı görüntüleme** | Yayımlanmış harita varlıklarını uygulamada görüntüleme |
+| 🧭 **Rota çizimi** | Harita üzerinde hedefe yönelik rota oluşturma/gösterme |
+| 🅿️ **Canlı park doluluğu** | SignalR ile park noktası durum değişikliklerini alma |
+| 🕘 **Son haritalar** | Daha önce açılan haritalara hızlı erişim |
+| 🔎 **Akıllı seçim akışı** | Yerleşke, bina ve kat aramalarında son kullanılanların öne çıkması |
+| 🔐 **Hesap yönetimi** | Giriş, kayıt, oturum yenileme ve profil işlemleri |
+| 🌐 **Google ile giriş** | Gerekli sunucu istemci kimliği yapılandırıldığında Google oturum açma |
+
+## 🖼️ Uygulama Ekranları
+
+Ekran görüntüleri henüz eklenmedi. Hazır olduklarında `screenshots/` klasörüne yerleştirip aşağıdaki yorum bloğunu açabilirsiniz.
+
+<!--
+<div align="center">
+
+| Ana Sayfa | QR Tarayıcı | Harita / Rota |
+|:---:|:---:|:---:|
+| <img src="screenshots/home.png" alt="Bulocation Ana Sayfa" width="220" /> | <img src="screenshots/qr-scanner.png" alt="QR Tarayıcı" width="220" /> | <img src="screenshots/map.png" alt="Harita ve Rota" width="220" /> |
+
+| Tesis Seçimi | Otopark | Profil |
+|:---:|:---:|:---:|
+| <img src="screenshots/facility-selection.png" alt="Tesis Seçimi" width="220" /> | <img src="screenshots/parking.png" alt="Park Durumu" width="220" /> | <img src="screenshots/profile.png" alt="Profil" width="220" /> |
+
+</div>
+-->
+
+## 🔄 Kullanıcı Akışı
+
+```mermaid
+flowchart TD
+    A[Uygulamayı aç] --> B{Konum belirleme}
+    B --> C[QR kodunu tara]
+    B --> D[Tesis / bina / kat seç]
+    C --> E[Yayımlanmış haritayı aç]
+    D --> E
+    E --> F[Hedef / rota işlemleri]
+    E --> G[Otopark doluluk durumunu görüntüle]
+    G --> H[SignalR ile canlı güncellemeler]
+```
+
+## 🧰 Kullanılan Teknolojiler
+
+- **Flutter / Dart 3** — Android ve iOS uygulama geliştirme
+- **Dio / HTTP** — Bulocation API ile veri alışverişi
+- **mobile_scanner** — QR kod tarama
+- **flutter_svg** — SVG tabanlı kat planları ve görseller
+- **SignalR (`signalr_netcore`)** — gerçek zamanlı park durumu güncellemeleri
+- **flutter_secure_storage** — güvenli yerel oturum bilgileri
+- **shared_preferences** — uygulama tercihleri ve son kullanılan haritalar
+- **google_sign_in** — Google oturum açma entegrasyonu
+
+## ⚙️ Kurulum
+
+### Gereksinimler
+
+- Flutter SDK (Dart 3.x uyumlu)
+- Android Studio ve Android SDK; iOS için macOS + Xcode
+- Çalışan bir [Bulocation API](https://github.com/mikdatkerem/bulocation-api) örneği
+
+**1. Depoyu klonlayın**
+
+```bash
+git clone https://github.com/mikdatkerem/bulocation-mobile-app.git
+cd bulocation-mobile-app
+```
+
+**2. Paketleri kurun**
 
 ```bash
 flutter pub get
-flutter analyze
-flutter test
 ```
 
-## Run
-
-For Android emulator development against the local API:
+**3. Android emülatöründe çalıştırın**
 
 ```bash
-flutter run \
-  --dart-define=BASE_HOST=http://10.0.2.2:5011
+flutter run --dart-define=BASE_HOST=http://10.0.2.2:5011
 ```
 
-For staging or production-like runs, `BASE_HOST` must be HTTPS:
+`10.0.2.2`, Android emülatöründen geliştirme bilgisayarının `localhost` adresine erişim içindir. Gerçek cihazda cihazın erişebildiği API adresini kullanmanız gerekir.
+
+### Yapılandırma
+
+Yapılandırma `--dart-define` ile aktarılır:
+
+| Değişken | Açıklama |
+| --- | --- |
+| `BASE_HOST` | API ana adresi; REST `/api` ve SignalR `/hubs/parking` yolları bundan türetilir |
+| `APP_SECRET` | Bazı API/gateway akışlarında kullanılan isteğe bağlı uygulama başlığı |
+| `GOOGLE_SERVER_CLIENT_ID` | Google ile giriş için sunucu istemci kimliği |
+
+Örnek HTTPS ortamı:
 
 ```bash
-flutter run --release \
-  --dart-define=BASE_HOST=https://api.bulocation.com \
-  --dart-define=APP_SECRET=... \
-  --dart-define=GOOGLE_SERVER_CLIENT_ID=...
+flutter run --dart-define=BASE_HOST=https://api.bulocation.com
 ```
 
-The main mobile security layer is JWT access tokens plus the refresh-token flow. If `APP_SECRET` is defined, REST and SignalR requests also include it as `x-app-secret`. Because a mobile binary can be reverse engineered, `APP_SECRET` must never be treated as the only real security boundary.
+> **Güvenlik:** Bir mobil uygulamaya gömülen `APP_SECRET` gerçek anlamda gizli tutulamaz. Yetki kontrolünün temeli sunucu tarafındaki doğrulama ve JWT oturum mekanizması olmalıdır. Gerçek anahtarları Git'e eklemeyin.
 
-## Project Structure
+## 📁 Proje Yapısı
 
 ```text
-lib/
-  app/
-    app_session_controller.dart
-  core/
-    api_client.dart
-  models/
-    auth_models.dart
-    exceptions.dart
-    facility_models.dart
-    graph_data.dart
-    recent_map.dart
-  screens/
-    app_shell.dart
-    home_overview_screen.dart
-    home_guide_screen.dart
-    home_screen.dart
-    login_screen.dart
-    register_screen.dart
-    profile_screen.dart
-    map/
-    home/
-    auth/
-    profile/
-  services/
-    auth_service.dart
-    facility_service.dart
-    parking_service.dart
-    pathfinding_service.dart
-    recent_maps_storage.dart
-    session_storage.dart
-  widgets/
-    bottom_bar.dart
-    embedded_scanner.dart
-    floor_plan_widget.dart
-    map_asset_preview.dart
-    skeleton.dart
-    parking_panel/
-    floor_plan/
+bulocation-mobile-app/
+├── lib/
+│   ├── app/                # Oturum / uygulama durumu
+│   ├── core/               # API istemcisi
+│   ├── models/             # Veri modelleri
+│   ├── screens/            # Giriş, ana sayfa, harita, profil
+│   ├── services/           # Auth, tesis, rota, park servisleri
+│   ├── widgets/            # QR, kat planı, panel bileşenleri
+│   └── main.dart
+├── assets/                 # Uygulama görselleri
+├── android/
+├── ios/
+├── test/
+└── pubspec.yaml
 ```
 
-Note: `home_screen.dart` still contains the main map screen state. A future cleanup can rename/split it into a clearer `map_screen.dart` structure, but do not do that casually because it touches routing and state handoff.
-
-## API Configuration
-
-`lib/main.dart` reads these dart defines:
-
-| Value | Purpose |
-| --- | --- |
-| `BASE_HOST` | API and SignalR host. Example: `https://api.bulocation.com` |
-| `APP_SECRET` | Optional Cloudflare/API gateway value sent as `x-app-secret`. |
-| `GOOGLE_SERVER_CLIENT_ID` | Server client id used for Google sign-in backend verification. |
-
-Derived endpoints:
-
-| Endpoint | Purpose |
-| --- | --- |
-| `$BASE_HOST/api` | REST API |
-| `$BASE_HOST/hubs/parking` | SignalR parking occupancy hub |
-
-## Platform Notes
-
-Android:
-
-- `applicationId`: `com.bulocation.app`
-- Camera and internet permissions are defined.
-- Release signing must use real store/CI keystore values, not a debug key.
-- Copy `android/key.properties.example` to `android/key.properties` locally and fill real values outside git.
-- The expected local keystore path is `android/app/bulocation-release-key.jks` unless `storeFile` is changed.
-
-iOS:
-
-- Display name: `Bulocation`
-- Bundle identifier: `com.bulocation.app`
-- Camera usage description is defined.
-- Signing and Apple Developer Team must be configured in Xcode before release.
-
-## Quality Checks
-
-Run after meaningful changes:
+## 🧪 Test ve Kalite
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-If Gradle is run directly on Windows:
+### Android sürüm paketi
 
-```powershell
-$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-```
-
-Release checks:
+Release paketi üretmeden önce `android/key.properties` ve gerçek imzalama anahtarı yapılandırılmalıdır. Depodaki `android/key.properties.example` örnek olarak kullanılabilir; şifreler ve anahtar dosyası repoya eklenmemelidir.
 
 ```bash
-flutter build apk --release \
-  --dart-define=BASE_HOST=https://api.bulocation.com
-
-flutter build appbundle --release \
-  --dart-define=BASE_HOST=https://api.bulocation.com
-
-flutter build ios --release \
-  --dart-define=BASE_HOST=https://api.bulocation.com
+flutter build apk --release --dart-define=BASE_HOST=https://api.bulocation.com
 ```
 
-## Android Release Signing
+> Release modunda `BASE_HOST` için HTTPS zorunludur. Android/iOS mağaza yayınından önce imzalama, Google oturum açma ayarları ve gerçek cihaz testleri tamamlanmalıdır.
 
-`android/key.properties` is intentionally ignored by git. A local release signing file should look like this:
+## 🔗 Bulocation Ekosistemi
 
-```properties
-storePassword=your-secure-store-password
-keyPassword=your-secure-key-password
-keyAlias=bulocation
-storeFile=../app/bulocation-release-key.jks
-```
+| Depo | Sorumluluk |
+| --- | --- |
+| [bulocation-api](https://github.com/mikdatkerem/bulocation-api) | Backend, haritalar, kimlik doğrulama, rota ve SignalR |
+| [bulocation-landing-page](https://github.com/mikdatkerem/bulocation-landing-page) | Tanıtım sitesi ve yönetim paneli |
+| **bulocation-mobile-app** | QR tabanlı mobil navigasyon uygulaması |
 
-The `storeFile` value is resolved from `android/app`, so `../app/bulocation-release-key.jks` points to:
+## 📄 Lisans
 
-```text
-android/app/bulocation-release-key.jks
-```
+Bu depoda açık bir lisansın varlığı doğrulanmadı. Kullanım ve yeniden dağıtım koşulları ayrıca tanımlanmalıdır.
 
-Keep both `android/key.properties` and the `.jks` file backed up securely. If the signing key is lost, Play Store updates for the same signing lineage can become painful or impossible depending on the release setup.
+---
 
-## Before Production
+<div align="center">
 
-- Android release keystore values must be defined securely in CI/store tooling.
-- iOS signing must be finalized.
-- Google sign-in Android/iOS native configuration must be verified.
-- QR -> scan context -> published map -> route integration/widget tests should be expanded.
-- SignalR should move toward a short-lived connection token strategy.
-- Large organization/site lists should keep using progressive loading and skeleton states.
+**Bulocation — Gideceğiniz yeri bulmak artık daha kolay.**
+
+Geliştirici: [Mikdat Kerem Kalkan](https://github.com/mikdatkerem)
+
+</div>
